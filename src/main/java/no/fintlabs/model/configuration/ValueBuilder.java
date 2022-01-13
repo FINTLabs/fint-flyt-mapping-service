@@ -14,5 +14,10 @@ import java.util.List;
 @AllArgsConstructor
 public class ValueBuilder {
     private String value;
-    private List<Property> properties = new ArrayList<>();
+    private List<Property> properties;
+
+    public ValueBuilder(String value, Property... properties) {
+        this.value = value;
+        this.properties = List.of(properties);
+    }
 }

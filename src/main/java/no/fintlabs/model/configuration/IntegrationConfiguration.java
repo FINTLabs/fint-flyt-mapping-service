@@ -1,10 +1,12 @@
 package no.fintlabs.model.configuration;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class IntegrationConfiguration {
     private String documentId;
 
