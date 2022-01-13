@@ -39,6 +39,8 @@ dependencies {
     //implementation 'org.apache.kafka:kafka-streams'
     //implementation 'org.springframework.kafka:spring-kafka'
 
+    implementation "no.fint:fint-arkiv-resource-model-java:${apiVersion}"
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
