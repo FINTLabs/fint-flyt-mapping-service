@@ -2,20 +2,27 @@ package no.fintlabs;
 
 import no.fint.model.resource.Link;
 import no.fint.model.resource.arkiv.noark.JournalpostResource;
+import no.fint.model.resource.arkiv.noark.KlasseResource;
 import no.fint.model.resource.arkiv.noark.SakResource;
+import no.fint.model.resource.arkiv.noark.SkjermingResource;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.instance.Instance;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CaseService {
 
     private final FieldMappingService fieldMappingService;
 
-    public CaseService(FieldMappingService fieldMappingService) {
+    private KlassifikasjonsMappingService klassifikasjonsMappingService;
+
+    public CaseService(FieldMappingService fieldMappingService, KlassifikasjonsMappingService klassifikasjonsMappingService) {
         this.fieldMappingService = fieldMappingService;
+        this.klassifikasjonsMappingService = klassifikasjonsMappingService;
     }
 
     public SakResource createSak(IntegrationConfiguration integrationConfiguration, Instance instance) {
@@ -60,23 +67,23 @@ public class CaseService {
 
         sakResource.setTittel(caseValuesByFieldKey.get("title"));
         sakResource.setOffentligTittel(caseValuesByFieldKey.get("offentligTittel"));
-        // TODO: 14/01/2022 What is this? 
+        // TODO: 14/01/2022 What is this?  // sakstype: Sak
         // "caseType",
-        // TODO: 14/01/2022 Will the value contain the link (applies to all links below):
-        sakResource.addAdministrativEnhet(new Link(caseValuesByFieldKey.get("administrativenhet")));
-        sakResource.addArkivdel(new Link(caseValuesByFieldKey.get("arkivdel")));
-        sakResource.addJournalenhet(new Link(caseValuesByFieldKey.get("journalenhet")));
-        // TODO: 14/01/2022 What is this?
-        // tilgangsrestriksjon
-        // skjermingshjemmel
-        sakResource.addSaksansvarlig(new Link(caseValuesByFieldKey.get("saksansvarlig")));
-        // primarordningsprinsipp
-        //sekundarordningsprinsipp
-        // primarklasse
-        // sekundarklasse
+        Optional.ofNullable(caseValuesByFieldKey.get("administrativenhet")).map(Link::new).ifPresent(sakResource::addAdministrativEnhet);
+        Optional.ofNullable(caseValuesByFieldKey.get("arkivdel")).map(Link::new).ifPresent(sakResource::addArkivdel);
+        Optional.ofNullable(caseValuesByFieldKey.get("journalenhet")).map(Link::new).ifPresent(sakResource::addJournalenhet);
+
+        SkjermingResource skjermingResource = new SkjermingResource();
+        Optional.ofNullable(caseValuesByFieldKey.get("tilgangsrestriksjon")).map(Link::new).ifPresent(skjermingResource::addTilgangsrestriksjon);
+        Optional.ofNullable(caseValuesByFieldKey.get("skjermingshjemmel")).map(Link::new).ifPresent(skjermingResource::addSkjermingshjemmel);
+        sakResource.setSkjerming(skjermingResource);
+
+        Optional.ofNullable(caseValuesByFieldKey.get("saksansvarlig")).map(Link::new).ifPresent(sakResource::addSaksansvarlig);
+        sakResource.setKlasse(klassifikasjonsMappingService.getKlasseResources(caseValuesByFieldKey)); // todo input keys here
 
         return sakResource;
     }
+
 
     private JournalpostResource createNewJournalpostAndDokumentbeskrivelse(IntegrationConfiguration integrationConfiguration, Instance instance, SakResource sakResource) {
         // TODO: 14/01/2022 Implement
@@ -85,19 +92,19 @@ public class CaseService {
             recordConfiguration:
                 "tittel",
                 "offentigTittel",
-                "DokumentBeskrivelse.dokumentType",
+                "DokumentBeskrivelse.dokumentType", (journalposttype)
                 "administrativenhet",
                 "journalstatus",
                 "tilgangsrestriksjon",
                 "skjermingshjemmel",
 
-            documentConfiguration:
+            documentConfiguration: (Dokumentbeskrivelse)
                 "tittel",}
                 "dokumentStatus",
                 "tilgangsrestriksjon",
                 "skjermingshjemmel",
-                "DokumentBeskrivelse.dokumentObjekt.variantFormat"}
-                "DokumentBeskrivelse.dokumentObjekt.filformat",
+                "DokumentBeskrivelse.dokumentObjekt.variantFormat"} ???
+                "DokumentBeskrivelse.dokumentObjekt.filformat",     ???
         */
 
         return new JournalpostResource();
