@@ -2,7 +2,6 @@ package no.fintlabs;
 
 import no.fint.model.resource.Link;
 import no.fint.model.resource.arkiv.noark.JournalpostResource;
-import no.fint.model.resource.arkiv.noark.KlasseResource;
 import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fint.model.resource.arkiv.noark.SkjermingResource;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
@@ -13,14 +12,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static no.fintlabs.SakField.*;
+
 @Service
 public class CaseService {
 
+    private final InstanceFieldsValidator instanceFieldsValidator;
+    private final MappedFieldsValidator mappedFieldsValidator;
+
     private final FieldMappingService fieldMappingService;
+    private final KlassifikasjonsMappingService klassifikasjonsMappingService;
 
-    private KlassifikasjonsMappingService klassifikasjonsMappingService;
-
-    public CaseService(FieldMappingService fieldMappingService, KlassifikasjonsMappingService klassifikasjonsMappingService) {
+    public CaseService(
+            InstanceFieldsValidator instanceFieldsValidator,
+            MappedFieldsValidator mappedFieldsValidator,
+            FieldMappingService fieldMappingService,
+            KlassifikasjonsMappingService klassifikasjonsMappingService
+    ) {
+        this.instanceFieldsValidator = instanceFieldsValidator;
+        this.mappedFieldsValidator = mappedFieldsValidator;
         this.fieldMappingService = fieldMappingService;
         this.klassifikasjonsMappingService = klassifikasjonsMappingService;
     }
@@ -47,9 +57,12 @@ public class CaseService {
     }
 
     private SakResource getSak(IntegrationConfiguration integrationConfiguration, Instance instance) {
+        this.instanceFieldsValidator.validate(integrationConfiguration, instance);
         switch (integrationConfiguration.getCaseConfiguration().getCaseCreationStrategy()) {
             case NEW:
-                return createNewSak(integrationConfiguration, instance);
+                Map<String, String> caseValuesByFieldKey = fieldMappingService.mapCaseFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFields());
+                this.mappedFieldsValidator.validate(caseValuesByFieldKey, SakField.values());
+                return createNewSak(caseValuesByFieldKey);
             case EXISTING:
                 // TODO: 14/01/2022 Handle existing
                 return null;
@@ -61,29 +74,30 @@ public class CaseService {
         }
     }
 
-    private SakResource createNewSak(IntegrationConfiguration integrationConfiguration, Instance instance) {
+    private SakResource createNewSak(Map<String, String> caseValuesByFieldKey) {
         SakResource sakResource = new SakResource();
-        Map<String, String> caseValuesByFieldKey = fieldMappingService.mapCaseFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFields());
+        sakResource.setTittel(caseValuesByFieldKey.get(TITTEL.getFieldKey()));
+        sakResource.setOffentligTittel(caseValuesByFieldKey.get(OFFENTLIG_TITTEL.getFieldKey()));
 
-        sakResource.setTittel(caseValuesByFieldKey.get("title"));
-        sakResource.setOffentligTittel(caseValuesByFieldKey.get("offentligTittel"));
-        // TODO: 14/01/2022 What is this?  // sakstype: Sak
-        // "caseType",
-        Optional.ofNullable(caseValuesByFieldKey.get("administrativenhet")).map(Link::new).ifPresent(sakResource::addAdministrativEnhet);
-        Optional.ofNullable(caseValuesByFieldKey.get("arkivdel")).map(Link::new).ifPresent(sakResource::addArkivdel);
-        Optional.ofNullable(caseValuesByFieldKey.get("journalenhet")).map(Link::new).ifPresent(sakResource::addJournalenhet);
+        Optional.ofNullable(caseValuesByFieldKey.get(ADMINISTRATIV_ENHET.getFieldKey())).map(Link::new).ifPresent(sakResource::addAdministrativEnhet);
+        Optional.ofNullable(caseValuesByFieldKey.get(ARKIVDEL.getFieldKey())).map(Link::new).ifPresent(sakResource::addArkivdel);
+        Optional.ofNullable(caseValuesByFieldKey.get(JOURNALENHET.getFieldKey())).map(Link::new).ifPresent(sakResource::addJournalenhet);
 
         SkjermingResource skjermingResource = new SkjermingResource();
-        Optional.ofNullable(caseValuesByFieldKey.get("tilgangsrestriksjon")).map(Link::new).ifPresent(skjermingResource::addTilgangsrestriksjon);
-        Optional.ofNullable(caseValuesByFieldKey.get("skjermingshjemmel")).map(Link::new).ifPresent(skjermingResource::addSkjermingshjemmel);
+        Optional.ofNullable(caseValuesByFieldKey.get(TILGANGSRESTRIKSJON.getFieldKey())).map(Link::new).ifPresent(skjermingResource::addTilgangsrestriksjon);
+        Optional.ofNullable(caseValuesByFieldKey.get(SKJERMINGSHJEMMEL.getFieldKey())).map(Link::new).ifPresent(skjermingResource::addSkjermingshjemmel);
         sakResource.setSkjerming(skjermingResource);
 
-        Optional.ofNullable(caseValuesByFieldKey.get("saksansvarlig")).map(Link::new).ifPresent(sakResource::addSaksansvarlig);
-        sakResource.setKlasse(klassifikasjonsMappingService.getKlasseResources(caseValuesByFieldKey)); // todo input keys here
+        Optional.ofNullable(caseValuesByFieldKey.get(SAKSANSVARLIG.getFieldKey())).map(Link::new).ifPresent(sakResource::addSaksansvarlig);
+
+        sakResource.setKlasse(klassifikasjonsMappingService.getKlasseResources(caseValuesByFieldKey, List.of(
+                new KlassifikasjonsMappingService.FieldKeys(PRIMARORDNINGSPRINSIPP.getFieldKey(), PRIMARKLASSE.getFieldKey()),
+                new KlassifikasjonsMappingService.FieldKeys(SEKUNDARORDNINGSPRINSIPP.getFieldKey(), SEKUNDARKLASSE.getFieldKey()),
+                new KlassifikasjonsMappingService.FieldKeys(TERTIARORDNINGSPRINSIPP.getFieldKey(), TERTIARKLASSE.getFieldKey())
+        )));
 
         return sakResource;
     }
-
 
     private JournalpostResource createNewJournalpostAndDokumentbeskrivelse(IntegrationConfiguration integrationConfiguration, Instance instance, SakResource sakResource) {
         // TODO: 14/01/2022 Implement

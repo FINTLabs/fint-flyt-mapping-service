@@ -1,5 +1,7 @@
 package no.fintlabs;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import no.fint.model.resource.arkiv.noark.KlasseResource;
 import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
 import no.fintlabs.kafka.consumer.cache.FintCache;
@@ -9,6 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class KlassifikasjonsMappingService {
@@ -19,32 +25,24 @@ public class KlassifikasjonsMappingService {
         klassifikasjonssystemCache = fintCacheManager.getCache("arkiv.noark.klassifikasjonssystem", String.class, KlassifikasjonssystemResource.class);
     }
 
-    public List<KlasseResource> getKlasseResources(Map<String, String> caseValuesByFieldKey) {
-        // TODO: 19/01/2022 Exception/validation handeling
-        KlasseResource primarKlasseResource = this.getKlasseResource(
-                caseValuesByFieldKey,
-                "primarordningsprinsipp",
-                "primarklasse",
-                1
-        );
-        KlasseResource sekundarKlasseResource = this.getKlasseResource(
-                caseValuesByFieldKey,
-                "sekundarordningsprinsipp",
-                "sekundarklasse",
-                2
-        );
-        return List.of(primarKlasseResource, sekundarKlasseResource);
+    public List<KlasseResource> getKlasseResources(Map<String, String> caseValuesByFieldKey, List<FieldKeys> orderedFieldKeys) {
+        return IntStream.range(0, orderedFieldKeys.size())
+                .mapToObj(i -> this.getKlasseResource(
+                        caseValuesByFieldKey,
+                        orderedFieldKeys.get(i).klassifikasjonsssystemFieldKey,
+                        orderedFieldKeys.get(i).klasseFieldKey,
+                        i + 1
+                ))
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 
-    private KlasseResource getKlasseResource(Map<String, String> caseValuesByFieldKey, String ordningsprinsippFieldKey, String klasseFieldKey, int order) {
-        String klassifikasjonssystemHref = caseValuesByFieldKey.get(ordningsprinsippFieldKey);
+    private KlasseResource getKlasseResource(Map<String, String> caseValuesByFieldKey, String klassifikasjonssystemFieldKey, String klasseFieldKey, int order) {
+        String klassifikasjonssystemHref = caseValuesByFieldKey.get(klassifikasjonssystemFieldKey);
         if (StringUtils.isBlank(klassifikasjonssystemHref)) {
             return null;
         }
-
-        KlassifikasjonssystemResource klassifikasjonssystem = klassifikasjonssystemCache.getOptional(klassifikasjonssystemHref)
-                .orElseThrow();
-
+        KlassifikasjonssystemResource klassifikasjonssystem = klassifikasjonssystemCache.get(klassifikasjonssystemHref);
         String klasseId = caseValuesByFieldKey.get(klasseFieldKey);
         return this.getKlasseResource(klassifikasjonssystem, klasseId, order);
     }
@@ -64,5 +62,12 @@ public class KlassifikasjonsMappingService {
         newKlasseResource.setLinks(klasseResource.getLinks());
         newKlasseResource.setRekkefolge(order);
         return newKlasseResource;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class FieldKeys {
+        private final String klassifikasjonsssystemFieldKey;
+        private final String klasseFieldKey;
     }
 }
