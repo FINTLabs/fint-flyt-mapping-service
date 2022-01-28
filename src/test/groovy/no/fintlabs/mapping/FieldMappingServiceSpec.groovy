@@ -1,4 +1,4 @@
-package no.fintlabs
+package no.fintlabs.mapping
 
 import no.fintlabs.model.configuration.*
 import no.fintlabs.model.instance.InstanceField
@@ -28,7 +28,7 @@ class FieldMappingServiceSpec extends Specification {
         def instanceFields = Map.of("title", new InstanceField("Tittel", "Test tittel"))
 
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("title") == "Søknad om TT-kort"
@@ -50,7 +50,7 @@ class FieldMappingServiceSpec extends Specification {
         def instanceFields = Map.of("title", new InstanceField("Tittel", "Test tittel"))
 
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("title") == "Test tittel"
@@ -77,7 +77,7 @@ class FieldMappingServiceSpec extends Specification {
                 "Title-part-two", new InstanceField("Tittel", "Tittel-del-2")
         )
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("title") == "Tittel: Tittel-del-1 Tittel-del-2"
@@ -108,7 +108,7 @@ class FieldMappingServiceSpec extends Specification {
                 "four", new InstanceField("Tittel", "del4")
         )
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("title") == "del1 del2 del3 del4"
@@ -130,7 +130,7 @@ class FieldMappingServiceSpec extends Specification {
         def instanceFields = Map.of()
 
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("title") == "1234#FiXedValue"
@@ -154,7 +154,7 @@ class FieldMappingServiceSpec extends Specification {
         def instanceFields = Map.of("felt1", new InstanceField("felt1", "TT-kort"))
 
         when:
-        def caseFields = fieldMappingService.mapCaseFields(configurationFields, instanceFields)
+        def caseFields = fieldMappingService.mapFields(configurationFields, instanceFields)
 
         then:
         caseFields.get("Tittel") == "Søknad om: TT-kort"

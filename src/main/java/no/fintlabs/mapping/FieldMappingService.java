@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.mapping;
 
 import no.fintlabs.model.configuration.Field;
 import no.fintlabs.model.configuration.Property;
@@ -12,16 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+// TODO: 28/01/2022 Naming
 @Service
 public class FieldMappingService {
 
-    public static class NoSuchFieldException extends RuntimeException {
-        public NoSuchFieldException(String fieldKey) {
-            super("Instance fields does not contain field with key=" + fieldKey);
-        }
-    }
-
-    public Map<String, String> mapCaseFields(List<Field> configurationFields, Map<String, InstanceField> instanceFields) {
+    public Map<String, String> mapFields(List<Field> configurationFields, Map<String, InstanceField> instanceFields) {
         return configurationFields.stream()
                 .map(configField -> mapFieldEntry(configField, instanceFields))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
@@ -51,23 +46,21 @@ public class FieldMappingService {
 
     private String mapFieldWithCombineStringValueStrategy(Field configField, Map<String, InstanceField> instanceFields) {
         String input = configField.getValueBuilder().getValue();
-        List<String> args = getSortedArgs(instanceFields, configField);
+        List<String> args = getArgsSortedByOrder(instanceFields, configField);
         return String.format(input, args.toArray());
     }
 
-    private List<String> getSortedArgs(Map<String, InstanceField> instanceFields, Field titleConfiguration) {
+    private List<String> getArgsSortedByOrder(Map<String, InstanceField> instanceFields, Field titleConfiguration) {
         return titleConfiguration.getValueBuilder().getProperties().stream()
                 .sorted(Comparator.comparingInt(Property::getOrder))
-                .map(f -> this.getValue(instanceFields, f.getKey(), f.getSource()))
+                .map(property -> this.getValue(instanceFields, property.getKey(), property.getSource()))
                 .collect(Collectors.toList());
     }
 
     private String getValue(Map<String, InstanceField> instanceFields, String key, ValueSource source) {
-
         if (!instanceFields.containsKey(key)) {
             throw new NoSuchFieldException(key);
         }
-
         return instanceFields.get(key).getValue();
     }
 }

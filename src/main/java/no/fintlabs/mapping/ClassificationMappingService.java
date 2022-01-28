@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,11 +17,11 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class KlassifikasjonsMappingService {
+public class ClassificationMappingService {
 
     private final FintCache<String, KlassifikasjonssystemResource> klassifikasjonssystemCache;
 
-    public KlassifikasjonsMappingService(FintCacheManager fintCacheManager) {
+    public ClassificationMappingService(FintCacheManager fintCacheManager) {
         klassifikasjonssystemCache = fintCacheManager.getCache("arkiv.noark.klassifikasjonssystem", String.class, KlassifikasjonssystemResource.class);
     }
 

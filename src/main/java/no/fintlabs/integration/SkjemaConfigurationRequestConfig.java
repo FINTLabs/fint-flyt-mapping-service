@@ -3,7 +3,7 @@ package no.fintlabs.integration;
 import no.fintlabs.kafka.FintKafkaReplyTemplateFactory;
 import no.fintlabs.kafka.topic.DomainContext;
 import no.fintlabs.kafka.topic.TopicService;
-import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.admin.TopicDescription;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,20 +20,25 @@ public class SkjemaConfigurationRequestConfig {
 
     @Bean
     @Qualifier("skjemaConfigurationTopic")
-    public NewTopic skjemaConfigurationTopic(TopicService topicService) {
-        return topicService.createRequestTopic(DomainContext.SKJEMA, skjemaConfigurationResourceReference, false, "skjemaid");
+    public TopicDescription skjemaConfigurationTopic(TopicService topicService) {
+        return topicService.getOrCreateRequestTopic(
+                DomainContext.SKJEMA,
+                skjemaConfigurationResourceReference,
+                false,
+                "skjemaid"
+        );
     }
 
     @Bean
     @Qualifier("skjemaConfigurationReplyTopic")
-    public NewTopic skjemaConfigurationReplyTopic(TopicService topicService) {
-        return topicService.createReplyTopic(DomainContext.SKJEMA, skjemaConfigurationResourceReference);
+    public TopicDescription skjemaConfigurationReplyTopic(TopicService topicService) {
+        return topicService.getOrCreateReplyTopic(DomainContext.SKJEMA, skjemaConfigurationResourceReference);
     }
 
     @Bean
     @Qualifier("skjemaConfigurationReplyingKafkaTemplate")
     public ReplyingKafkaTemplate<String, String, String> skjemaConfigurationReplyingKafkaTemplate(
-            @Qualifier("skjemaConfigurationReplyTopic") NewTopic skjemaConfigurationReplyTopic,
+            @Qualifier("skjemaConfigurationReplyTopic") TopicDescription skjemaConfigurationReplyTopic,
             ProducerFactory<String, String> producerFactory,
             ConsumerFactory<String, String> consumerFactory
     ) {
