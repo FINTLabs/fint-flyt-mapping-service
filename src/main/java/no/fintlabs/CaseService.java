@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Optional;
 
-// TODO: 28/01/2022 Name and placement?
 @Service
 public class CaseService {
 
@@ -65,15 +64,14 @@ public class CaseService {
             throw new MissingMappingFieldsValidationException(error);
         });
 
-        DokumentbeskrivelseResource dokumentbeskrivelseResource = this.documentMappingService.map(documentValuesByFieldKey);
-        JournalpostResource journalpostResource = this.recordMappingService.map(recordValuesByFieldKey);
-        journalpostResource.getDokumentbeskrivelse().add(dokumentbeskrivelseResource);
-
         SakResource sak = this.createOrFindExisingCase(
                 integrationConfiguration.getCaseConfiguration().getCaseCreationStrategy(),
                 caseValuesByFieldKey
         );
+        JournalpostResource journalpostResource = this.recordMappingService.map(recordValuesByFieldKey);
+        DokumentbeskrivelseResource dokumentbeskrivelseResource = this.documentMappingService.map(documentValuesByFieldKey);
 
+        journalpostResource.getDokumentbeskrivelse().add(dokumentbeskrivelseResource);
         sak.getJournalpost().add(journalpostResource);
         return sak;
     }
