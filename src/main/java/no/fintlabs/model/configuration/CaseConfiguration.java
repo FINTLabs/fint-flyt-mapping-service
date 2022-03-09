@@ -10,5 +10,6 @@ import java.util.List;
 @Builder
 public class CaseConfiguration {
     private CaseCreationStrategy caseCreationStrategy;
-    private List<Field> fields = new ArrayList<>();
+    private String caseNumber;
+    private List<Field> fields;
 }
