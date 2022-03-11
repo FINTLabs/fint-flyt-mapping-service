@@ -2,7 +2,7 @@ package no.fintlabs.validation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import no.fintlabs.model.configuration.Field;
+import no.fintlabs.model.configuration.ConfigurationField;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.configuration.Property;
 import no.fintlabs.model.instance.Instance;
@@ -20,19 +20,19 @@ public class InstanceFieldsValidationService {
     @Data
     @AllArgsConstructor
     public static class Error {
-        Map<Field, List<String>> missingInstanceFieldsPerCaseConfigurationField;
-        Map<Field, List<String>> missingInstanceFieldsPerRecordConfigurationField;
-        Map<Field, List<String>> missingInstanceFieldsPerDocumentConfigurationField;
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerCaseConfigurationField;
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerRecordConfigurationField;
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerDocumentConfigurationField;
     }
 
     public Optional<Error> validate(IntegrationConfiguration integrationConfiguration, Instance instance) {
         Set<String> instanceFieldKeys = instance.getFields().keySet();
 
-        Map<Field, List<String>> missingInstanceFieldsPerCaseConfigurationField =
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerCaseConfigurationField =
                 this.findMissingInstanceFieldsPerConfigurationField(integrationConfiguration.getCaseConfiguration().getFields(), instanceFieldKeys);
-        Map<Field, List<String>> missingInstanceFieldsPerRecordConfigurationField =
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerRecordConfigurationField =
                 this.findMissingInstanceFieldsPerConfigurationField(integrationConfiguration.getRecordConfiguration().getFields(), instanceFieldKeys);
-        Map<Field, List<String>> missingInstanceFieldsPerDocumentConfigurationField =
+        Map<ConfigurationField, List<String>> missingInstanceFieldsPerDocumentConfigurationField =
                 this.findMissingInstanceFieldsPerConfigurationField(integrationConfiguration.getDocumentConfiguration().getFields(), instanceFieldKeys);
 
         return Stream.of(
@@ -49,7 +49,7 @@ public class InstanceFieldsValidationService {
     }
 
 
-    private Map<Field, List<String>> findMissingInstanceFieldsPerConfigurationField(List<Field> configurationFields, Set<String> instanceFieldKeys) {
+    private Map<ConfigurationField, List<String>> findMissingInstanceFieldsPerConfigurationField(List<ConfigurationField> configurationFields, Set<String> instanceFieldKeys) {
         return configurationFields
                 .stream()
                 .map(field -> new AbstractMap.SimpleEntry<>(field, this.findMissingProperties(field, instanceFieldKeys)))
@@ -57,7 +57,7 @@ public class InstanceFieldsValidationService {
                 .collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
-    private List<String> findMissingProperties(Field configurationField, Set<String> instanceFieldKeys) {
+    private List<String> findMissingProperties(ConfigurationField configurationField, Set<String> instanceFieldKeys) {
         return configurationField.getValueBuilder().getProperties()
                 .stream()
                 .map(Property::getKey)

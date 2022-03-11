@@ -20,7 +20,7 @@ class InstanceFieldsValidationServiceSpec extends Specification {
         IntegrationConfiguration integrationConfiguration = Stub(IntegrationConfiguration.class) {
             getCaseConfiguration() >> Stub(CaseConfiguration.class) {
                 getFields() >> [
-                        new Field(
+                        new ConfigurationField(
                                 ValueBuildStrategy.COMBINE_STRING_VALUE,
                                 "Tittel",
                                 new ValueBuilder("Søknad om: %s", new Property(ValueSource.FORM, "caseconfiguration-field-1", 0))
@@ -28,14 +28,14 @@ class InstanceFieldsValidationServiceSpec extends Specification {
                 ]
             }
             getDocumentConfiguration() >> Stub(DocumentConfiguration.class) {
-                getFields() >> [new Field(
+                getFields() >> [new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "Offentlig tittel",
                         new ValueBuilder("%s", new Property(ValueSource.FORM, "documentconfiguration-field-1", 0))
                 )]
             }
             getRecordConfiguration() >> Stub(RecordConfiguration.class) {
-                getFields() >> [new Field(
+                getFields() >> [new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "Skjerming",
                         new ValueBuilder("Skjerming: %s", new Property(ValueSource.FORM, "recordconfiguration-field-1", 0))
@@ -56,17 +56,17 @@ class InstanceFieldsValidationServiceSpec extends Specification {
 
     def 'given an instance that does not contain a required field, validation should throw exception'() {
         given:
-        Field caseField = new Field(
+        ConfigurationField caseField = new ConfigurationField(
                 ValueBuildStrategy.COMBINE_STRING_VALUE,
                 "Tittel",
                 new ValueBuilder("Søknad om: %s", new Property(ValueSource.FORM, "caseconfiguration-field-1", 0))
         )
-        Field recordField = new Field(
+        ConfigurationField recordField = new ConfigurationField(
                 ValueBuildStrategy.COMBINE_STRING_VALUE,
                 "Skjerming",
                 new ValueBuilder("Skjerming: %s", new Property(ValueSource.FORM, "recordconfiguration-field-1", 0))
         )
-        Field documentField = new Field(
+        ConfigurationField documentField = new ConfigurationField(
                 ValueBuildStrategy.COMBINE_STRING_VALUE,
                 "Offentlig tittel",
                 new ValueBuilder("%s", new Property(ValueSource.FORM, "documentconfiguration-field-1", 0))

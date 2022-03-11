@@ -9,5 +9,5 @@ import java.util.List;
 public class ApplicantConfiguration {
     private String organisationNumber;
     private String nationalIdentityNumber;
-    private List<Field> fields = new ArrayList<>();
+    private List<ConfigurationField> fields = new ArrayList<>();
 }

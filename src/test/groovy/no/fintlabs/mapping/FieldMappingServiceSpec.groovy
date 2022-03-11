@@ -16,7 +16,7 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "title",
                         new ValueBuilder(
@@ -38,7 +38,7 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "title",
                         new ValueBuilder(
@@ -60,7 +60,7 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "title",
                         new ValueBuilder(
@@ -87,7 +87,7 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "title",
                         new ValueBuilder(
@@ -118,7 +118,7 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.FIXED_ARCHIVE_CODE_VALUE,
                         "title",
                         new ValueBuilder(
@@ -140,12 +140,12 @@ class FieldMappingServiceSpec extends Specification {
 
         given:
         def configurationFields = List.of(
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.COMBINE_STRING_VALUE,
                         "Tittel",
                         new ValueBuilder("Søknad om: %s", new Property(ValueSource.FORM, "felt1", 0),)
                 ),
-                new Field(
+                new ConfigurationField(
                         ValueBuildStrategy.FIXED_ARCHIVE_CODE_VALUE,
                         "OffentligTittel",
                         new ValueBuilder("Dette er en undertittel")

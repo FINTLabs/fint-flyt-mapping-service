@@ -6,7 +6,7 @@ import no.fintlabs.mapping.fields.CaseMappingField;
 import no.fintlabs.mapping.fields.DocumentMappingField;
 import no.fintlabs.mapping.fields.MappingField;
 import no.fintlabs.mapping.fields.RecordMappingField;
-import no.fintlabs.model.configuration.Field;
+import no.fintlabs.model.configuration.ConfigurationField;
 import no.fintlabs.model.configuration.Property;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +52,7 @@ public class MappedFieldsValidationService {
                 .collect(Collectors.toList());
     }
 
-    private Map<Field, List<String>> findMissingInstanceFieldsPerConfigurationField(List<Field> configurationFields, Set<String> instanceFieldKeys) {
+    private Map<ConfigurationField, List<String>> findMissingInstanceFieldsPerConfigurationField(List<ConfigurationField> configurationFields, Set<String> instanceFieldKeys) {
         return configurationFields
                 .stream()
                 .map(field -> new AbstractMap.SimpleEntry<>(field, this.findMissingProperties(field, instanceFieldKeys)))
@@ -60,7 +60,7 @@ public class MappedFieldsValidationService {
                 .collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
-    private List<String> findMissingProperties(Field configurationField, Set<String> instanceFieldKeys) {
+    private List<String> findMissingProperties(ConfigurationField configurationField, Set<String> instanceFieldKeys) {
         return configurationField.getValueBuilder().getProperties()
                 .stream()
                 .map(Property::getKey)

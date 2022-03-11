@@ -1,6 +1,6 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.model.configuration.Field;
+import no.fintlabs.model.configuration.ConfigurationField;
 import no.fintlabs.model.configuration.Property;
 import no.fintlabs.model.configuration.ValueSource;
 import no.fintlabs.model.instance.InstanceField;
@@ -16,20 +16,20 @@ import java.util.stream.Collectors;
 @Service
 public class FieldMappingService {
 
-    public Map<String, String> mapFields(List<Field> configurationFields, Map<String, InstanceField> instanceFields) {
+    public Map<String, String> mapFields(List<ConfigurationField> configurationFields, Map<String, InstanceField> instanceFields) {
         return configurationFields.stream()
                 .map(configField -> mapFieldEntry(configField, instanceFields))
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
-    private AbstractMap.SimpleEntry<String, String> mapFieldEntry(Field configField, Map<String, InstanceField> instanceFields) {
+    private AbstractMap.SimpleEntry<String, String> mapFieldEntry(ConfigurationField configField, Map<String, InstanceField> instanceFields) {
         return new AbstractMap.SimpleEntry<>(
                 configField.getField(),
                 mapField(configField, instanceFields)
         );
     }
 
-    private String mapField(Field configField, Map<String, InstanceField> instanceFields) {
+    private String mapField(ConfigurationField configField, Map<String, InstanceField> instanceFields) {
         switch (configField.getValueBuildStrategy()) {
             case COMBINE_STRING_VALUE:
                 return mapFieldWithCombineStringValueStrategy(configField, instanceFields);
@@ -40,17 +40,17 @@ public class FieldMappingService {
         }
     }
 
-    private String mapFieldWithFixedValueStrategy(Field configField) {
+    private String mapFieldWithFixedValueStrategy(ConfigurationField configField) {
         return configField.getValueBuilder().getValue();
     }
 
-    private String mapFieldWithCombineStringValueStrategy(Field configField, Map<String, InstanceField> instanceFields) {
+    private String mapFieldWithCombineStringValueStrategy(ConfigurationField configField, Map<String, InstanceField> instanceFields) {
         String input = configField.getValueBuilder().getValue();
         List<String> args = getArgsSortedByOrder(instanceFields, configField);
         return String.format(input, args.toArray());
     }
 
-    private List<String> getArgsSortedByOrder(Map<String, InstanceField> instanceFields, Field titleConfiguration) {
+    private List<String> getArgsSortedByOrder(Map<String, InstanceField> instanceFields, ConfigurationField titleConfiguration) {
         return titleConfiguration.getValueBuilder().getProperties().stream()
                 .sorted(Comparator.comparingInt(Property::getOrder))
                 .map(property -> this.getValue(instanceFields, property.getKey(), property.getSource()))
