@@ -7,6 +7,9 @@ import no.fintlabs.mapping.CaseMappingService;
 import no.fintlabs.mapping.DocumentMappingService;
 import no.fintlabs.mapping.FieldMappingService;
 import no.fintlabs.mapping.RecordMappingService;
+import no.fintlabs.mapping.fields.CaseMappingField;
+import no.fintlabs.mapping.fields.DocumentMappingField;
+import no.fintlabs.mapping.fields.RecordMappingField;
 import no.fintlabs.model.configuration.CaseCreationStrategy;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.instance.Instance;
@@ -57,9 +60,9 @@ public class CaseService {
         Map<String, String> documentValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getDocumentConfiguration().getFields(), instance.getFields());
 
         this.mappedFieldsValidationService.validate(
-                caseValuesByFieldKey,
-                recordValuesByFieldKey,
-                documentValuesByFieldKey
+                CaseMappingField.values(), caseValuesByFieldKey,
+                RecordMappingField.values(), recordValuesByFieldKey,
+                DocumentMappingField.values(), documentValuesByFieldKey
         ).ifPresent(error -> {
             throw new MissingMappingFieldsValidationException(error);
         });

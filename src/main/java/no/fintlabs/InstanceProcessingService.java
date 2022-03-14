@@ -43,7 +43,7 @@ public class InstanceProcessingService {
                 // TODO: 28/01/2022 Publish validation error event?
                 return;
             }
-            caseEventProducerService.newOrUpdatedTopic(newOrUpdatedCase);
+            caseEventProducerService.sendNewOrUpdatedCase(newOrUpdatedCase);
         } catch (Exception e) {
             log.error("Could not process instance", e);
             // TODO: 28/01/2022 Publish case processing failed event

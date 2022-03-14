@@ -1,12 +1,10 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.kafka.util.FintKafkaRequestReplyUtil;
-import no.fintlabs.kafka.util.RequestReplyOperationArgs;
+import no.fintlabs.kafka.requestreply.*;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
-import org.apache.kafka.clients.admin.TopicDescription;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,24 +13,39 @@ import java.util.Optional;
 @Slf4j
 public class SkjemaConfigurationRequestService {
 
-    private final ReplyingKafkaTemplate<String, String, String> skjemaConfigurationReplyingKafkaTemplate;
-    private final TopicDescription skjemaConfigurationTopic;
+    private final RequestTopicNameParameters requestTopicNameParameters;
+    private final RequestProducer<String, IntegrationConfiguration> requestProducer;
 
     public SkjemaConfigurationRequestService(
-            @Qualifier("skjemaConfigurationReplyingKafkaTemplate") ReplyingKafkaTemplate<String, String, String> skjemaConfigurationReplyingKafkaTemplate,
-            @Qualifier("skjemaConfigurationTopic") TopicDescription skjemaConfigurationTopic
+            @Value("${fint.org-id}") String orgId,
+            @Value("${fint.kafka.application-id}") String applicationId,
+            FintKafkaRequestProducerFactory fintKafkaRequestProducerFactory
     ) {
-        this.skjemaConfigurationReplyingKafkaTemplate = skjemaConfigurationReplyingKafkaTemplate;
-        this.skjemaConfigurationTopic = skjemaConfigurationTopic;
+        this.requestTopicNameParameters = RequestTopicNameParameters.builder()
+                .orgId(orgId)
+                .domainContext("skjema")
+                .resource("skjema.configuration")
+                .parameterName("skjemaid")
+                .build();
+        this.requestProducer = fintKafkaRequestProducerFactory.createProducer(
+                ReplyTopicNameParameters.builder()
+                        .orgId(orgId)
+                        .domainContext("skjema")
+                        .applicationId(applicationId)
+                        .resource("skjema.configuration")
+                        .build(),
+                String.class,
+                IntegrationConfiguration.class
+        );
     }
 
     public Optional<IntegrationConfiguration> get(String skjemaId) {
-        return FintKafkaRequestReplyUtil.get(new RequestReplyOperationArgs<>(
-                this.skjemaConfigurationTopic.name(),
-                skjemaId,
-                skjemaConfigurationReplyingKafkaTemplate,
-                IntegrationConfiguration.class
-        ));
+        return requestProducer.requestAndReceive(
+                RequestProducerRecord.<String>builder()
+                        .topicNameParameters(requestTopicNameParameters)
+                        .value(skjemaId)
+                        .build()
+        ).map(ConsumerRecord::value);
     }
 
 }

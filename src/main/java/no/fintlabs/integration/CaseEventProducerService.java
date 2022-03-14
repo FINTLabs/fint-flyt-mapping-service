@@ -1,39 +1,41 @@
 package no.fintlabs.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fintlabs.kafka.topic.DomainContext;
-import no.fintlabs.kafka.topic.TopicService;
-import org.springframework.kafka.core.KafkaTemplate;
+import no.fintlabs.kafka.event.EventProducer;
+import no.fintlabs.kafka.event.EventProducerRecord;
+import no.fintlabs.kafka.event.EventTopicNameParameters;
+import no.fintlabs.kafka.event.FintKafkaEventProducerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class CaseEventProducerService {
 
-    private final KafkaTemplate<String, String> template;
-    private final ObjectMapper objectMapper;
+    private final EventProducer<SakResource> newOrUpdatedCaseProducer;
 
-    private final String newOrUpdatedCaseTopicName;
-    private final String couldNotProcessInstanceTopicName;
+    private final EventTopicNameParameters newOrUpdatedCaseTopicNameParameters;
 
-    public CaseEventProducerService(KafkaTemplate<String, String> template, TopicService topicService, ObjectMapper objectMapper) {
-        this.template = template;
-        this.objectMapper = objectMapper;
-        this.newOrUpdatedCaseTopicName = topicService.getOrCreateEventTopic(DomainContext.SKJEMA, "new-or-updated-case").name();
-        this.couldNotProcessInstanceTopicName = topicService.getOrCreateEventTopic(DomainContext.SKJEMA, "could-not-process-topic").name();
+    public CaseEventProducerService(
+            @Value("${fint.org-id}") String orgId,
+            FintKafkaEventProducerFactory fintKafkaEventProducerFactory
+    ) {
+        this.newOrUpdatedCaseProducer = fintKafkaEventProducerFactory.createProducer(SakResource.class);
+        this.newOrUpdatedCaseTopicNameParameters = EventTopicNameParameters.builder()
+                .orgId(orgId)
+                .domainContext("skjema")
+                .eventName("new-or-updated-case")
+                .build();
     }
 
-    public void newOrUpdatedTopic(SakResource newOrUpdatedCase) throws JsonProcessingException {
-        String payload = this.objectMapper.writeValueAsString(newOrUpdatedCase);
-        this.template.send(this.newOrUpdatedCaseTopicName, payload);
+    public void sendNewOrUpdatedCase(SakResource newOrUpdatedCase) {
+        newOrUpdatedCaseProducer.send(
+                EventProducerRecord.<SakResource>builder()
+                        .topicNameParameters(newOrUpdatedCaseTopicNameParameters)
+                        .value(newOrUpdatedCase)
+                        .build()
+        );
     }
 
-    // TODO: 28/01/2022 Reference
-    public void couldNotProcessInstance(Object reference) throws JsonProcessingException {
-        String payload = this.objectMapper.writeValueAsString(reference);
-        this.template.send(this.couldNotProcessInstanceTopicName, payload);
-    }
 }

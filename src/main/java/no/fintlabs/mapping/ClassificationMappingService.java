@@ -4,9 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import no.fint.model.resource.arkiv.noark.KlasseResource;
 import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
-import no.fintlabs.kafka.consumer.cache.FintCache;
-import no.fintlabs.kafka.consumer.cache.FintCacheManager;
+import no.fintlabs.cache.FintCache;
+import no.fintlabs.cache.FintCacheManager;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 
 @Service
+@DependsOn("klassifikasjonssystemResourceEntityConsumer")
 public class ClassificationMappingService {
 
     private final FintCache<String, KlassifikasjonssystemResource> klassifikasjonssystemCache;
