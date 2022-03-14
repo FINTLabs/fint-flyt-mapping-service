@@ -1,6 +1,7 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.kafka.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.*;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,8 +20,18 @@ public class SkjemaConfigurationRequestService {
     public SkjemaConfigurationRequestService(
             @Value("${fint.org-id}") String orgId,
             @Value("${fint.kafka.application-id}") String applicationId,
-            FintKafkaRequestProducerFactory fintKafkaRequestProducerFactory
+            FintKafkaRequestProducerFactory fintKafkaRequestProducerFactory,
+            ReplyTopicService replyTopicService
     ) {
+        ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
+                .orgId(orgId)
+                .domainContext("skjema")
+                .applicationId(applicationId)
+                .resource("skjema.configuration")
+                .build();
+
+        replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
+
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .orgId(orgId)
                 .domainContext("skjema")
@@ -28,12 +39,7 @@ public class SkjemaConfigurationRequestService {
                 .parameterName("skjemaid")
                 .build();
         this.requestProducer = fintKafkaRequestProducerFactory.createProducer(
-                ReplyTopicNameParameters.builder()
-                        .orgId(orgId)
-                        .domainContext("skjema")
-                        .applicationId(applicationId)
-                        .resource("skjema.configuration")
-                        .build(),
+                replyTopicNameParameters,
                 String.class,
                 IntegrationConfiguration.class
         );
