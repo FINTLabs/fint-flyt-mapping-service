@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public
 class RecordConfiguration {
-    private List<Field> fields = new ArrayList<>();
+    private List<ConfigurationField> fields = new ArrayList<>();
 }

@@ -3,7 +3,6 @@ package no.fintlabs.model.configuration;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -11,5 +10,5 @@ import java.util.List;
 public class CaseConfiguration {
     private CaseCreationStrategy caseCreationStrategy;
     private String caseNumber;
-    private List<Field> fields;
+    private List<ConfigurationField> fields;
 }

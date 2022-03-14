@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Field {
+public class ConfigurationField {
     private ValueBuildStrategy valueBuildStrategy;
     private String field;
     private ValueBuilder valueBuilder;

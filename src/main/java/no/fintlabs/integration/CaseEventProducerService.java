@@ -1,33 +1,41 @@
 package no.fintlabs.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.kafka.topic.DomainContext;
-import no.fintlabs.kafka.topic.TopicNameService;
-import org.springframework.kafka.core.KafkaTemplate;
+import no.fint.model.resource.arkiv.noark.SakResource;
+import no.fintlabs.kafka.event.EventProducer;
+import no.fintlabs.kafka.event.EventProducerRecord;
+import no.fintlabs.kafka.event.EventTopicNameParameters;
+import no.fintlabs.kafka.event.FintKafkaEventProducerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class CaseEventProducerService {
 
-    private final KafkaTemplate<String, String> template;
-    private final ObjectMapper objectMapper;
+    private final EventProducer<SakResource> newOrUpdatedCaseProducer;
 
-    public CaseEventProducerService(KafkaTemplate<String, String> template, TopicNameService topicNameService, ObjectMapper objectMapper) {
-        template.setDefaultTopic(topicNameService.generateEventTopicName(DomainContext.SKJEMA, "new-case"));
-        this.template = template;
-        this.objectMapper = objectMapper;
+    private final EventTopicNameParameters newOrUpdatedCaseTopicNameParameters;
+
+    public CaseEventProducerService(
+            @Value("${fint.org-id}") String orgId,
+            FintKafkaEventProducerFactory fintKafkaEventProducerFactory
+    ) {
+        this.newOrUpdatedCaseProducer = fintKafkaEventProducerFactory.createProducer(SakResource.class);
+        this.newOrUpdatedCaseTopicNameParameters = EventTopicNameParameters.builder()
+                .orgId(orgId)
+                .domainContext("skjema")
+                .eventName("new-or-updated-case")
+                .build();
     }
 
-    // TODO: 05/01/2022 Specify type
-    public void produce(Object newCase) {
-        try {
-            String payload = this.objectMapper.writeValueAsString(newCase);
-            template.sendDefault(payload);
-        } catch (JsonProcessingException e) {
-            log.error("Could not write case as string", e);
-        }
+    public void sendNewOrUpdatedCase(SakResource newOrUpdatedCase) {
+        newOrUpdatedCaseProducer.send(
+                EventProducerRecord.<SakResource>builder()
+                        .topicNameParameters(newOrUpdatedCaseTopicNameParameters)
+                        .value(newOrUpdatedCase)
+                        .build()
+        );
     }
+
 }

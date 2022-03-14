@@ -1,126 +1,108 @@
 package no.fintlabs;
 
-import no.fint.model.resource.Link;
+import no.fint.model.resource.arkiv.noark.DokumentbeskrivelseResource;
 import no.fint.model.resource.arkiv.noark.JournalpostResource;
 import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fint.model.resource.arkiv.noark.SkjermingResource;
+import no.fintlabs.mapping.CaseMappingService;
+import no.fintlabs.mapping.DocumentMappingService;
+import no.fintlabs.mapping.FieldMappingService;
+import no.fintlabs.mapping.RecordMappingService;
+import no.fintlabs.mapping.fields.CaseMappingField;
+import no.fintlabs.mapping.fields.DocumentMappingField;
+import no.fintlabs.mapping.fields.RecordMappingField;
+import no.fintlabs.model.configuration.CaseCreationStrategy;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.instance.Instance;
+import no.fintlabs.validation.InstanceFieldsValidationService;
+import no.fintlabs.validation.MappedFieldsValidationService;
+import no.fintlabs.validation.exceptions.MissingInstanceFieldsValidationException;
+import no.fintlabs.validation.exceptions.MissingMappingFieldsValidationException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static no.fintlabs.SakField.*;
 
 @Service
 public class CaseService {
 
-    private final InstanceFieldsValidator instanceFieldsValidator;
-    private final MappedFieldsValidator mappedFieldsValidator;
+    private final InstanceFieldsValidationService instanceFieldsValidationService;
+    private final MappedFieldsValidationService mappedFieldsValidationService;
 
     private final FieldMappingService fieldMappingService;
-    private final KlassifikasjonsMappingService klassifikasjonsMappingService;
+    private final CaseMappingService caseMappingService;
+    private final RecordMappingService recordMappingService;
+    private final DocumentMappingService documentMappingService;
 
     public CaseService(
-            InstanceFieldsValidator instanceFieldsValidator,
-            MappedFieldsValidator mappedFieldsValidator,
+            InstanceFieldsValidationService instanceFieldsValidationService,
+            MappedFieldsValidationService mappedFieldsValidationService,
             FieldMappingService fieldMappingService,
-            KlassifikasjonsMappingService klassifikasjonsMappingService
+            CaseMappingService caseMappingService,
+            RecordMappingService recordMappingService,
+            DocumentMappingService documentMappingService
     ) {
-        this.instanceFieldsValidator = instanceFieldsValidator;
-        this.mappedFieldsValidator = mappedFieldsValidator;
+        this.instanceFieldsValidationService = instanceFieldsValidationService;
+        this.mappedFieldsValidationService = mappedFieldsValidationService;
         this.fieldMappingService = fieldMappingService;
-        this.klassifikasjonsMappingService = klassifikasjonsMappingService;
+        this.caseMappingService = caseMappingService;
+        this.recordMappingService = recordMappingService;
+        this.documentMappingService = documentMappingService;
     }
 
-    public SakResource createSak(IntegrationConfiguration integrationConfiguration, Instance instance) {
+    public SakResource createOrUpdateCase(IntegrationConfiguration integrationConfiguration, Instance instance) {
+        this.instanceFieldsValidationService.validate(integrationConfiguration, instance)
+                .ifPresent(error -> {
+                    throw new MissingInstanceFieldsValidationException(error);
+                });
 
-        SakResource sakResource = getSak(integrationConfiguration, instance);
-        createNewJournalpostAndDokumentbeskrivelse(integrationConfiguration, instance, sakResource);
+        Map<String, String> caseValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFields());
+        Map<String, String> recordValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getRecordConfiguration().getFields(), instance.getFields());
+        Map<String, String> documentValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getDocumentConfiguration().getFields(), instance.getFields());
 
-        /*
-            todo: Don't know where this should be applied
-            applicantConfiguration:
-                "KorrespondansepartNavn",
-                "Adresse.adresselinje",
-                "Adresse.postnummer",
-                "Adresse.poststed",
-                "Kontaktinformasjon.mobiltelefonnummer",
-                "Kontaktinformasjon.epostadresse",
-                "tilgangsrestriksjon",
-                "skjermingshjemmel",
-         */
+        this.mappedFieldsValidationService.validate(
+                CaseMappingField.values(), caseValuesByFieldKey,
+                RecordMappingField.values(), recordValuesByFieldKey,
+                DocumentMappingField.values(), documentValuesByFieldKey
+        ).ifPresent(error -> {
+            throw new MissingMappingFieldsValidationException(error);
+        });
 
-        return sakResource;
+        SakResource sak = this.createOrFindExisingCase(
+                integrationConfiguration.getCaseConfiguration().getCaseCreationStrategy(),
+                caseValuesByFieldKey
+        );
+        JournalpostResource journalpostResource = this.recordMappingService.map(recordValuesByFieldKey);
+        DokumentbeskrivelseResource dokumentbeskrivelseResource = this.documentMappingService.map(documentValuesByFieldKey);
+
+        journalpostResource.getDokumentbeskrivelse().add(dokumentbeskrivelseResource);
+        sak.getJournalpost().add(journalpostResource);
+        return sak;
     }
 
-    private SakResource getSak(IntegrationConfiguration integrationConfiguration, Instance instance) {
-        this.instanceFieldsValidator.validate(integrationConfiguration, instance);
-        switch (integrationConfiguration.getCaseConfiguration().getCaseCreationStrategy()) {
+    private SakResource createOrFindExisingCase(CaseCreationStrategy caseCreationStrategy, Map<String, String> caseValuesByFieldKey) {
+        switch (caseCreationStrategy) {
             case NEW:
-                Map<String, String> caseValuesByFieldKey = fieldMappingService.mapCaseFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFields());
-                this.mappedFieldsValidator.validate(caseValuesByFieldKey, SakField.values());
-                return createNewSak(caseValuesByFieldKey);
+                return this.caseMappingService.map(caseValuesByFieldKey);
             case EXISTING:
-                // TODO: 14/01/2022 Handle existing
-                return null;
+                return this.findExistingCaseWithFilter(null, null)
+                        .orElse(this.caseMappingService.map(caseValuesByFieldKey));
             case COLLECTION:
-                // TODO: 14/01/2022 Handle Collection
-                return null;
+                return this.findExistingCaseWithCaseNumber(null, null);
             default:
                 throw new RuntimeException();
         }
     }
 
-    private SakResource createNewSak(Map<String, String> caseValuesByFieldKey) {
-        SakResource sakResource = new SakResource();
-        sakResource.setTittel(caseValuesByFieldKey.get(TITTEL.getFieldKey()));
-        sakResource.setOffentligTittel(caseValuesByFieldKey.get(OFFENTLIG_TITTEL.getFieldKey()));
-
-        Optional.ofNullable(caseValuesByFieldKey.get(ADMINISTRATIV_ENHET.getFieldKey())).map(Link::new).ifPresent(sakResource::addAdministrativEnhet);
-        Optional.ofNullable(caseValuesByFieldKey.get(ARKIVDEL.getFieldKey())).map(Link::new).ifPresent(sakResource::addArkivdel);
-        Optional.ofNullable(caseValuesByFieldKey.get(JOURNALENHET.getFieldKey())).map(Link::new).ifPresent(sakResource::addJournalenhet);
-
-        SkjermingResource skjermingResource = new SkjermingResource();
-        Optional.ofNullable(caseValuesByFieldKey.get(TILGANGSRESTRIKSJON.getFieldKey())).map(Link::new).ifPresent(skjermingResource::addTilgangsrestriksjon);
-        Optional.ofNullable(caseValuesByFieldKey.get(SKJERMINGSHJEMMEL.getFieldKey())).map(Link::new).ifPresent(skjermingResource::addSkjermingshjemmel);
-        sakResource.setSkjerming(skjermingResource);
-
-        Optional.ofNullable(caseValuesByFieldKey.get(SAKSANSVARLIG.getFieldKey())).map(Link::new).ifPresent(sakResource::addSaksansvarlig);
-
-        sakResource.setKlasse(klassifikasjonsMappingService.getKlasseResources(caseValuesByFieldKey, List.of(
-                new KlassifikasjonsMappingService.FieldKeys(PRIMARORDNINGSPRINSIPP.getFieldKey(), PRIMARKLASSE.getFieldKey()),
-                new KlassifikasjonsMappingService.FieldKeys(SEKUNDARORDNINGSPRINSIPP.getFieldKey(), SEKUNDARKLASSE.getFieldKey()),
-                new KlassifikasjonsMappingService.FieldKeys(TERTIARORDNINGSPRINSIPP.getFieldKey(), TERTIARKLASSE.getFieldKey())
-        )));
-
-        return sakResource;
+    private Optional<SakResource> findExistingCaseWithFilter(IntegrationConfiguration integrationConfiguration, Instance instance) {
+        // TODO: 27/01/2022 Fail if multiple matching cases exist
+        // TODO: 26/01/2022 Implement
+        return Optional.empty();
     }
 
-    private JournalpostResource createNewJournalpostAndDokumentbeskrivelse(IntegrationConfiguration integrationConfiguration, Instance instance, SakResource sakResource) {
-        // TODO: 14/01/2022 Implement
-
-        /*
-            recordConfiguration:
-                "tittel",
-                "offentigTittel",
-                "DokumentBeskrivelse.dokumentType", (journalposttype)
-                "administrativenhet",
-                "journalstatus",
-                "tilgangsrestriksjon",
-                "skjermingshjemmel",
-
-            documentConfiguration: (Dokumentbeskrivelse)
-                "tittel",}
-                "dokumentStatus",
-                "tilgangsrestriksjon",
-                "skjermingshjemmel",
-                "DokumentBeskrivelse.dokumentObjekt.variantFormat"} ???
-                "DokumentBeskrivelse.dokumentObjekt.filformat",     ???
-        */
-
-        return new JournalpostResource();
+    private SakResource findExistingCaseWithCaseNumber(IntegrationConfiguration integrationConfiguration, Instance instance) {
+        // TODO: 27/01/2022 Fail if no or multiple matching cases exist
+        // TODO: 26/01/2022 Implement
+        return new SakResource();
     }
+
 }
