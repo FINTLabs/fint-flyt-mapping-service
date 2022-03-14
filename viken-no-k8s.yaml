@@ -48,6 +48,9 @@ spec:
       containers:
         - image: fintlabsacr.azurecr.io/fint-skjema-case-service:build.${BUILD_NUMBER}_${GIT_COMMIT}
           name: fint-skjema-case-service
+          volumeMounts:
+            - name: credentials
+              mountPath: /credentials
           resources:
             limits:
               memory: "512Mi"
