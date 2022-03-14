@@ -1,3 +1,10 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: aiven-kafka
+spec:
+  itemPath: "vaults/aks-alpha-vault/items/aiven-kafka"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,6 +41,10 @@ spec:
         io.kompose.service: fint-skjema-case-service
     spec:
       restartPolicy: Always
+      volumes:
+        - name: credentials
+          secret:
+            secretName: aiven-kafka-certificates
       containers:
         - image: fintlabsacr.azurecr.io/fint-skjema-case-service:build.${BUILD_NUMBER}_${GIT_COMMIT}
           name: fint-skjema-case-service
@@ -46,6 +57,9 @@ spec:
               cpu: "100m"
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: aiven-kafka
           env:
             - name: TZ
               value: Europe/Oslo
