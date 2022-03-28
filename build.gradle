@@ -52,7 +52,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.springframework.kafka:spring-kafka:2.8.3'
-    implementation 'no.fintlabs:fint-kafka:1.2.0'
+    implementation 'no.fintlabs:fint-kafka:1.8.0'
     implementation 'org.apache.commons:commons-lang3'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

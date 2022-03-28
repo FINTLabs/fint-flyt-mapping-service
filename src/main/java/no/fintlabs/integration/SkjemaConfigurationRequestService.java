@@ -1,7 +1,7 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.kafka.TopicCleanupPolicyParameters;
+import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.*;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -38,6 +38,7 @@ public class SkjemaConfigurationRequestService {
                 .resource("skjema.configuration")
                 .parameterName("skjemaid")
                 .build();
+
         this.requestProducer = fintKafkaRequestProducerFactory.createProducer(
                 replyTopicNameParameters,
                 String.class,

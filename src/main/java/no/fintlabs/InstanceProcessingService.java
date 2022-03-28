@@ -6,10 +6,7 @@ import no.fintlabs.integration.CaseEventProducerService;
 import no.fintlabs.integration.SkjemaConfigurationRequestService;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.instance.Instance;
-import no.fintlabs.validation.exceptions.ValidationException;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -30,24 +27,11 @@ public class InstanceProcessingService {
     }
 
     public void process(Instance instance) {
-        try {
-            String skjemaId = "TODO"; // TODO: 28/01/2022 Get from instance
-            IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(skjemaId)
-                    .orElseThrow(() -> new NoSuchElementException("No skjema with id=" + skjemaId));
-
-            SakResource newOrUpdatedCase;
-            try {
-                newOrUpdatedCase = this.caseService.createOrUpdateCase(integrationConfiguration, instance);
-            } catch (ValidationException e) {
-                log.error("Validation error", e);
-                // TODO: 28/01/2022 Publish validation error event?
-                return;
-            }
-            caseEventProducerService.sendNewOrUpdatedCase(newOrUpdatedCase);
-        } catch (Exception e) {
-            log.error("Could not process instance", e);
-            // TODO: 28/01/2022 Publish case processing failed event
-        }
+        String integrationId = "TODO"; // TODO: 28/01/2022 Get from skjema headers
+        IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(integrationId)
+                .orElseThrow(() -> new NoSuchIntegrationConfigurationException(integrationId));
+        SakResource newOrUpdatedCase = this.caseService.createOrUpdateCase(integrationConfiguration, instance);
+        caseEventProducerService.sendNewOrUpdatedCase(newOrUpdatedCase);
     }
 
 }

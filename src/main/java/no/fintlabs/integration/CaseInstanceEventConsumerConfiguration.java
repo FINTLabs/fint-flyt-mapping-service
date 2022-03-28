@@ -1,6 +1,7 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fintlabs.InstanceProcessingErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
 import no.fintlabs.kafka.event.EventTopicNameParameters;
 import no.fintlabs.kafka.event.FintKafkaEventConsumerFactory;
@@ -8,7 +9,6 @@ import no.fintlabs.model.instance.Instance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Slf4j
@@ -19,13 +19,9 @@ public class CaseInstanceEventConsumerConfiguration {
     public ConcurrentMessageListenerContainer<String, Instance> caseInstanceConsumer(
             @Value("${fint.org-id}") String orgId,
             FintKafkaEventConsumerFactory fintKafkaEventConsumerFactory,
-            InstanceProcessingService instanceProcessingService
+            InstanceProcessingService instanceProcessingService,
+            InstanceProcessingErrorHandlerService instanceProcessingErrorHandlerService
     ) {
-        // TODO: 05/01/2022 :
-        //  1. Get skjemaId from instance
-        //  2. Request configuration by skjemaId from SkjemaConfigurationRequestService
-        //  3. Map instance with configuration
-        //  4. Produce result to kafka through CaseEventProducerService
         return fintKafkaEventConsumerFactory.createConsumer(
                 EventTopicNameParameters.builder()
                         .orgId(orgId)
@@ -33,8 +29,9 @@ public class CaseInstanceEventConsumerConfiguration {
                         .eventName("new-instance")
                         .build(),
                 Instance.class,
+                // TODO: 28/03/2022 Pass skjema headers to use in mapping and to include in the outgoing producer record
                 consumerRecord -> instanceProcessingService.process(consumerRecord.value()),
-                new CommonLoggingErrorHandler()
+                instanceProcessingErrorHandlerService
         );
     }
 
