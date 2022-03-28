@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 public class ErrorEventProducerService {
 
     private final ErrorEventProducer errorEventProducer;
-
     private final ErrorEventTopicNameParameters instanceToCaseMappingErrorTopicNameParameters;
     private final MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper;
     private final MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper;
@@ -22,7 +21,8 @@ public class ErrorEventProducerService {
             @Value("${fint.org-id}") String orgId,
             ErrorEventProducer errorEventProducer,
             MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper,
-            MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper
+            MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper,
+            ErrorEventTopicService errorEventTopicService
     ) {
         this.errorEventProducer = errorEventProducer;
         this.instanceToCaseMappingErrorTopicNameParameters = ErrorEventTopicNameParameters.builder()
@@ -32,6 +32,8 @@ public class ErrorEventProducerService {
                 .build();
         this.missingInstanceFieldsErrorMapper = missingInstanceFieldsErrorMapper;
         this.missingMappingFieldsErrorMapper = missingMappingFieldsErrorMapper;
+
+        errorEventTopicService.ensureTopic(instanceToCaseMappingErrorTopicNameParameters, 0);
     }
 
     public void sendMissingInstanceFieldsErrorEvent(MissingInstanceFieldsValidationException e) {
