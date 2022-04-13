@@ -4,10 +4,9 @@ import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.cache.FintCacheManager;
-import no.fintlabs.kafka.entity.EntityTopicNameParameters;
-import no.fintlabs.kafka.entity.FintKafkaEntityConsumerFactory;
+import no.fintlabs.flyt.kafka.entity.FlytEntityConsumerFactoryService;
+import no.fintlabs.kafka.entity.topic.EntityTopicNameParameters;
 import no.fintlabs.links.ResourceLinkUtil;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
@@ -16,15 +15,12 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 @Configuration
 public class EntityConsumerConfiguration {
 
-    @Value("${fint.org-id}")
-    private String orgId;
-
     private final FintCacheManager fintCacheManager;
-    private final FintKafkaEntityConsumerFactory entityConsumerFactory;
+    private final FlytEntityConsumerFactoryService flytEntityConsumerFactoryService;
 
-    public EntityConsumerConfiguration(FintCacheManager fintCacheManager, FintKafkaEntityConsumerFactory entityConsumerFactory) {
+    public EntityConsumerConfiguration(FintCacheManager fintCacheManager, FlytEntityConsumerFactoryService flytEntityConsumerFactoryService) {
         this.fintCacheManager = fintCacheManager;
-        this.entityConsumerFactory = entityConsumerFactory;
+        this.flytEntityConsumerFactoryService = flytEntityConsumerFactoryService;
     }
 
     private <T extends FintLinks> ConcurrentMessageListenerContainer<String, T> createCacheConsumer(
@@ -36,18 +32,17 @@ public class EntityConsumerConfiguration {
                 String.class,
                 resourceClass
         );
-        return entityConsumerFactory.createConsumer(
-                EntityTopicNameParameters.builder()
-                        .orgId(orgId)
-                        .domainContext("skjema")
-                        .resource(resourceReference)
-                        .build(),
+        return flytEntityConsumerFactoryService.createFactory(
                 resourceClass,
                 consumerRecord -> cache.put(
                         ResourceLinkUtil.getSelfLinks(consumerRecord.value()),
                         consumerRecord.value()
                 ),
                 new CommonLoggingErrorHandler()
+        ).createContainer(
+                EntityTopicNameParameters.builder()
+                        .resource(resourceReference)
+                        .build()
         );
     }
 
