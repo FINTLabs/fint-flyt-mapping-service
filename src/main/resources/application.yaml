@@ -4,7 +4,7 @@ fint:
     defaultCacheHeapSize: 1000000
   kafka:
     topic:
-      org-id: no.fintlabs
+      org-id: fintlabs.no
     application-id: fint-skjema-case-service
 spring:
   kafka:
