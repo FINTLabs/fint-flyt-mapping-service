@@ -1,6 +1,6 @@
 package no.fintlabs.integration.error;
 
-import no.fintlabs.flyt.kafka.event.error.FlytErrorEventProducer;
+import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducer;
 import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.integration.error.mappers.MissingInstanceFieldsErrorMapper;
@@ -16,18 +16,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class ErrorEventProducerService {
 
-    private final FlytErrorEventProducer errorEventProducer;
+    private final InstanceFlowErrorEventProducer instanceFlowErrorEventProducer;
     private final ErrorEventTopicNameParameters instanceToCaseMappingErrorTopicNameParameters;
     private final MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper;
     private final MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper;
 
     public ErrorEventProducerService(
-            FlytErrorEventProducer errorEventProducer,
+            InstanceFlowErrorEventProducer instanceFlowErrorEventProducer,
             MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper,
             MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper,
             ErrorEventTopicService errorEventTopicService
     ) {
-        this.errorEventProducer = errorEventProducer;
+        this.instanceFlowErrorEventProducer = instanceFlowErrorEventProducer;
         this.instanceToCaseMappingErrorTopicNameParameters = ErrorEventTopicNameParameters.builder()
                 .errorEventName("instance-to-case-mapping")
                 .build();
@@ -38,7 +38,7 @@ public class ErrorEventProducerService {
     }
 
     public void sendMissingInstanceFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingInstanceFieldsValidationException e) {
-        errorEventProducer.send(
+        instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
                         .topicNameParameters(instanceToCaseMappingErrorTopicNameParameters)
@@ -49,7 +49,7 @@ public class ErrorEventProducerService {
     }
 
     public void sendMissingMappingFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingMappingFieldsValidationException e) {
-        errorEventProducer.send(
+        instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
                         .topicNameParameters(instanceToCaseMappingErrorTopicNameParameters)
@@ -68,7 +68,7 @@ public class ErrorEventProducerService {
     }
 
     private void sendErrorEventWithASingleErrorCode(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode) {
-        errorEventProducer.send(
+        instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
                         .topicNameParameters(instanceToCaseMappingErrorTopicNameParameters)

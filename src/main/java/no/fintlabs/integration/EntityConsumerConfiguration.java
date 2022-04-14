@@ -4,7 +4,7 @@ import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.arkiv.noark.KlassifikasjonssystemResource;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.cache.FintCacheManager;
-import no.fintlabs.flyt.kafka.entity.FlytEntityConsumerFactoryService;
+import no.fintlabs.kafka.entity.EntityConsumerFactoryService;
 import no.fintlabs.kafka.entity.topic.EntityTopicNameParameters;
 import no.fintlabs.links.ResourceLinkUtil;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +16,11 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 public class EntityConsumerConfiguration {
 
     private final FintCacheManager fintCacheManager;
-    private final FlytEntityConsumerFactoryService flytEntityConsumerFactoryService;
+    private final EntityConsumerFactoryService entityConsumerFactoryService;
 
-    public EntityConsumerConfiguration(FintCacheManager fintCacheManager, FlytEntityConsumerFactoryService flytEntityConsumerFactoryService) {
+    public EntityConsumerConfiguration(FintCacheManager fintCacheManager, EntityConsumerFactoryService entityConsumerFactoryService) {
         this.fintCacheManager = fintCacheManager;
-        this.flytEntityConsumerFactoryService = flytEntityConsumerFactoryService;
+        this.entityConsumerFactoryService = entityConsumerFactoryService;
     }
 
     private <T extends FintLinks> ConcurrentMessageListenerContainer<String, T> createCacheConsumer(
@@ -32,7 +32,7 @@ public class EntityConsumerConfiguration {
                 String.class,
                 resourceClass
         );
-        return flytEntityConsumerFactoryService.createFactory(
+        return entityConsumerFactoryService.createFactory(
                 resourceClass,
                 consumerRecord -> cache.put(
                         ResourceLinkUtil.getSelfLinks(consumerRecord.value()),

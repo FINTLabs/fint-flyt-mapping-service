@@ -3,7 +3,7 @@ package no.fintlabs.integration;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.InstanceProcessingErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
-import no.fintlabs.flyt.kafka.event.FlytEventConsumerFactoryService;
+import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.model.instance.Instance;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +16,11 @@ public class CaseInstanceEventConsumerConfiguration {
 
     @Bean
     public ConcurrentMessageListenerContainer<String, Instance> caseInstanceConsumer(
-            FlytEventConsumerFactoryService flytEventConsumerFactoryService,
+            InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
             InstanceProcessingErrorHandlerService instanceProcessingErrorHandlerService
     ) {
-        return flytEventConsumerFactoryService.createInstanceFlowFactory(
+        return instanceFlowEventConsumerFactoryService.createFactory(
                 Instance.class,
                 instanceProcessingService::process,
                 instanceProcessingErrorHandlerService,

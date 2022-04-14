@@ -2,8 +2,8 @@ package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.model.resource.arkiv.noark.SakResource;
-import no.fintlabs.flyt.kafka.event.FlytEventProducerFactory;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducer;
+import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerFactory;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
@@ -18,9 +18,9 @@ public class CaseEventProducerService {
     private final EventTopicNameParameters newOrUpdatedCaseTopicNameParameters;
 
     public CaseEventProducerService(
-            FlytEventProducerFactory flytEventProducerFactory,
+            InstanceFlowEventProducerFactory instanceFlowEventProducerFactory,
             EventTopicService eventTopicService) {
-        this.newOrUpdatedCaseProducer = flytEventProducerFactory.createInstanceFlowProducer(SakResource.class);
+        this.newOrUpdatedCaseProducer = instanceFlowEventProducerFactory.createProducer(SakResource.class);
         this.newOrUpdatedCaseTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("new-or-updated-case")
                 .build();
