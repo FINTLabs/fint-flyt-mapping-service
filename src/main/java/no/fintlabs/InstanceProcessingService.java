@@ -31,11 +31,9 @@ public class InstanceProcessingService {
     public void process(InstanceFlowConsumerRecord<Instance> flytConsumerRecord) {
         InstanceFlowHeaders consumerRecordInstanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders();
 
-        String sourceApplication = consumerRecordInstanceFlowHeaders.getSourceApplication();
-        String sourceApplicationIntegrationId = consumerRecordInstanceFlowHeaders.getSourceApplicationIntegrationId();
-
-        IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(sourceApplication, sourceApplicationIntegrationId)
-                .orElseThrow(() -> new NoSuchIntegrationConfigurationException(sourceApplication));
+        String integrationId =  consumerRecordInstanceFlowHeaders.getIntegrationId();
+        IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(integrationId)
+                .orElseThrow(() -> new NoSuchIntegrationConfigurationException(integrationId));
 
         SakResource newOrUpdatedCase = this.caseService.createOrUpdateCase(integrationConfiguration, flytConsumerRecord.getConsumerRecord().value());
 

@@ -29,14 +29,14 @@ public class SkjemaConfigurationRequestService {
     ) {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
                 .applicationId(applicationId)
-                .resource("flyt.configuration")
+                .resource("integration.configuration")
                 .build();
 
         replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
-                .resource("flyt.configuration")
-                .parameterName("skjemaid")
+                .resource("integration.configuration")
+                .parameterName("integration-id")
                 .build();
 
         this.requestProducer = requestProducerFactory.createProducer(
@@ -46,11 +46,11 @@ public class SkjemaConfigurationRequestService {
         );
     }
 
-    public Optional<IntegrationConfiguration> get(String sourceApplication, String sourceApplicationIntegrationId) {
+    public Optional<IntegrationConfiguration> get(String integrationId) {
         return requestProducer.requestAndReceive(
                 RequestProducerRecord.<String>builder()
                         .topicNameParameters(requestTopicNameParameters)
-                        .value(sourceApplication + sourceApplicationIntegrationId) // TODO: 10/04/2022 DTO?
+                        .value(integrationId)
                         .build()
         ).map(ConsumerRecord::value);
     }
