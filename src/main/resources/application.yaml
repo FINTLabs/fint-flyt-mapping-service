@@ -5,6 +5,7 @@ fint:
   kafka:
     topic:
       org-id: fintlabs.no
+      domain-context: flyt
     application-id: fint-skjema-case-service
 spring:
   kafka:
