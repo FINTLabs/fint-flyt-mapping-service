@@ -68,4 +68,4 @@ spec:
               value: Europe/Oslo
             - name: JAVA_TOOL_OPTIONS
               value: '-XX:+ExitOnOutOfMemoryError -Xmx480M -verbose:gc'
-            - {name: fint.kafka.topic.org-id, value: 'viken-no'}
+            - {name: fint.kafka.topic.org-id, value: 'viken.no'}
