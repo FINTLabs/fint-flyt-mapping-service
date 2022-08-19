@@ -46,17 +46,17 @@ spec:
           secret:
             secretName: aiven-kafka-certificates
       containers:
-        - image: fintlabsacr.azurecr.io/fint-skjema-case-service:build.${BUILD_NUMBER}_${GIT_COMMIT}
+        - image: fintlabsacr.azurecr.io/fint-skjema-case-service:dummy
           name: fint-skjema-case-service
           volumeMounts:
             - name: credentials
               mountPath: /credentials
           resources:
             limits:
-              memory: "512Mi"
+              memory: "2048Mi"
               cpu: "1"
             requests:
-              memory: "128Mi"
+              memory: "512Mi"
               cpu: "100m"
           ports:
             - containerPort: 8080
@@ -64,8 +64,6 @@ spec:
             - secretRef:
                 name: aiven-kafka
           env:
-            - name: TZ
-              value: Europe/Oslo
-            - name: JAVA_TOOL_OPTIONS
-              value: '-XX:+ExitOnOutOfMemoryError -Xmx480M -verbose:gc'
-            - {name: fint.org-id, value: 'pwf.no'}
+            - { name: TZ, value: Europe/Oslo }
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M' }
+            - { name: fint.org-id, value: 'pwf.no' }
