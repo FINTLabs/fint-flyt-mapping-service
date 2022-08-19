@@ -7,7 +7,7 @@ fint:
     topic:
       org-id: ${fint.org-id}
       domain-context: flyt
-    application-id: fint-skjema-case-service
+    application-id: fint-flyt-case-service
 spring:
   kafka:
     bootstrap-servers: localhost:29092
