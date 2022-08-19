@@ -36,7 +36,7 @@ public class SkjemaConfigurationRequestService {
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .resource("integration.configuration")
-                .parameterName("integration-id")
+                .parameterName("source-application-integration-id")
                 .build();
 
         this.requestProducer = requestProducerFactory.createProducer(

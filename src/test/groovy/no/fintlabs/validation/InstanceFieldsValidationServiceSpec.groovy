@@ -43,7 +43,7 @@ class InstanceFieldsValidationServiceSpec extends Specification {
             }
         }
         Instance instance = Stub() {
-            getFields() >> ["caseconfiguration-field-1"    : new InstanceField("SkjemaTittel", "Value1"),
+            getFieldPerKey() >> ["caseconfiguration-field-1"    : new InstanceField("SkjemaTittel", "Value1"),
                             "documentconfiguration-field-1": new InstanceField("SkjemaTittel2", "Value2"),
                             "recordconfiguration-field-1"  : new InstanceField("SkjemaSkjerming", "Value3"),
             ]
@@ -84,7 +84,7 @@ class InstanceFieldsValidationServiceSpec extends Specification {
             }
         }
         Instance instance = Stub() {
-            getFields() >> ["documentconfiguration-field-1": new InstanceField("SkjemaTittel2", "Value2")]
+            getFieldPerKey() >> ["documentconfiguration-field-1": new InstanceField("SkjemaTittel2", "Value2")]
         }
 
         when:

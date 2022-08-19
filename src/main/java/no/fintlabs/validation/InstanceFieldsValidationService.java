@@ -26,7 +26,7 @@ public class InstanceFieldsValidationService {
     }
 
     public Optional<Error> validate(IntegrationConfiguration integrationConfiguration, Instance instance) {
-        Set<String> instanceFieldKeys = instance.getFields().keySet();
+        Set<String> instanceFieldKeys = instance.getFieldPerKey().keySet();
 
         Map<ConfigurationField, List<String>> missingInstanceFieldsPerCaseConfigurationField =
                 this.findMissingInstanceFieldsPerConfigurationField(integrationConfiguration.getCaseConfiguration().getFields(), instanceFieldKeys);

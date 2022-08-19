@@ -1,8 +1,16 @@
 package no.fintlabs.model.instance;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public @Data class Document {
-	private String format;
-	private String uri;
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Document {
+    private String type;
+    private String uri;
+    private String base64;
 }

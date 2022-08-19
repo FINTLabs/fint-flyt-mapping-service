@@ -60,18 +60,17 @@ public class InstanceProcessingService {
     private void mapToAndPublishCase(InstanceFlowConsumerRecord<Instance> flytConsumerRecord) {
         InstanceFlowHeaders consumerRecordInstanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders();
 
-        String integrationId = consumerRecordInstanceFlowHeaders.getIntegrationId();
-        IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(integrationId)
-                .orElseThrow(() -> new NoSuchIntegrationConfigurationException(integrationId));
+        String sourceApplicationIntegrationId = consumerRecordInstanceFlowHeaders.getSourceApplicationIntegrationId();
+        IntegrationConfiguration integrationConfiguration = this.skjemaConfigurationRequestService.get(sourceApplicationIntegrationId)
+                .orElseThrow(() -> new NoSuchIntegrationConfigurationException(sourceApplicationIntegrationId));
 
         SakResource newOrUpdatedCase = this.caseService.createOrUpdateCase(integrationConfiguration, flytConsumerRecord.getConsumerRecord().value());
 
-        InstanceFlowHeaders flytHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
-                .configurationId("TODO") // TODO: 07/04/2022 No id on configuration
-                .caseId(newOrUpdatedCase.getMappeId().getIdentifikatorverdi())
+        InstanceFlowHeaders instanceFlowHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
+                .configurationId(String.valueOf(integrationConfiguration.getId()))
                 .build();
 
-        caseEventProducerService.sendNewOrUpdatedCase(flytHeaders, newOrUpdatedCase);
+        caseEventProducerService.sendNewOrUpdatedCase(instanceFlowHeaders, newOrUpdatedCase);
     }
 
 }

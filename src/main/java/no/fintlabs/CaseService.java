@@ -55,9 +55,9 @@ public class CaseService {
                     throw new MissingInstanceFieldsValidationException(error);
                 });
 
-        Map<String, String> caseValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFields());
-        Map<String, String> recordValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getRecordConfiguration().getFields(), instance.getFields());
-        Map<String, String> documentValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getDocumentConfiguration().getFields(), instance.getFields());
+        Map<String, String> caseValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getCaseConfiguration().getFields(), instance.getFieldPerKey());
+        Map<String, String> recordValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getRecordConfiguration().getFields(), instance.getFieldPerKey());
+        Map<String, String> documentValuesByFieldKey = fieldMappingService.mapFields(integrationConfiguration.getDocumentConfiguration().getFields(), instance.getFieldPerKey());
 
         this.mappedFieldsValidationService.validate(
                 CaseMappingField.values(), caseValuesByFieldKey,

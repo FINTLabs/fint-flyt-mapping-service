@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import no.fintlabs.model.instance.Instance;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Data
@@ -25,9 +26,9 @@ public class ConfigurationField {
             List<String> args = new ArrayList<>();
             valueBuilder.getProperties()
                     .stream()
-                    .sorted((o1, o2) -> Integer.compare(o1.getOrder(), o2.getOrder()))
+                    .sorted(Comparator.comparingInt(Property::getOrder))
                     .forEach(property -> {
-                        args.add(instance.getFields().get(property.getKey()).getValue());
+                        args.add(instance.getFieldPerKey().get(property.getKey()).getValue());
                     });
             return String.format(valueBuilder.getValue(), args);
         }

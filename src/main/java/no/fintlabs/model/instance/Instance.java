@@ -5,19 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Instance {
-    private String formId;
+    private String sourceApplicationInstanceUri;
+    private Map<String, InstanceField> fieldPerKey;
     private List<Document> documents;
-    private String id;
-    private Map<String, InstanceField> fields;
-    private String uri;
 }
