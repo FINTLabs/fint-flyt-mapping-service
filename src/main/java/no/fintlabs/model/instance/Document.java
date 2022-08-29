@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Document {
+    private String name;
     private String type;
-    private String uri;
+    private String encoding;
     private String base64;
 }
