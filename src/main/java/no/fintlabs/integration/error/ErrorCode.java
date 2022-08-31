@@ -10,7 +10,7 @@ public enum ErrorCode {
     MISSING_MAPPING_FIELD_FOR_RECORD,
     MISSING_MAPPING_FIELD_FOR_DOCUMENT;
 
-    private static final String ERROR_PREFIX = "FINT_SKJEMA_CASE_SERVICE_";
+    private static final String ERROR_PREFIX = "FINT_FLYT_CASE_SERVICE_";
 
     public String getCode() {
         return ERROR_PREFIX + name();
