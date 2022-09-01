@@ -3,7 +3,7 @@ package no.fintlabs;
 import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
-import no.fintlabs.integration.CaseEventProducerService;
+import no.fintlabs.integration.CaseCreatedEventProducerService;
 import no.fintlabs.integration.SkjemaConfigurationRequestService;
 import no.fintlabs.model.configuration.IntegrationConfiguration;
 import no.fintlabs.model.instance.Instance;
@@ -14,15 +14,15 @@ public class InstanceProcessingService {
 
     private final SkjemaConfigurationRequestService skjemaConfigurationRequestService;
     private final CaseService caseService;
-    private final CaseEventProducerService caseEventProducerService;
+    private final CaseCreatedEventProducerService caseCreatedEventProducerService;
 
     public InstanceProcessingService(
             SkjemaConfigurationRequestService skjemaConfigurationRequestService,
             CaseService caseService,
-            CaseEventProducerService caseEventProducerService) {
+            CaseCreatedEventProducerService caseCreatedEventProducerService) {
         this.skjemaConfigurationRequestService = skjemaConfigurationRequestService;
         this.caseService = caseService;
-        this.caseEventProducerService = caseEventProducerService;
+        this.caseCreatedEventProducerService = caseCreatedEventProducerService;
     }
 
     public void process(InstanceFlowConsumerRecord<Instance> flytConsumerRecord) {
@@ -38,7 +38,7 @@ public class InstanceProcessingService {
                 .configurationId(String.valueOf(integrationConfiguration.getId()))
                 .build();
 
-        caseEventProducerService.sendNewOrUpdatedCase(instanceFlowHeaders, newOrUpdatedCase);
+        caseCreatedEventProducerService.publish(instanceFlowHeaders, newOrUpdatedCase);
     }
 
 }

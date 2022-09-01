@@ -14,14 +14,14 @@ import no.fintlabs.validation.exceptions.MissingMappingFieldsValidationException
 import org.springframework.stereotype.Service;
 
 @Service
-public class ErrorEventProducerService {
+public class CaseCreationErrorEventProducerService {
 
     private final InstanceFlowErrorEventProducer instanceFlowErrorEventProducer;
     private final ErrorEventTopicNameParameters instanceToCaseMappingErrorTopicNameParameters;
     private final MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper;
     private final MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper;
 
-    public ErrorEventProducerService(
+    public CaseCreationErrorEventProducerService(
             InstanceFlowErrorEventProducer instanceFlowErrorEventProducer,
             MissingInstanceFieldsErrorMapper missingInstanceFieldsErrorMapper,
             MissingMappingFieldsErrorMapper missingMappingFieldsErrorMapper,
@@ -29,7 +29,7 @@ public class ErrorEventProducerService {
     ) {
         this.instanceFlowErrorEventProducer = instanceFlowErrorEventProducer;
         this.instanceToCaseMappingErrorTopicNameParameters = ErrorEventTopicNameParameters.builder()
-                .errorEventName("instance-to-case-mapping")
+                .errorEventName("case-creation-error")
                 .build();
         this.missingInstanceFieldsErrorMapper = missingInstanceFieldsErrorMapper;
         this.missingMappingFieldsErrorMapper = missingMappingFieldsErrorMapper;
@@ -37,7 +37,7 @@ public class ErrorEventProducerService {
         errorEventTopicService.ensureTopic(instanceToCaseMappingErrorTopicNameParameters, 0);
     }
 
-    public void sendMissingInstanceFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingInstanceFieldsValidationException e) {
+    public void publishMissingInstanceFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingInstanceFieldsValidationException e) {
         instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
@@ -48,7 +48,7 @@ public class ErrorEventProducerService {
         );
     }
 
-    public void sendMissingMappingFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingMappingFieldsValidationException e) {
+    public void publishMissingMappingFieldsErrorEvent(InstanceFlowHeaders instanceFlowHeaders, MissingMappingFieldsValidationException e) {
         instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
@@ -59,15 +59,15 @@ public class ErrorEventProducerService {
         );
     }
 
-    public void sendNoConfigurationForIntegrationErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
-        sendErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.NO_CONFIGURATION_FOR_INTEGRATION);
+    public void publishNoConfigurationForIntegrationErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
+        publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.NO_CONFIGURATION_FOR_INTEGRATION);
     }
 
-    public void sendGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
-        sendErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.GENERAL_SYSTEM_ERROR);
+    public void publishGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
+        publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.GENERAL_SYSTEM_ERROR);
     }
 
-    private void sendErrorEventWithASingleErrorCode(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode) {
+    private void publishErrorEventWithASingleErrorCode(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode) {
         instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()

@@ -1,7 +1,7 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.InstanceProcessingErrorHandlerService;
+import no.fintlabs.CaseCreationErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
@@ -12,22 +12,22 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Slf4j
 @Configuration
-public class CaseInstanceEventConsumerConfiguration {
+public class InstanceRegisteredEventConsumerConfiguration {
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, Instance> caseInstanceConsumer(
+    public ConcurrentMessageListenerContainer<String, Instance> registeredInstanceEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
-            InstanceProcessingErrorHandlerService instanceProcessingErrorHandlerService
+            CaseCreationErrorHandlerService caseCreationErrorHandlerService
     ) {
         return instanceFlowEventConsumerFactoryService.createFactory(
                 Instance.class,
                 instanceProcessingService::process,
-                instanceProcessingErrorHandlerService,
+                caseCreationErrorHandlerService,
                 false
         ).createContainer(
                 EventTopicNameParameters.builder()
-                        .eventName("new-instance")
+                        .eventName("instance-registered")
                         .build()
         );
     }

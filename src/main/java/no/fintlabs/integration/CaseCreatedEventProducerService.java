@@ -12,22 +12,22 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class CaseEventProducerService {
+public class CaseCreatedEventProducerService {
 
     private final InstanceFlowEventProducer<SakResource> newOrUpdatedCaseProducer;
     private final EventTopicNameParameters newOrUpdatedCaseTopicNameParameters;
 
-    public CaseEventProducerService(
+    public CaseCreatedEventProducerService(
             InstanceFlowEventProducerFactory instanceFlowEventProducerFactory,
             EventTopicService eventTopicService) {
         this.newOrUpdatedCaseProducer = instanceFlowEventProducerFactory.createProducer(SakResource.class);
         this.newOrUpdatedCaseTopicNameParameters = EventTopicNameParameters.builder()
-                .eventName("new-or-updated-case")
+                .eventName("case-created")
                 .build();
         eventTopicService.ensureTopic(newOrUpdatedCaseTopicNameParameters, 0);
     }
 
-    public void sendNewOrUpdatedCase(InstanceFlowHeaders instanceFlowHeaders, SakResource newOrUpdatedCase) {
+    public void publish(InstanceFlowHeaders instanceFlowHeaders, SakResource newOrUpdatedCase) {
         newOrUpdatedCaseProducer.send(
                 InstanceFlowEventProducerRecord.<SakResource>builder()
                         .topicNameParameters(newOrUpdatedCaseTopicNameParameters)
