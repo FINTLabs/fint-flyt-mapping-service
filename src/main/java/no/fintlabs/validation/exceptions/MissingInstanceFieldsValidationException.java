@@ -9,7 +9,7 @@ public class MissingInstanceFieldsValidationException extends ValidationExceptio
     private final InstanceFieldsValidationService.Error validationError;
 
     public MissingInstanceFieldsValidationException(InstanceFieldsValidationService.Error validationError) {
-        super("TODO"); // TODO: 28/01/2022 Message
+        super("Validation error(s): " + validationError);
         this.validationError = validationError;
     }
 

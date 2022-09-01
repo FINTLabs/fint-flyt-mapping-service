@@ -9,7 +9,7 @@ public class MissingMappingFieldsValidationException extends ValidationException
     private final MappedFieldsValidationService.Error validationError;
 
     public MissingMappingFieldsValidationException(MappedFieldsValidationService.Error validationError) {
-        super("TODO"); // TODO: 28/01/2022 Message
+        super("Validation error(s): " + validationError);
         this.validationError = validationError;
     }
 }
