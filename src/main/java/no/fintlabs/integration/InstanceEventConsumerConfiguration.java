@@ -12,10 +12,10 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Slf4j
 @Configuration
-public class InstanceRegisteredEventConsumerConfiguration {
+public class InstanceEventConsumerConfiguration {
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, Instance> registeredInstanceEventConsumer(
+    public ConcurrentMessageListenerContainer<String, Instance> instanceRegisteredEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
             CaseCreationErrorHandlerService caseCreationErrorHandlerService
@@ -28,6 +28,24 @@ public class InstanceRegisteredEventConsumerConfiguration {
         ).createContainer(
                 EventTopicNameParameters.builder()
                         .eventName("instance-registered")
+                        .build()
+        );
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, Instance> instanceRequestedForRetryEventConsumer(
+            InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
+            InstanceProcessingService instanceProcessingService,
+            CaseCreationErrorHandlerService caseCreationErrorHandlerService
+    ) {
+        return instanceFlowEventConsumerFactoryService.createFactory(
+                Instance.class,
+                instanceProcessingService::process,
+                caseCreationErrorHandlerService,
+                false
+        ).createContainer(
+                EventTopicNameParameters.builder()
+                        .eventName("instance-requested-for-retry")
                         .build()
         );
     }
