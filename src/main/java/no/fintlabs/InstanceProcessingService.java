@@ -35,7 +35,7 @@ public class InstanceProcessingService {
         SakResource newOrUpdatedCase = this.caseService.createOrUpdateCase(integrationConfiguration, flytConsumerRecord.getConsumerRecord().value());
 
         InstanceFlowHeaders instanceFlowHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
-                .configurationId(String.valueOf(integrationConfiguration.getId()))
+                .configurationId(integrationConfiguration.getId())
                 .build();
 
         caseCreatedEventProducerService.publish(instanceFlowHeaders, newOrUpdatedCase);
