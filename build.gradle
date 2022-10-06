@@ -53,7 +53,7 @@ dependencies {
 
     implementation 'org.springframework.kafka:spring-kafka:2.8.3'
     implementation 'no.fintlabs:fint-kafka:2.3.0'
-    implementation 'no.fintlabs:fint-flyt-kafka:2.0.0'
+    implementation 'no.fintlabs:fint-flyt-kafka:2.2.0'
 
     implementation 'org.apache.commons:commons-lang3'
 
