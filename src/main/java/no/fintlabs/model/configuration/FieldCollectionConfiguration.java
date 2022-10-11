@@ -5,12 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
+
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class Property {
-    private ValueSource source;
+@NoArgsConstructor
+public class FieldCollectionConfiguration {
+
+    public enum Type {
+        STRING, URL, BOOLEAN
+    }
+
     private String key;
-    private int order;
+    private Type type;
+    Collection<String> values;
 }
