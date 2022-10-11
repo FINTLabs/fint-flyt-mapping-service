@@ -1,7 +1,7 @@
 package no.fintlabs.integration;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.CaseCreationErrorHandlerService;
+import no.fintlabs.InstanceMappingErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
@@ -18,12 +18,12 @@ public class InstanceEventConsumerConfiguration {
     public ConcurrentMessageListenerContainer<String, Instance> instanceRegisteredEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
-            CaseCreationErrorHandlerService caseCreationErrorHandlerService
+            InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
     ) {
         return instanceFlowEventConsumerFactoryService.createFactory(
                 Instance.class,
                 instanceProcessingService::process,
-                caseCreationErrorHandlerService,
+                instanceMappingErrorHandlerService,
                 false
         ).createContainer(
                 EventTopicNameParameters.builder()
@@ -36,12 +36,12 @@ public class InstanceEventConsumerConfiguration {
     public ConcurrentMessageListenerContainer<String, Instance> instanceRequestedForRetryEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
-            CaseCreationErrorHandlerService caseCreationErrorHandlerService
+            InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
     ) {
         return instanceFlowEventConsumerFactoryService.createFactory(
                 Instance.class,
                 instanceProcessingService::process,
-                caseCreationErrorHandlerService,
+                instanceMappingErrorHandlerService,
                 false
         ).createContainer(
                 EventTopicNameParameters.builder()

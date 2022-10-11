@@ -1,23 +1,22 @@
-package no.fintlabs.model.configuration;
+package no.fintlabs.model.mappedinstance;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FieldCollectionConfiguration {
+public class MappedInstanceField {
 
     public enum Type {
-        STRING, URL
+        STRING, URL, BOOLEAN
     }
 
     private String key;
     private Type type;
-    Collection<String> values;
+    private String value;
+
 }
