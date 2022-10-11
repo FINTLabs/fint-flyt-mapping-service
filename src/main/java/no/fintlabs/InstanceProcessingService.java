@@ -39,7 +39,7 @@ public class InstanceProcessingService {
         Long integrationId = consumerRecordInstanceFlowHeaders.getIntegrationId();
 
         Long configurationId = this.activeConfigurationIdRequestProducerService.get(integrationId)
-                .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(integrationId));
+                .orElseThrow(() -> ConfigurationNotFoundException.fromIntegrationId(integrationId));
 
         Configuration configuration = this.configurationRequestProducerService.get(configurationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(configurationId));
