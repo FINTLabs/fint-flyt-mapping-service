@@ -12,7 +12,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Slf4j
 @Configuration
-public class InstanceEventConsumerConfiguration {
+public class InstanceRegisteredEventConsumerConfiguration {
 
     @Bean
     public ConcurrentMessageListenerContainer<String, Instance> instanceRegisteredEventConsumer(
