@@ -1,4 +1,4 @@
-package no.fintlabs.integration.error;
+package no.fintlabs.kafka.error;
 
 import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducer;
 import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducerRecord;

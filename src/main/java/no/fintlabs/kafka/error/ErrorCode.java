@@ -1,4 +1,4 @@
-package no.fintlabs.integration.error;
+package no.fintlabs.kafka.error;
 
 public enum ErrorCode {
     GENERAL_SYSTEM_ERROR,

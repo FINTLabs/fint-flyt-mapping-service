@@ -2,9 +2,9 @@ package no.fintlabs;
 
 import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
-import no.fintlabs.integration.InstanceMappedEventProducerService;
-import no.fintlabs.integration.configuration.ActiveConfigurationIdRequestProducerService;
-import no.fintlabs.integration.configuration.ConfigurationRequestService;
+import no.fintlabs.kafka.InstanceMappedEventProducerService;
+import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
+import no.fintlabs.kafka.configuration.ConfigurationRequestProducerService;
 import no.fintlabs.mapping.InstanceMappingService;
 import no.fintlabs.model.configuration.Configuration;
 import no.fintlabs.model.instance.Instance;
@@ -14,18 +14,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class InstanceProcessingService {
 
-    private final ConfigurationRequestService configurationRequestService;
+    private final ConfigurationRequestProducerService configurationRequestProducerService;
     private final InstanceMappedEventProducerService instanceMappedEventProducerService;
     private final ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService;
     private final InstanceMappingService instanceMappingService;
 
     public InstanceProcessingService(
-            ConfigurationRequestService configurationRequestService,
+            ConfigurationRequestProducerService configurationRequestProducerService,
             InstanceMappedEventProducerService instanceMappedEventProducerService,
             ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService,
             InstanceMappingService instanceMappingService
     ) {
-        this.configurationRequestService = configurationRequestService;
+        this.configurationRequestProducerService = configurationRequestProducerService;
         this.instanceMappedEventProducerService = instanceMappedEventProducerService;
         this.activeConfigurationIdRequestProducerService = activeConfigurationIdRequestProducerService;
         this.instanceMappingService = instanceMappingService;
@@ -41,7 +41,7 @@ public class InstanceProcessingService {
         Long configurationId = this.activeConfigurationIdRequestProducerService.get(integrationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(integrationId));
 
-        Configuration configuration = this.configurationRequestService.get(configurationId)
+        Configuration configuration = this.configurationRequestProducerService.get(configurationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(configurationId));
 
         MappedInstance mappedInstance = this.instanceMappingService.map(instance, configuration);

@@ -1,4 +1,4 @@
-package no.fintlabs.integration;
+package no.fintlabs.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.InstanceMappingErrorHandlerService;

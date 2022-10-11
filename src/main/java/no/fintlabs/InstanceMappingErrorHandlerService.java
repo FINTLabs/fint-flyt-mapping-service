@@ -3,7 +3,7 @@ package no.fintlabs;
 import no.fintlabs.flyt.kafka.InstanceFlowErrorHandler;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeadersMapper;
-import no.fintlabs.integration.error.InstanceMappingErrorEventProducerService;
+import no.fintlabs.kafka.error.InstanceMappingErrorEventProducerService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 

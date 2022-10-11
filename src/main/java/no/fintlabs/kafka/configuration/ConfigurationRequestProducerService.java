@@ -1,4 +1,4 @@
-package no.fintlabs.integration.configuration;
+package no.fintlabs.kafka.configuration;
 
 import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.RequestProducer;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class ConfigurationRequestService {
+public class ConfigurationRequestProducerService {
 
     private final RequestTopicNameParameters requestTopicNameParameters;
     private final RequestProducer<Long, Configuration> configurationRequestProducer;
 
-    public ConfigurationRequestService(
+    public ConfigurationRequestProducerService(
             @Value("${fint.kafka.application-id}") String applicationId,
             RequestProducerFactory requestProducerFactory,
             ReplyTopicService replyTopicService
