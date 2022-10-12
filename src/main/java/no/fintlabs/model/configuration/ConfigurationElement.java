@@ -15,5 +15,5 @@ public class ConfigurationElement {
     private String key;
     private Collection<ConfigurationElement> elements;
     private Collection<FieldConfiguration> fieldConfigurations;
-    private Collection<FieldCollectionConfiguration> fieldCollectionConfigurations;
+    private Collection<CollectionFieldConfiguration> collectionFieldConfigurations;
 }

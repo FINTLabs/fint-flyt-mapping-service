@@ -15,5 +15,5 @@ public class MappedInstanceElement {
     private String key;
     private Collection<MappedInstanceElement> elements;
     private Collection<MappedInstanceField> fields;
-    private Collection<MappedInstanceFieldCollection> fieldCollections;
+    private Collection<MappedInstanceCollectionField> collectionFields;
 }

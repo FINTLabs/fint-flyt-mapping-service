@@ -2,14 +2,14 @@ package no.fintlabs.mapping
 
 import no.fintlabs.model.configuration.Configuration
 import no.fintlabs.model.configuration.ConfigurationElement
-import no.fintlabs.model.configuration.FieldCollectionConfiguration
+import no.fintlabs.model.configuration.CollectionFieldConfiguration
 import no.fintlabs.model.configuration.FieldConfiguration
 import no.fintlabs.model.instance.Instance
 import no.fintlabs.model.instance.InstanceField
 import no.fintlabs.model.mappedinstance.MappedInstance
 import no.fintlabs.model.mappedinstance.MappedInstanceElement
 import no.fintlabs.model.mappedinstance.MappedInstanceField
-import no.fintlabs.model.mappedinstance.MappedInstanceFieldCollection
+import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField
 import spock.lang.Specification
 
 class InstanceMappingIntegrationSpec extends Specification {
@@ -46,10 +46,10 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(FieldConfiguration.Type.DYNAMIC_STRING)
                                         .value("Søknad VGS \$if{fieldKey2}")
                                         .build()))
-                        .fieldCollectionConfigurations(List.of(FieldCollectionConfiguration
+                        .collectionFieldConfigurations(List.of(CollectionFieldConfiguration
                                 .builder()
-                                .key("fieldCollection11")
-                                .type(FieldCollectionConfiguration.Type.URL)
+                                .key("collectionField11")
+                                .type(CollectionFieldConfiguration.Type.URL)
                                 .values(List.of("http://www.example.com", "www.fintlabs.no"))
                                 .build()))
                         .elements(List.of(ConfigurationElement
@@ -61,7 +61,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(FieldConfiguration.Type.BOOLEAN)
                                         .value("true")
                                         .build()))
-                                .fieldCollectionConfigurations(Collections.emptyList())
+                                .collectionFieldConfigurations(Collections.emptyList())
                                 .elements(Collections.emptyList())
                                 .build()))
                         .build(),
@@ -74,7 +74,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(FieldConfiguration.Type.STRING)
                                         .value("")
                                         .build()))
-                                .fieldCollectionConfigurations(Collections.emptyList())
+                                .collectionFieldConfigurations(Collections.emptyList())
                                 .elements(Collections.emptyList())
                                 .build()))
                 .build()
@@ -100,10 +100,10 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(MappedInstanceField.Type.STRING)
                                         .value("Søknad VGS http://www.example.com")
                                         .build()))
-                        .fieldCollections(List.of(MappedInstanceFieldCollection
+                        .collectionFields(List.of(MappedInstanceCollectionField
                                 .builder()
-                                .key("fieldCollection11")
-                                .type(MappedInstanceFieldCollection.Type.URL)
+                                .key("collectionField11")
+                                .type(MappedInstanceCollectionField.Type.URL)
                                 .values(List.of("http://www.example.com", "www.fintlabs.no"))
                                 .build()))
                         .elements(List.of(MappedInstanceElement
@@ -115,7 +115,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(MappedInstanceField.Type.BOOLEAN)
                                         .value("true")
                                         .build()))
-                                .fieldCollections(Collections.emptyList())
+                                .collectionFields(Collections.emptyList())
                                 .elements(Collections.emptyList())
                                 .build()))
                         .build(),
@@ -128,7 +128,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .type(MappedInstanceField.Type.STRING)
                                         .value("")
                                         .build()))
-                                .fieldCollections(Collections.emptyList())
+                                .collectionFields(Collections.emptyList())
                                 .elements(Collections.emptyList())
                                 .build()))
                 .build()

@@ -2,13 +2,13 @@ package no.fintlabs.mapping;
 
 import no.fintlabs.model.configuration.Configuration;
 import no.fintlabs.model.configuration.ConfigurationElement;
-import no.fintlabs.model.configuration.FieldCollectionConfiguration;
+import no.fintlabs.model.configuration.CollectionFieldConfiguration;
 import no.fintlabs.model.configuration.FieldConfiguration;
 import no.fintlabs.model.instance.Instance;
 import no.fintlabs.model.mappedinstance.MappedInstance;
 import no.fintlabs.model.mappedinstance.MappedInstanceElement;
 import no.fintlabs.model.mappedinstance.MappedInstanceField;
-import no.fintlabs.model.mappedinstance.MappedInstanceFieldCollection;
+import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -42,7 +42,7 @@ public class InstanceMappingService {
                 .key(configurationElement.getKey())
                 .elements(toMappedInstanceElements(instance, configurationElement.getElements()))
                 .fields(toMappedInstanceFields(instance, configurationElement.getFieldConfigurations()))
-                .fieldCollections(toMappedInstanceFieldCollections(configurationElement.getFieldCollectionConfigurations()))
+                .collectionFields(toMappedInstanceCollectionFields(configurationElement.getCollectionFieldConfigurations()))
                 .build();
     }
 
@@ -69,19 +69,19 @@ public class InstanceMappingService {
                 .build();
     }
 
-    private Collection<MappedInstanceFieldCollection> toMappedInstanceFieldCollections(Collection<FieldCollectionConfiguration> fieldCollectionConfigurations) {
-        return fieldCollectionConfigurations
+    private Collection<MappedInstanceCollectionField> toMappedInstanceCollectionFields(Collection<CollectionFieldConfiguration> collectionFieldConfigurations) {
+        return collectionFieldConfigurations
                 .stream()
-                .map(this::toMappedInstanceFieldCollection)
+                .map(this::toMappedInstanceCollectionField)
                 .toList();
     }
 
-    private MappedInstanceFieldCollection toMappedInstanceFieldCollection(FieldCollectionConfiguration fieldCollectionConfiguration) {
-        return MappedInstanceFieldCollection
+    private MappedInstanceCollectionField toMappedInstanceCollectionField(CollectionFieldConfiguration collectionFieldConfiguration) {
+        return MappedInstanceCollectionField
                 .builder()
-                .key(fieldCollectionConfiguration.getKey())
-                .type(MappedInstanceFieldCollection.Type.valueOf(fieldCollectionConfiguration.getType().name()))
-                .values(fieldCollectionConfiguration.getValues())
+                .key(collectionFieldConfiguration.getKey())
+                .type(MappedInstanceCollectionField.Type.valueOf(collectionFieldConfiguration.getType().name()))
+                .values(collectionFieldConfiguration.getValues())
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package no.fintlabs.model.configuration;
+package no.fintlabs.model.mappedinstance;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.util.Collection;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FieldCollectionConfiguration {
+public class MappedInstanceCollectionField {
 
     public enum Type {
         STRING, URL
@@ -19,5 +19,6 @@ public class FieldCollectionConfiguration {
 
     private String key;
     private Type type;
-    Collection<String> values;
+    private Collection<String> values;
+
 }
