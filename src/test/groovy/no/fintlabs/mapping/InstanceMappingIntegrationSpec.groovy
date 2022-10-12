@@ -44,7 +44,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .builder()
                                         .key("field12")
                                         .type(FieldConfiguration.Type.DYNAMIC_STRING)
-                                        .value("dynamicString")
+                                        .value("Søknad VGS \$if{fieldKey2}")
                                         .build()))
                         .fieldCollectionConfigurations(List.of(FieldCollectionConfiguration
                                 .builder()
@@ -98,7 +98,7 @@ class InstanceMappingIntegrationSpec extends Specification {
                                         .builder()
                                         .key("field12")
                                         .type(MappedInstanceField.Type.STRING)
-                                        .value("dynamicString")
+                                        .value("Søknad VGS http://www.example.com")
                                         .build()))
                         .fieldCollections(List.of(MappedInstanceFieldCollection
                                 .builder()
