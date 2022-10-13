@@ -2,7 +2,8 @@ package no.fintlabs.kafka.error;
 
 public enum ErrorCode {
     GENERAL_SYSTEM_ERROR,
-    CONFIGURATION_NOT_FOUND;
+    CONFIGURATION_NOT_FOUND,
+    INSTANCE_FIELD_NOT_FOUND;
 
     private static final String ERROR_PREFIX = "FINT_FLYT_MAPPING_SERVICE_";
 

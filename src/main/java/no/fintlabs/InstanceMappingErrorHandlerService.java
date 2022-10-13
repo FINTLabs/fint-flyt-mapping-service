@@ -24,6 +24,12 @@ public class InstanceMappingErrorHandlerService extends InstanceFlowErrorHandler
     public void handleInstanceFlowRecord(Throwable cause, InstanceFlowHeaders instanceFlowHeaders, ConsumerRecord<?, ?> consumerRecord) {
         if (cause instanceof ConfigurationNotFoundException) {
             instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
+        }
+        if (cause instanceof InstanceFieldNotFoundException) {
+            instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
+                    instanceFlowHeaders,
+                    ((InstanceFieldNotFoundException) cause).getInstanceFieldKey()
+            );
         } else if (cause instanceof RuntimeException) {
             instanceMappingErrorEventProducerService.publishGeneralSystemErrorEvent(instanceFlowHeaders);
         }

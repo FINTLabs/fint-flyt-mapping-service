@@ -9,6 +9,8 @@ import no.fintlabs.kafka.event.error.topic.ErrorEventTopicNameParameters;
 import no.fintlabs.kafka.event.error.topic.ErrorEventTopicService;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class InstanceMappingErrorEventProducerService {
 
@@ -29,6 +31,23 @@ public class InstanceMappingErrorEventProducerService {
 
     public void publishConfigurationNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
         publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.CONFIGURATION_NOT_FOUND);
+    }
+
+    public void publishInstanceFieldNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders, String instanceFieldKey) {
+        instanceFlowErrorEventProducer.send(
+                InstanceFlowErrorEventProducerRecord
+                        .builder()
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .errorCollection(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(ErrorCode.INSTANCE_FIELD_NOT_FOUND.getCode())
+                                .args(Map.of(
+                                        "instanceFieldKey", instanceFieldKey
+                                ))
+                                .build()))
+                        .build()
+        );
     }
 
     public void publishGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
