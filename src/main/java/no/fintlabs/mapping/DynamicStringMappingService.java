@@ -13,8 +13,7 @@ import java.util.regex.Pattern;
 @Service
 public class DynamicStringMappingService extends DynamicInstanceFieldMapper {
 
-    private static final Pattern allowedCharacters = Pattern.compile("[^${}]");
-    private static final Pattern ifReferencePattern = Pattern.compile("\\$if\\{" + allowedCharacters.pattern() + "+}");
+    private static final Pattern ifReferencePattern = Pattern.compile("\\$if\\{[^}]+}");
 
     @Override
     protected MappedInstanceField.Type getMappedInstanceFieldType() {
