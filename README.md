@@ -1,4 +1,4 @@
-# FINT Skjema Case Service
+# FINT Skjema Mapping Service
 
 
 
