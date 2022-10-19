@@ -1,15 +1,14 @@
 package no.fintlabs.mapping
 
-import no.fintlabs.model.configuration.Configuration
-import no.fintlabs.model.configuration.ConfigurationElement
 import no.fintlabs.model.configuration.CollectionFieldConfiguration
+import no.fintlabs.model.configuration.ConfigurationElement
 import no.fintlabs.model.configuration.FieldConfiguration
 import no.fintlabs.model.instance.Instance
 import no.fintlabs.model.instance.InstanceField
 import no.fintlabs.model.mappedinstance.MappedInstance
+import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField
 import no.fintlabs.model.mappedinstance.MappedInstanceElement
 import no.fintlabs.model.mappedinstance.MappedInstanceField
-import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField
 import spock.lang.Specification
 
 class InstanceMappingIntegrationSpec extends Specification {
@@ -29,9 +28,8 @@ class InstanceMappingIntegrationSpec extends Specification {
                         "fieldKey3", InstanceField.builder().key("fieldKey3").value("true").build(),))
                 .build()
 
-        Configuration configuration = Configuration
-                .builder()
-                .elements(List.of(ConfigurationElement
+        Collection<ConfigurationElement> configurationElements = List.of(
+                ConfigurationElement
                         .builder()
                         .key("element1")
                         .fieldConfigurations(List.of(FieldConfiguration
@@ -65,22 +63,22 @@ class InstanceMappingIntegrationSpec extends Specification {
                                 .elements(Collections.emptyList())
                                 .build()))
                         .build(),
-                        ConfigurationElement
+                ConfigurationElement
+                        .builder()
+                        .key("element2")
+                        .fieldConfigurations(List.of(FieldConfiguration
                                 .builder()
-                                .key("element2")
-                                .fieldConfigurations(List.of(FieldConfiguration
-                                        .builder()
-                                        .key("field21")
-                                        .type(FieldConfiguration.Type.STRING)
-                                        .value("")
-                                        .build()))
-                                .collectionFieldConfigurations(Collections.emptyList())
-                                .elements(Collections.emptyList())
+                                .key("field21")
+                                .type(FieldConfiguration.Type.STRING)
+                                .value("")
                                 .build()))
-                .build()
+                        .collectionFieldConfigurations(Collections.emptyList())
+                        .elements(Collections.emptyList())
+                        .build()
+        )
 
         when:
-        MappedInstance mappedInstance = instanceMappingService.map(instance, configuration)
+        MappedInstance mappedInstance = instanceMappingService.map(instance, configurationElements)
 
         then:
         mappedInstance == MappedInstance

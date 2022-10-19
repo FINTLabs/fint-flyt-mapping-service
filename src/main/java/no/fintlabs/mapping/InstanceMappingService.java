@@ -1,14 +1,13 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.model.configuration.Configuration;
-import no.fintlabs.model.configuration.ConfigurationElement;
 import no.fintlabs.model.configuration.CollectionFieldConfiguration;
+import no.fintlabs.model.configuration.ConfigurationElement;
 import no.fintlabs.model.configuration.FieldConfiguration;
 import no.fintlabs.model.instance.Instance;
 import no.fintlabs.model.mappedinstance.MappedInstance;
+import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField;
 import no.fintlabs.model.mappedinstance.MappedInstanceElement;
 import no.fintlabs.model.mappedinstance.MappedInstanceField;
-import no.fintlabs.model.mappedinstance.MappedInstanceCollectionField;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -22,10 +21,10 @@ public class InstanceMappingService {
         this.dynamicStringMappingService = dynamicStringMappingService;
     }
 
-    public MappedInstance map(Instance instance, Configuration configuration) {
+    public MappedInstance map(Instance instance, Collection<ConfigurationElement> configurationElements) {
         return MappedInstance
                 .builder()
-                .elements(toMappedInstanceElements(instance, configuration.getElements()))
+                .elements(toMappedInstanceElements(instance, configurationElements))
                 .build();
     }
 
