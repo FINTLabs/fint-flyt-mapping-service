@@ -25,6 +25,7 @@ public class InstanceMappingService {
         return MappedInstance
                 .builder()
                 .elements(toMappedInstanceElements(instance, configurationElements))
+                .documents(instance.getDocuments())
                 .build();
     }
 

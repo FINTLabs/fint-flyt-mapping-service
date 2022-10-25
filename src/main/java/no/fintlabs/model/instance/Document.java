@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -13,5 +15,5 @@ public class Document {
     private String name;
     private String type;
     private String encoding;
-    private String base64;
+    private UUID fileId;
 }
