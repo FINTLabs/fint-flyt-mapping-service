@@ -12,7 +12,11 @@ public abstract class DynamicInstanceFieldMapper {
                 .builder()
                 .key(fieldConfiguration.getKey())
                 .type(getMappedInstanceFieldType())
-                .value(toMappedInstanceFieldValue(instance, fieldConfiguration.getValue()))
+                .value(
+                        fieldConfiguration.getValue() == null
+                                ? null
+                                : toMappedInstanceFieldValue(instance, fieldConfiguration.getValue())
+                )
                 .build();
     }
 
