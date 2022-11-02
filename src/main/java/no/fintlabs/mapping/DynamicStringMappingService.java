@@ -28,9 +28,10 @@ public class DynamicStringMappingService extends DynamicInstanceFieldMapper {
 
     private String getInstanceFieldValue(Instance instance, String ifReference) {
         String instanceFieldKey = ifReference.replace("$if{", "").replace("}", "");
-        return Optional.ofNullable(instance.getFieldPerKey().get(instanceFieldKey))
-                .map(InstanceField::getValue)
+        InstanceField instanceField = Optional.ofNullable(instance.getFieldPerKey().get(instanceFieldKey))
                 .orElseThrow(() -> new InstanceFieldNotFoundException(instanceFieldKey));
+        return Optional.ofNullable(instanceField.getValue())
+                .orElse("");
     }
 
 }

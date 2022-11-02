@@ -57,4 +57,24 @@ class DynamicStringMappingServiceSpec extends Specification {
         e.getMessage() == "Could not find instance field with key='etternavn'"
     }
 
+    def 'should return blank string if an instance field value is null'() {
+        given:
+        Instance instance = Instance
+                .builder()
+                .fieldPerKey(Map.of(
+                        "tittel", InstanceField.builder().value("Tittel som ikke skal brukes").build(),
+                        "fornavn", InstanceField.builder().value(null).build()
+                ))
+                .build()
+
+        when:
+        String result = dynamicStringMappingService.toMappedInstanceFieldValue(
+                instance,
+                "Søknad VGS \$if{fornavn}"
+        )
+
+        then:
+        result == "Søknad VGS "
+    }
+
 }
