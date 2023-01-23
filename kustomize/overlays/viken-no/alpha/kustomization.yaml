@@ -4,7 +4,7 @@ namespace: viken-no
 resources:
   - ../../../base
 patchesStrategicMerge:
-  - ../config-map.yaml
+  - config-map.yaml
 commonLabels:
   app.kubernetes.io/name: fint-flyt-mapping-service
   app.kubernetes.io/instance: fint-flyt-mapping-service_viken-no
