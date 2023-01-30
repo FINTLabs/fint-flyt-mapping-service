@@ -5,7 +5,7 @@ import no.fintlabs.InstanceMappingErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
-import no.fintlabs.model.instance.Instance;
+import no.fintlabs.model.instance.InstanceElement;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -15,13 +15,13 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 public class InstanceRegisteredEventConsumerConfiguration {
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, Instance> instanceRegisteredEventConsumer(
+    public ConcurrentMessageListenerContainer<String, InstanceElement> instanceRegisteredEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
             InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
     ) {
         return instanceFlowEventConsumerFactoryService.createFactory(
-                Instance.class,
+                InstanceElement.class,
                 instanceProcessingService::process,
                 instanceMappingErrorHandlerService,
                 false
@@ -33,13 +33,13 @@ public class InstanceRegisteredEventConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, Instance> instanceRequestedForRetryEventConsumer(
+    public ConcurrentMessageListenerContainer<String, InstanceElement> instanceRequestedForRetryEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
             InstanceProcessingService instanceProcessingService,
             InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
     ) {
         return instanceFlowEventConsumerFactoryService.createFactory(
-                Instance.class,
+                InstanceElement.class,
                 instanceProcessingService::process,
                 instanceMappingErrorHandlerService,
                 false

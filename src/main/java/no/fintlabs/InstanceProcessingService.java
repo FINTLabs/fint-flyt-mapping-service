@@ -4,56 +4,52 @@ import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.InstanceMappedEventProducerService;
 import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
-import no.fintlabs.kafka.configuration.ConfigurationElementsRequestProducerService;
+import no.fintlabs.kafka.configuration.ConfigurationElementMappingRequestProducerService;
 import no.fintlabs.mapping.InstanceMappingService;
-import no.fintlabs.model.configuration.ConfigurationElement;
-import no.fintlabs.model.instance.Instance;
-import no.fintlabs.model.mappedinstance.MappedInstance;
+import no.fintlabs.model.configuration.ElementMapping;
+import no.fintlabs.model.instance.InstanceElement;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
 
 @Service
 public class InstanceProcessingService {
 
-    private final ConfigurationElementsRequestProducerService configurationElementsRequestProducerService;
+    private final ConfigurationElementMappingRequestProducerService configurationElementMappingRequestProducerService;
     private final InstanceMappedEventProducerService instanceMappedEventProducerService;
     private final ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService;
     private final InstanceMappingService instanceMappingService;
 
     public InstanceProcessingService(
-            ConfigurationElementsRequestProducerService configurationElementsRequestProducerService,
+            ConfigurationElementMappingRequestProducerService configurationElementMappingRequestProducerService,
             InstanceMappedEventProducerService instanceMappedEventProducerService,
             ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService,
             InstanceMappingService instanceMappingService
     ) {
-        this.configurationElementsRequestProducerService = configurationElementsRequestProducerService;
+        this.configurationElementMappingRequestProducerService = configurationElementMappingRequestProducerService;
         this.instanceMappedEventProducerService = instanceMappedEventProducerService;
         this.activeConfigurationIdRequestProducerService = activeConfigurationIdRequestProducerService;
         this.instanceMappingService = instanceMappingService;
     }
 
-    public void process(InstanceFlowConsumerRecord<Instance> flytConsumerRecord) {
+    public void process(InstanceFlowConsumerRecord<InstanceElement> flytConsumerRecord) {
         InstanceFlowHeaders consumerRecordInstanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders();
 
-        Instance instance = flytConsumerRecord.getConsumerRecord().value();
+        InstanceElement instance = flytConsumerRecord.getConsumerRecord().value();
 
         Long integrationId = consumerRecordInstanceFlowHeaders.getIntegrationId();
 
         Long configurationId = this.activeConfigurationIdRequestProducerService.get(integrationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromIntegrationId(integrationId));
 
-        Collection<ConfigurationElement> configurationElements = this.configurationElementsRequestProducerService.get(configurationId)
+        ElementMapping elementMapping = this.configurationElementMappingRequestProducerService.get(configurationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(configurationId));
 
-        MappedInstance mappedInstance = this.instanceMappingService.map(instance, configurationElements);
+        Object mappedInstance = this.instanceMappingService.toMappedInstanceElement(elementMapping, instance);
 
         InstanceFlowHeaders instanceFlowHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
                 .configurationId(configurationId)
                 .build();
 
         instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
-
     }
 
 }

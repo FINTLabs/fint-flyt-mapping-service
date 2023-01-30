@@ -12,11 +12,12 @@ import java.util.Collection;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Configuration {
-    private Long integrationId;
-    private Long integrationMetadataId;
-    private Integer version;
-    private boolean completed;
-    private String comment;
-    private Collection<ConfigurationElement> elements = new ArrayList<>();
+public class ElementCollectionMapping {
+
+    @Builder.Default
+    private Collection<ElementMapping> elementMappings = new ArrayList<>();
+
+    @Builder.Default
+    private Collection<ElementsFromCollectionMapping> elementsFromCollectionMappings = new ArrayList<>();
+
 }
