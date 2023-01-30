@@ -94,4 +94,35 @@ class InstanceReferenceServiceSpec extends Specification {
         result == "Søknad VGS - Navn Navnesen - Tittel her - Gate 1, 0000, By, Land - Fintlabs"
     }
 
+    def 'should throw exception if an instance collection element field cannot be found'() {
+        given:
+        Map<String, String> instanceValuePerKey = new HashMap<>()
+        instanceValuePerKey.put("tittel", "Tittel her")
+        instanceValuePerKey.put("fornavn", null)
+
+        when:
+        instanceReferenceService.replaceIfReferencesWithInstanceValues(
+                "Søknad VGS - \$icf{0}{navn} - \$if{tittel} - \$icf{0}{adresselinje} - \$icf{1}{organisasjon}",
+                instanceValuePerKey,
+                new InstanceElement[]{
+                        InstanceElement
+                                .builder()
+                                .valuePerKey(Map.of(
+                                        "navn", "Navn Navnesen"
+                                ))
+                                .build(),
+                        InstanceElement
+                                .builder()
+                                .valuePerKey(Map.of(
+                                        "organisasjon", "Fintlabs",
+                                ))
+                                .build(),
+                }
+        )
+
+        then:
+        def e = thrown(InstanceFieldNotFoundException)
+        e.getMessage() == "Could not find instance field with key='adresselinje'"
+    }
+
 }

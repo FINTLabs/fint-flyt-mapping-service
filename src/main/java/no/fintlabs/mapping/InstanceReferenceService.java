@@ -55,8 +55,10 @@ public class InstanceReferenceService {
     private String getCollectionFieldValue(String icfReference, InstanceElement[] selectedCollectionElementsPerCollectionIndex) {
         CollectionFieldKey collectionIndexAndFieldReference = getCollectionFieldKey(icfReference);
         Map<String, String> valuePerKeyForCollectionElement = selectedCollectionElementsPerCollectionIndex[collectionIndexAndFieldReference.getCollectionIndex()].getValuePerKey();
-        if (!valuePerKeyForCollectionElement.containsKey(collectionIndexAndFieldReference.getCollectionFieldKey())) { // TODO: 29/01/2023 Replace with separate exception
-            throw new InstanceFieldNotFoundException(collectionIndexAndFieldReference.getCollectionFieldKey());
+        if (!valuePerKeyForCollectionElement.containsKey(collectionIndexAndFieldReference.getCollectionFieldKey())) {
+            throw new InstanceFieldNotFoundException(
+                    collectionIndexAndFieldReference.getCollectionFieldKey()
+            );
         }
         return Optional.ofNullable(
                 valuePerKeyForCollectionElement.get(collectionIndexAndFieldReference.getCollectionFieldKey())
