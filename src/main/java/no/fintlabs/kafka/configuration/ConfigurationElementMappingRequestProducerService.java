@@ -33,7 +33,7 @@ public class ConfigurationElementMappingRequestProducerService {
         replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
-                .resource("configuration-elements")
+                .resource("mapping")
                 .parameterName("configuration-id")
                 .build();
 
