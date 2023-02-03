@@ -1,4 +1,4 @@
-package no.fintlabs.model.mappedinstance;
+package no.fintlabs.model.configuration;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,14 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MappedInstanceField {
+public class ValueMapping {
 
     public enum Type {
-        STRING, URL, BOOLEAN
+        STRING, URL, BOOLEAN, DYNAMIC_STRING, FILE
     }
 
-    private String key;
     private Type type;
-    private String value;
-
+    private String mappingString;
 }

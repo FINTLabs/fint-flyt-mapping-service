@@ -7,29 +7,28 @@ import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
-import no.fintlabs.model.mappedinstance.MappedInstance;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class InstanceMappedEventProducerService {
 
-    private final InstanceFlowEventProducer<MappedInstance> instanceFlowEventProducer;
+    private final InstanceFlowEventProducer<Object> instanceFlowEventProducer;
     private final EventTopicNameParameters eventTopicNameParameters;
 
     public InstanceMappedEventProducerService(
             InstanceFlowEventProducerFactory instanceFlowEventProducerFactory,
             EventTopicService eventTopicService) {
-        this.instanceFlowEventProducer = instanceFlowEventProducerFactory.createProducer(MappedInstance.class);
+        this.instanceFlowEventProducer = instanceFlowEventProducerFactory.createProducer(Object.class);
         this.eventTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("instance-mapped")
                 .build();
         eventTopicService.ensureTopic(eventTopicNameParameters, 0);
     }
 
-    public void publish(InstanceFlowHeaders instanceFlowHeaders, MappedInstance mappedInstance) {
+    public void publish(InstanceFlowHeaders instanceFlowHeaders, Object mappedInstance) {
         instanceFlowEventProducer.send(
-                InstanceFlowEventProducerRecord.<MappedInstance>builder()
+                InstanceFlowEventProducerRecord.builder()
                         .topicNameParameters(eventTopicNameParameters)
                         .instanceFlowHeaders(instanceFlowHeaders)
                         .value(mappedInstance)
