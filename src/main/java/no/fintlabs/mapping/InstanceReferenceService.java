@@ -36,7 +36,6 @@ public class InstanceReferenceService {
         Matcher matcher = referencePattern.matcher(mappingString);
         return matcher.replaceAll(matchResult -> {
             String matchedReference = matchResult.group();
-            log.info("replacing if references in mappingString='" + mappingString + "' with selectedCollectionElementsPerKey=" + selectedCollectionElementsPerKey);
             return instanceFieldReferencePattern.matcher(matchedReference).matches()
                     ? getInstanceValue(matchedReference, instanceValuePerKey)
                     : getCollectionFieldValue(matchedReference, selectedCollectionElementsPerKey);
