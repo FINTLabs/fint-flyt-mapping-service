@@ -119,13 +119,14 @@ public class InstanceMappingService {
         return Stream.concat(
                         elementCollectionMapping.getElementMappings()
                                 .stream()
-                                .map(elementMapping -> toMappedInstanceElement(elementMapping, instance)),
+                                .map(elementMapping -> toMappedInstanceElement(elementMapping, instance, selectedCollectionElementsByCollectionIndex)),
                         elementCollectionMapping.getElementsFromCollectionMappings()
                                 .stream()
                                 .map(elementsFromCollectionMapping -> toMappedInstanceElements(
                                         elementsFromCollectionMapping.getElementMapping(),
                                         instance,
                                         elementsFromCollectionMapping.getInstanceCollectionReferencesOrdered().toArray(new String[0]),
+                                        0,
                                         selectedCollectionElementsByCollectionIndex
                                 ))
                                 .flatMap(Collection::stream)
@@ -137,13 +138,12 @@ public class InstanceMappingService {
             ElementMapping elementMapping,
             InstanceElement instance,
             String[] instanceCollectionReferencesByCollectionIndex,
+            int nextCollectionIndex,
             InstanceElement[] selectedCollectionElementsByCollectionIndex
     ) {
-        if (selectedCollectionElementsByCollectionIndex.length == instanceCollectionReferencesByCollectionIndex.length) {
+        if (nextCollectionIndex == instanceCollectionReferencesByCollectionIndex.length) {
             return List.of(toMappedInstanceElement(elementMapping, instance, selectedCollectionElementsByCollectionIndex));
         }
-
-        int nextCollectionIndex = selectedCollectionElementsByCollectionIndex.length;
 
         Collection<InstanceElement> nextCollection = instanceReferenceService.getInstanceElementCollection(
                 instanceCollectionReferencesByCollectionIndex[nextCollectionIndex],
@@ -155,12 +155,13 @@ public class InstanceMappingService {
                 .stream()
                 .map(instanceElement -> {
                     InstanceElement[] newselectedCollectionElementsByCollectionIndex =
-                            Arrays.copyOf(selectedCollectionElementsByCollectionIndex, nextCollectionIndex + 1);
-                    newselectedCollectionElementsByCollectionIndex[nextCollectionIndex] = instanceElement;
+                            Arrays.copyOf(selectedCollectionElementsByCollectionIndex, selectedCollectionElementsByCollectionIndex.length + 1);
+                    newselectedCollectionElementsByCollectionIndex[selectedCollectionElementsByCollectionIndex.length] = instanceElement;
                     return toMappedInstanceElements(
                             elementMapping,
                             instance,
                             instanceCollectionReferencesByCollectionIndex,
+                            nextCollectionIndex + 1,
                             newselectedCollectionElementsByCollectionIndex
                     );
                 })

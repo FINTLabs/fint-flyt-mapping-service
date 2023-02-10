@@ -1,6 +1,7 @@
 package no.fintlabs.mapping;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.InstanceFieldNotFoundException;
 import no.fintlabs.model.instance.InstanceElement;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class InstanceReferenceService {
 
@@ -34,6 +36,7 @@ public class InstanceReferenceService {
         Matcher matcher = referencePattern.matcher(mappingString);
         return matcher.replaceAll(matchResult -> {
             String matchedReference = matchResult.group();
+            log.info("replacing if references in mappingString='" + mappingString + "' with selectedCollectionElementsPerKey=" + selectedCollectionElementsPerKey);
             return instanceFieldReferencePattern.matcher(matchedReference).matches()
                     ? getInstanceValue(matchedReference, instanceValuePerKey)
                     : getCollectionFieldValue(matchedReference, selectedCollectionElementsPerKey);
