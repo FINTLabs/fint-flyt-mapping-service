@@ -5,7 +5,7 @@ import no.fintlabs.model.configuration.ElementCollectionMapping
 import no.fintlabs.model.configuration.ElementMapping
 import no.fintlabs.model.configuration.ElementsFromCollectionMapping
 import no.fintlabs.model.configuration.ValueMapping
-import no.fintlabs.model.instance.InstanceElement
+import no.fintlabs.model.instance.InstanceObject
 import spock.lang.Specification
 
 class InstanceMappingServiceIntegrationSpec extends Specification {
@@ -110,7 +110,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                 ))
                 .build()
 
-        InstanceElement instance = InstanceElement
+        InstanceObject instance = InstanceObject
                 .builder()
                 .valuePerKey(Map.of(
                         "tittel1", "Hei på deg",
@@ -119,23 +119,23 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         "person2.navn", "Navn Navnesen",
                         "person2.by", "Oslo",
                 ))
-                .elementCollectionPerKey(Map.of(
+                .objectCollectionPerKey(Map.of(
                         "saksparter", List.of(
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Nora Noradottir"
                                 ))
-                                .elementCollectionPerKey(Map.of(
+                                .objectCollectionPerKey(Map.of(
                                         "publikasjoner", List.of(
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Min barnebok",
                                                         "utgiver", "Bokprodusenten"
                                                 ))
                                                 .build(),
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Ludde",
@@ -145,14 +145,14 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 )
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Eirik Eiriksson"
                                 ))
-                                .elementCollectionPerKey(Map.of(
+                                .objectCollectionPerKey(Map.of(
                                         "publikasjoner", List.of(
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Den lille mulvarpen",
@@ -164,13 +164,13 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 .build()
                 ),
                         "dokumenter", List.of(
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "tittel", "Dokument1"
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "tittel", "Dokument2"

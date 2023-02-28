@@ -1,7 +1,7 @@
 package no.fintlabs.mapping
 
 import no.fintlabs.InstanceFieldNotFoundException
-import no.fintlabs.model.instance.InstanceElement
+import no.fintlabs.model.instance.InstanceObject
 import spock.lang.Specification
 
 class InstanceReferenceServiceSpec extends Specification {
@@ -23,7 +23,7 @@ class InstanceReferenceServiceSpec extends Specification {
                         "dato", "24.12.2022",
                         "person nr1 fødselsdato", "01.01.2000"
                 ),
-                new InstanceElement[]{}
+                new InstanceObject[]{}
         )
 
         then:
@@ -38,7 +38,7 @@ class InstanceReferenceServiceSpec extends Specification {
                         "tittel", "Tittel som ikke skal brukes",
                         "fornavn", "Ola"
                 ),
-                new InstanceElement[]{}
+                new InstanceObject[]{}
         )
 
         then:
@@ -56,7 +56,7 @@ class InstanceReferenceServiceSpec extends Specification {
         String result = instanceReferenceService.replaceIfReferencesWithInstanceValues(
                 "Søknad VGS \$if{fornavn}",
                 instanceValuePerKey,
-                new InstanceElement[]{}
+                new InstanceObject[]{}
         )
 
         then:
@@ -73,15 +73,15 @@ class InstanceReferenceServiceSpec extends Specification {
         String result = instanceReferenceService.replaceIfReferencesWithInstanceValues(
                 "Søknad VGS - \$icf{0}{navn} - \$if{tittel} - \$icf{0}{adresselinje} - \$icf{1}{organisasjon}",
                 instanceValuePerKey,
-                new InstanceElement[]{
-                        InstanceElement
+                new InstanceObject[]{
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Navn Navnesen",
                                         "adresselinje", "Gate 1, 0000, By, Land"
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "organisasjon", "Fintlabs",
@@ -104,14 +104,14 @@ class InstanceReferenceServiceSpec extends Specification {
         instanceReferenceService.replaceIfReferencesWithInstanceValues(
                 "Søknad VGS - \$icf{0}{navn} - \$if{tittel} - \$icf{0}{adresselinje} - \$icf{1}{organisasjon}",
                 instanceValuePerKey,
-                new InstanceElement[]{
-                        InstanceElement
+                new InstanceObject[]{
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Navn Navnesen"
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "organisasjon", "Fintlabs",

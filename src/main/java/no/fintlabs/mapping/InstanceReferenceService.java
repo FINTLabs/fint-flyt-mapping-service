@@ -3,7 +3,7 @@ package no.fintlabs.mapping;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.InstanceFieldNotFoundException;
-import no.fintlabs.model.instance.InstanceElement;
+import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -31,7 +31,7 @@ public class InstanceReferenceService {
     public String replaceIfReferencesWithInstanceValues(
             String mappingString,
             Map<String, String> instanceValuePerKey,
-            InstanceElement[] selectedCollectionElementsPerKey
+            InstanceObject[] selectedCollectionElementsPerKey
     ) {
         Matcher matcher = referencePattern.matcher(mappingString);
         return matcher.replaceAll(matchResult -> {
@@ -54,7 +54,7 @@ public class InstanceReferenceService {
         return ifReference.replace("$if{", "").replace("}", "");
     }
 
-    private String getCollectionFieldValue(String icfReference, InstanceElement[] selectedCollectionElementsPerCollectionIndex) {
+    private String getCollectionFieldValue(String icfReference, InstanceObject[] selectedCollectionElementsPerCollectionIndex) {
         CollectionFieldKey collectionIndexAndFieldReference = getCollectionFieldKey(icfReference);
         Map<String, String> valuePerKeyForCollectionElement = selectedCollectionElementsPerCollectionIndex[collectionIndexAndFieldReference.getCollectionIndex()].getValuePerKey();
         if (!valuePerKeyForCollectionElement.containsKey(collectionIndexAndFieldReference.getCollectionFieldKey())) {
@@ -78,19 +78,19 @@ public class InstanceReferenceService {
         return new CollectionFieldKey(collectionIndex, collectionElementValueReference);
     }
 
-    public Collection<InstanceElement> getInstanceElementCollection(
+    public Collection<InstanceObject> getInstanceElementCollection(
             String collectionReference,
-            Map<String, Collection<InstanceElement>> elementCollectionPerKey,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            Map<String, Collection<InstanceObject>> elementCollectionPerKey,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return instanceFieldReferencePattern.matcher(collectionReference).matches()
                 ? getCollectionFromInstance(collectionReference, elementCollectionPerKey)
                 : getCollectionFromSelectedCollectionElement(collectionReference, selectedCollectionElementsByCollectionIndex);
     }
 
-    private Collection<InstanceElement> getCollectionFromInstance(
+    private Collection<InstanceObject> getCollectionFromInstance(
             String collectionReference,
-            Map<String, Collection<InstanceElement>> elementCollectionPerKey
+            Map<String, Collection<InstanceObject>> elementCollectionPerKey
     ) {
         String collectionKey = getInstanceFieldKey(collectionReference);
         if (!elementCollectionPerKey.containsKey(collectionKey)) {
@@ -99,13 +99,14 @@ public class InstanceReferenceService {
         return Optional.ofNullable(elementCollectionPerKey.get(collectionKey)).orElse(Collections.emptyList());
     }
 
-    private Collection<InstanceElement> getCollectionFromSelectedCollectionElement(
+    private Collection<InstanceObject> getCollectionFromSelectedCollectionElement(
             String collectionReference,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         CollectionFieldKey collectionFieldKey = getCollectionFieldKey(collectionReference);
-        Map<String, Collection<InstanceElement>> elementCollectionPerKey = selectedCollectionElementsByCollectionIndex[collectionFieldKey.getCollectionIndex()]
-                .getElementCollectionPerKey();
+        Map<String, Collection<InstanceObject>> elementCollectionPerKey =
+                selectedCollectionElementsByCollectionIndex[collectionFieldKey.getCollectionIndex()]
+                        .getObjectCollectionPerKey();
         if (!elementCollectionPerKey.containsKey(collectionFieldKey.getCollectionFieldKey())) {
             throw new InstanceFieldNotFoundException(collectionFieldKey.getCollectionIndex() + "." + collectionFieldKey.getCollectionFieldKey());
         }

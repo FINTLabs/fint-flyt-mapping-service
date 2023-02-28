@@ -3,7 +3,7 @@ package no.fintlabs.mapping;
 import no.fintlabs.model.configuration.ElementCollectionMapping;
 import no.fintlabs.model.configuration.ElementMapping;
 import no.fintlabs.model.configuration.ValueMapping;
-import no.fintlabs.model.instance.InstanceElement;
+import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,15 +25,15 @@ public class InstanceMappingService {
 
     public Map<String, ?> toMappedInstanceElement(
             ElementMapping elementMapping,
-            InstanceElement instance
+            InstanceObject instance
     ) {
-        return toMappedInstanceElement(elementMapping, instance, new InstanceElement[]{});
+        return toMappedInstanceElement(elementMapping, instance, new InstanceObject[]{});
     }
 
     private Map<String, ?> toMappedInstanceElement(
             ElementMapping elementMapping,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return Stream.of(
                         toValuePerKey(
@@ -59,8 +59,8 @@ public class InstanceMappingService {
 
     private Map<String, String> toValuePerKey(
             Map<String, ValueMapping> valueMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return valueMappingPerKey
                 .keySet()
@@ -77,8 +77,8 @@ public class InstanceMappingService {
 
     private Map<String, Map<String, ?>> toMappedInstanceElementPerKey(
             Map<String, ElementMapping> elementMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return elementMappingPerKey
                 .keySet()
@@ -95,8 +95,8 @@ public class InstanceMappingService {
 
     private Map<String, Collection<Map<String, ?>>> toMappedInstanceElementCollectionPerKey(
             Map<String, ElementCollectionMapping> elementCollectionMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return elementCollectionMappingPerKey
                 .keySet()
@@ -113,8 +113,8 @@ public class InstanceMappingService {
 
     private Collection<Map<String, ?>> toMappedInstanceElements(
             ElementCollectionMapping elementCollectionMapping,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         return Stream.concat(
                         elementCollectionMapping.getElementMappings()
@@ -136,25 +136,25 @@ public class InstanceMappingService {
 
     private Collection<Map<String, ?>> toMappedInstanceElements(
             ElementMapping elementMapping,
-            InstanceElement instance,
+            InstanceObject instance,
             String[] instanceCollectionReferencesByCollectionIndex,
             int nextCollectionIndex,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject[] selectedCollectionElementsByCollectionIndex
     ) {
         if (nextCollectionIndex == instanceCollectionReferencesByCollectionIndex.length) {
             return List.of(toMappedInstanceElement(elementMapping, instance, selectedCollectionElementsByCollectionIndex));
         }
 
-        Collection<InstanceElement> nextCollection = instanceReferenceService.getInstanceElementCollection(
+        Collection<InstanceObject> nextCollection = instanceReferenceService.getInstanceElementCollection(
                 instanceCollectionReferencesByCollectionIndex[nextCollectionIndex],
-                instance.getElementCollectionPerKey(),
+                instance.getObjectCollectionPerKey(),
                 selectedCollectionElementsByCollectionIndex
         );
 
         return nextCollection
                 .stream()
                 .map(instanceElement -> {
-                    InstanceElement[] newselectedCollectionElementsByCollectionIndex =
+                    InstanceObject[] newselectedCollectionElementsByCollectionIndex =
                             Arrays.copyOf(selectedCollectionElementsByCollectionIndex, selectedCollectionElementsByCollectionIndex.length + 1);
                     newselectedCollectionElementsByCollectionIndex[selectedCollectionElementsByCollectionIndex.length] = instanceElement;
                     return toMappedInstanceElements(
