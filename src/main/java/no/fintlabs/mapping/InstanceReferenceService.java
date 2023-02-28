@@ -31,14 +31,14 @@ public class InstanceReferenceService {
     public String replaceIfReferencesWithInstanceValues(
             String mappingString,
             Map<String, String> instanceValuePerKey,
-            InstanceObject[] selectedCollectionElementsPerKey
+            InstanceObject[] selectedCollectionObjectsPerKey
     ) {
         Matcher matcher = referencePattern.matcher(mappingString);
         return matcher.replaceAll(matchResult -> {
             String matchedReference = matchResult.group();
             return instanceFieldReferencePattern.matcher(matchedReference).matches()
                     ? getInstanceValue(matchedReference, instanceValuePerKey)
-                    : getCollectionFieldValue(matchedReference, selectedCollectionElementsPerKey);
+                    : getCollectionFieldValue(matchedReference, selectedCollectionObjectsPerKey);
         });
     }
 
@@ -54,63 +54,63 @@ public class InstanceReferenceService {
         return ifReference.replace("$if{", "").replace("}", "");
     }
 
-    private String getCollectionFieldValue(String icfReference, InstanceObject[] selectedCollectionElementsPerCollectionIndex) {
+    private String getCollectionFieldValue(String icfReference, InstanceObject[] selectedCollectionObjectsPerCollectionIndex) {
         CollectionFieldKey collectionIndexAndFieldReference = getCollectionFieldKey(icfReference);
-        Map<String, String> valuePerKeyForCollectionElement = selectedCollectionElementsPerCollectionIndex[collectionIndexAndFieldReference.getCollectionIndex()].getValuePerKey();
-        if (!valuePerKeyForCollectionElement.containsKey(collectionIndexAndFieldReference.getCollectionFieldKey())) {
+        Map<String, String> valuePerKeyForCollectionObject = selectedCollectionObjectsPerCollectionIndex[collectionIndexAndFieldReference.getCollectionIndex()].getValuePerKey();
+        if (!valuePerKeyForCollectionObject.containsKey(collectionIndexAndFieldReference.getCollectionFieldKey())) {
             throw new InstanceFieldNotFoundException(
                     collectionIndexAndFieldReference.getCollectionFieldKey()
             );
         }
         return Optional.ofNullable(
-                valuePerKeyForCollectionElement.get(collectionIndexAndFieldReference.getCollectionFieldKey())
+                valuePerKeyForCollectionObject.get(collectionIndexAndFieldReference.getCollectionFieldKey())
         ).orElse("");
     }
 
     private CollectionFieldKey getCollectionFieldKey(String icfReference) {
-        String[] collectionIndexAndAollectionElementValueReference = icfReference.split("}\\{");
+        String[] collectionIndexAndAollectionObjectValueReference = icfReference.split("}\\{");
         int collectionIndex = Integer.parseInt(
-                collectionIndexAndAollectionElementValueReference[0]
+                collectionIndexAndAollectionObjectValueReference[0]
                         .replace("$icf{", "")
         );
-        String collectionElementValueReference = collectionIndexAndAollectionElementValueReference[1]
+        String collectionObjectValueReference = collectionIndexAndAollectionObjectValueReference[1]
                 .replace("}", "");
-        return new CollectionFieldKey(collectionIndex, collectionElementValueReference);
+        return new CollectionFieldKey(collectionIndex, collectionObjectValueReference);
     }
 
-    public Collection<InstanceObject> getInstanceElementCollection(
+    public Collection<InstanceObject> getInstanceObjectCollection(
             String collectionReference,
-            Map<String, Collection<InstanceObject>> elementCollectionPerKey,
-            InstanceObject[] selectedCollectionElementsByCollectionIndex
+            Map<String, Collection<InstanceObject>> objectCollectionPerKey,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return instanceFieldReferencePattern.matcher(collectionReference).matches()
-                ? getCollectionFromInstance(collectionReference, elementCollectionPerKey)
-                : getCollectionFromSelectedCollectionElement(collectionReference, selectedCollectionElementsByCollectionIndex);
+                ? getCollectionFromInstance(collectionReference, objectCollectionPerKey)
+                : getCollectionFromSelectedCollectionObject(collectionReference, selectedCollectionObjectsByCollectionIndex);
     }
 
     private Collection<InstanceObject> getCollectionFromInstance(
             String collectionReference,
-            Map<String, Collection<InstanceObject>> elementCollectionPerKey
+            Map<String, Collection<InstanceObject>> objectCollectionPerKey
     ) {
         String collectionKey = getInstanceFieldKey(collectionReference);
-        if (!elementCollectionPerKey.containsKey(collectionKey)) {
+        if (!objectCollectionPerKey.containsKey(collectionKey)) {
             throw new InstanceFieldNotFoundException(collectionKey);
         }
-        return Optional.ofNullable(elementCollectionPerKey.get(collectionKey)).orElse(Collections.emptyList());
+        return Optional.ofNullable(objectCollectionPerKey.get(collectionKey)).orElse(Collections.emptyList());
     }
 
-    private Collection<InstanceObject> getCollectionFromSelectedCollectionElement(
+    private Collection<InstanceObject> getCollectionFromSelectedCollectionObject(
             String collectionReference,
-            InstanceObject[] selectedCollectionElementsByCollectionIndex
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         CollectionFieldKey collectionFieldKey = getCollectionFieldKey(collectionReference);
-        Map<String, Collection<InstanceObject>> elementCollectionPerKey =
-                selectedCollectionElementsByCollectionIndex[collectionFieldKey.getCollectionIndex()]
+        Map<String, Collection<InstanceObject>> objectCollectionPerKey =
+                selectedCollectionObjectsByCollectionIndex[collectionFieldKey.getCollectionIndex()]
                         .getObjectCollectionPerKey();
-        if (!elementCollectionPerKey.containsKey(collectionFieldKey.getCollectionFieldKey())) {
+        if (!objectCollectionPerKey.containsKey(collectionFieldKey.getCollectionFieldKey())) {
             throw new InstanceFieldNotFoundException(collectionFieldKey.getCollectionIndex() + "." + collectionFieldKey.getCollectionFieldKey());
         }
-        return Optional.ofNullable(elementCollectionPerKey.get(collectionFieldKey.getCollectionFieldKey())).orElse(Collections.emptyList());
+        return Optional.ofNullable(objectCollectionPerKey.get(collectionFieldKey.getCollectionFieldKey())).orElse(Collections.emptyList());
     }
 
 }

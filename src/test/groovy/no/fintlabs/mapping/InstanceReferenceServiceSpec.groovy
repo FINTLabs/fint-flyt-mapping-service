@@ -63,7 +63,7 @@ class InstanceReferenceServiceSpec extends Specification {
         result == "Søknad VGS "
     }
 
-    def 'should return string with values from iterated collection elements'() {
+    def 'should return string with values from iterated collection objects'() {
         given:
         Map<String, String> instanceValuePerKey = new HashMap<>()
         instanceValuePerKey.put("tittel", "Tittel her")
@@ -94,7 +94,7 @@ class InstanceReferenceServiceSpec extends Specification {
         result == "Søknad VGS - Navn Navnesen - Tittel her - Gate 1, 0000, By, Land - Fintlabs"
     }
 
-    def 'should throw exception if an instance collection element field cannot be found'() {
+    def 'should throw exception if an instance collection object field cannot be found'() {
         given:
         Map<String, String> instanceValuePerKey = new HashMap<>()
         instanceValuePerKey.put("tittel", "Tittel her")

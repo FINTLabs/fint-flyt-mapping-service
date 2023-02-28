@@ -15,19 +15,19 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class ConfigurationElementMappingRequestProducerService {
+public class ConfigurationMappingRequestProducerService {
 
     private final RequestTopicNameParameters requestTopicNameParameters;
     private final RequestProducer<Long, ObjectMapping> configurationRequestProducer;
 
-    public ConfigurationElementMappingRequestProducerService(
+    public ConfigurationMappingRequestProducerService(
             @Value("${fint.kafka.application-id}") String applicationId,
             RequestProducerFactory requestProducerFactory,
             ReplyTopicService replyTopicService
     ) {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
                 .applicationId(applicationId)
-                .resource("configuration-elements")
+                .resource("mapping")
                 .build();
 
         replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());

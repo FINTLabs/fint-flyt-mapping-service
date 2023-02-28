@@ -20,7 +20,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
 
     def 'should map instance based on mapping from configuration'() {
         given:
-        ObjectMapping elementMapping = ObjectMapping
+        ObjectMapping objectMapping = ObjectMapping
                 .builder()
                 .valueMappingPerKey(Map.of(
                         "kombinert tittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Livsmotto: \$if{tittel1}, \$if{tittel2}").build())
@@ -180,8 +180,8 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                 .build()
 
         when:
-        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceElement(
-                elementMapping,
+        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceObject(
+                objectMapping,
                 instance
         )
 
