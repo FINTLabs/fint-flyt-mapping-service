@@ -1,20 +1,22 @@
 package no.fintlabs.model.configuration;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.extern.jackson.Jacksonized;
 
-@Data
+@Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@EqualsAndHashCode
+@Jacksonized
 public class ValueMapping {
 
     public enum Type {
         STRING, URL, BOOLEAN, DYNAMIC_STRING, FILE
     }
 
-    private Type type;
-    private String mappingString;
+    private final Type type;
+
+    private final String mappingString;
+
 }

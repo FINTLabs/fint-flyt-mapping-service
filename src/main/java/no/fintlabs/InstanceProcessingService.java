@@ -6,7 +6,7 @@ import no.fintlabs.kafka.InstanceMappedEventProducerService;
 import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.fintlabs.kafka.configuration.ConfigurationElementMappingRequestProducerService;
 import no.fintlabs.mapping.InstanceMappingService;
-import no.fintlabs.model.configuration.ElementMapping;
+import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
 
@@ -40,10 +40,10 @@ public class InstanceProcessingService {
         Long configurationId = this.activeConfigurationIdRequestProducerService.get(integrationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromIntegrationId(integrationId));
 
-        ElementMapping elementMapping = this.configurationElementMappingRequestProducerService.get(configurationId)
+        ObjectMapping objectMapping = this.configurationElementMappingRequestProducerService.get(configurationId)
                 .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(configurationId));
 
-        Object mappedInstance = this.instanceMappingService.toMappedInstanceElement(elementMapping, instance);
+        Object mappedInstance = this.instanceMappingService.toMappedInstanceElement(objectMapping, instance);
 
         InstanceFlowHeaders instanceFlowHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
                 .configurationId(configurationId)
