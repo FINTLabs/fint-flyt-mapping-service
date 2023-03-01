@@ -4,6 +4,7 @@ import no.fintlabs.model.configuration.CollectionMapping;
 import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.configuration.ValueMapping;
 import no.fintlabs.model.instance.InstanceObject;
+import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -46,7 +47,14 @@ public class InstanceMappingService {
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
                         ),
-                        toMappedInstanceObjectCollectionPerKey(
+                        toMappedInstanceElementCollectionPerKey(
+                                this::toValue,
+                                objectMapping.getValueCollectionMappingPerKey(),
+                                instance,
+                                selectedCollectionObjectsByCollectionIndex
+                        ),
+                        toMappedInstanceElementCollectionPerKey(
+                                this::toMappedInstanceObject,
                                 objectMapping.getObjectCollectionMappingPerKey(),
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
@@ -67,12 +75,24 @@ public class InstanceMappingService {
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        key -> valueMappingService.toValue(
+                        key -> toValue(
                                 valueMappingPerKey.get(key),
-                                instance.getValuePerKey(),
+                                instance,
                                 selectedCollectionObjectsByCollectionIndex
                         )
                 ));
+    }
+
+    private String toValue(
+            ValueMapping valueMapping,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
+    ) {
+        return valueMappingService.toValue(
+                valueMapping,
+                instance.getValuePerKey(),
+                selectedCollectionObjectsByCollectionIndex
+        );
     }
 
     private Map<String, Map<String, ?>> toMappedInstanceObjectPerKey(
@@ -93,39 +113,43 @@ public class InstanceMappingService {
                 ));
     }
 
-    private Map<String, Collection<Map<String, ?>>> toMappedInstanceObjectCollectionPerKey(
-            Map<String, CollectionMapping<ObjectMapping>> objectCollectionMappingPerKey,
+    private <T, R> Map<String, Collection<R>> toMappedInstanceElementCollectionPerKey(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            Map<String, CollectionMapping<T>> collectionMappingPerKey,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return objectCollectionMappingPerKey
+        return collectionMappingPerKey
                 .keySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        key -> toMappedInstanceObjects(
-                                objectCollectionMappingPerKey.get(key),
+                        key -> toMappedInstanceElements(
+                                elementMappingFunction,
+                                collectionMappingPerKey.get(key),
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
                         )
                 ));
     }
 
-    private Collection<Map<String, ?>> toMappedInstanceObjects(
-            CollectionMapping<ObjectMapping> objectCollectionMapping,
+    private <T, R> Collection<R> toMappedInstanceElements(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            CollectionMapping<T> elementCollectionMapping,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return Stream.concat(
-                        objectCollectionMapping.getElementMappings()
+                        elementCollectionMapping.getElementMappings()
                                 .stream()
-                                .map(objectMapping -> toMappedInstanceObject(objectMapping, instance, selectedCollectionObjectsByCollectionIndex)),
-                        objectCollectionMapping.getFromCollectionMappings()
+                                .map(objectMapping -> elementMappingFunction.apply(objectMapping, instance, selectedCollectionObjectsByCollectionIndex)),
+                        elementCollectionMapping.getFromCollectionMappings()
                                 .stream()
-                                .map(objectsFromCollectionMapping -> toMappedInstanceObjects(
-                                        objectsFromCollectionMapping.getElementMapping(),
+                                .map(fromCollectionMapping -> toMappedInstanceElements(
+                                        elementMappingFunction,
+                                        fromCollectionMapping.getElementMapping(),
                                         instance,
-                                        objectsFromCollectionMapping.getInstanceCollectionReferencesOrdered().toArray(new String[0]),
+                                        fromCollectionMapping.getInstanceCollectionReferencesOrdered().toArray(new String[0]),
                                         0,
                                         selectedCollectionObjectsByCollectionIndex
                                 ))
@@ -134,15 +158,16 @@ public class InstanceMappingService {
                 .collect(Collectors.toList());
     }
 
-    private Collection<Map<String, ?>> toMappedInstanceObjects(
-            ObjectMapping objectMapping,
+    private <T, R> Collection<R> toMappedInstanceElements(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            T elementMapping,
             InstanceObject instance,
             String[] instanceCollectionReferencesByCollectionIndex,
             int nextCollectionIndex,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         if (nextCollectionIndex == instanceCollectionReferencesByCollectionIndex.length) {
-            return List.of(toMappedInstanceObject(objectMapping, instance, selectedCollectionObjectsByCollectionIndex));
+            return List.of(elementMappingFunction.apply(elementMapping, instance, selectedCollectionObjectsByCollectionIndex));
         }
 
         Collection<InstanceObject> nextCollection = instanceReferenceService.getInstanceObjectCollection(
@@ -157,8 +182,9 @@ public class InstanceMappingService {
                     InstanceObject[] newSelectedCollectionObjectsByCollectionIndex =
                             Arrays.copyOf(selectedCollectionObjectsByCollectionIndex, selectedCollectionObjectsByCollectionIndex.length + 1);
                     newSelectedCollectionObjectsByCollectionIndex[selectedCollectionObjectsByCollectionIndex.length] = instanceObject;
-                    return toMappedInstanceObjects(
-                            objectMapping,
+                    return toMappedInstanceElements(
+                            elementMappingFunction,
+                            elementMapping,
                             instance,
                             instanceCollectionReferencesByCollectionIndex,
                             nextCollectionIndex + 1,

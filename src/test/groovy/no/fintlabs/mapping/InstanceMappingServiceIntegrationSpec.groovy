@@ -68,6 +68,34 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                                                         "publikasjon", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{1}{tittel} - \$icf{1}{utgiver}").build(),
                                                                         "vedleggTittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{2}{tittel}").build()
                                                                 ))
+                                                                .valueCollectionMappingPerKey(Map.of(
+                                                                        "venner",
+                                                                        CollectionMapping
+                                                                                .<ValueMapping> builder()
+                                                                                .elementMappings(List.of(
+                                                                                        ValueMapping
+                                                                                                .builder()
+                                                                                                .type(ValueMapping.Type.STRING)
+                                                                                                .mappingString("Ole Brum")
+                                                                                                .build(),
+                                                                                ))
+                                                                                .fromCollectionMappings(List.of(
+                                                                                        FromCollectionMapping
+                                                                                                .<ValueMapping> builder()
+                                                                                                .instanceCollectionReferencesOrdered(List.of(
+                                                                                                        "\$if{saksparter}"
+                                                                                                ))
+                                                                                                .elementMapping(
+                                                                                                        ValueMapping
+                                                                                                                .builder()
+                                                                                                                .type(ValueMapping.Type.DYNAMIC_STRING)
+                                                                                                                .mappingString("\$icf{3}{navn}")
+                                                                                                                .build()
+                                                                                                )
+                                                                                                .build()
+                                                                                ))
+                                                                                .build()
+                                                                ))
                                                                 .objectCollectionMappingPerKey(Map.of(
                                                                         "priser",
                                                                         CollectionMapping
@@ -207,42 +235,48 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         )
                 )
         )
