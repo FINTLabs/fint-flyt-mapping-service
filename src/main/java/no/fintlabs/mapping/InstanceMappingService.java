@@ -37,7 +37,7 @@ public class InstanceMappingService {
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return Stream.of(
-                        toValuePerKey(
+                        toMappedInstanceValuePerKey(
                                 objectMapping.getValueMappingPerKey(),
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
@@ -48,7 +48,7 @@ public class InstanceMappingService {
                                 selectedCollectionObjectsByCollectionIndex
                         ),
                         toMappedInstanceElementCollectionPerKey(
-                                this::toValue,
+                                this::toMappedInstanceValue,
                                 objectMapping.getValueCollectionMappingPerKey(),
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
@@ -65,7 +65,7 @@ public class InstanceMappingService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<String, String> toValuePerKey(
+    private Map<String, String> toMappedInstanceValuePerKey(
             Map<String, ValueMapping> valueMappingPerKey,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
@@ -75,7 +75,7 @@ public class InstanceMappingService {
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        key -> toValue(
+                        key -> toMappedInstanceValue(
                                 valueMappingPerKey.get(key),
                                 instance,
                                 selectedCollectionObjectsByCollectionIndex
@@ -83,7 +83,7 @@ public class InstanceMappingService {
                 ));
     }
 
-    private String toValue(
+    private String toMappedInstanceValue(
             ValueMapping valueMapping,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
