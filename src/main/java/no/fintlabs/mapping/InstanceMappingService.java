@@ -1,9 +1,10 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.model.configuration.ElementCollectionMapping;
-import no.fintlabs.model.configuration.ElementMapping;
+import no.fintlabs.model.configuration.CollectionMapping;
+import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.configuration.ValueMapping;
-import no.fintlabs.model.instance.InstanceElement;
+import no.fintlabs.model.instance.InstanceObject;
+import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,33 +24,40 @@ public class InstanceMappingService {
         this.valueMappingService = valueMappingService;
     }
 
-    public Map<String, ?> toMappedInstanceElement(
-            ElementMapping elementMapping,
-            InstanceElement instance
+    public Map<String, ?> toMappedInstanceObject(
+            ObjectMapping objectMapping,
+            InstanceObject instance
     ) {
-        return toMappedInstanceElement(elementMapping, instance, new InstanceElement[]{});
+        return toMappedInstanceObject(objectMapping, instance, new InstanceObject[]{});
     }
 
-    private Map<String, ?> toMappedInstanceElement(
-            ElementMapping elementMapping,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+    private Map<String, ?> toMappedInstanceObject(
+            ObjectMapping objectMapping,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return Stream.of(
-                        toValuePerKey(
-                                elementMapping.getValueMappingPerKey(),
+                        toMappedInstanceValuePerKey(
+                                objectMapping.getValueMappingPerKey(),
                                 instance,
-                                selectedCollectionElementsByCollectionIndex
+                                selectedCollectionObjectsByCollectionIndex
                         ),
-                        toMappedInstanceElementPerKey(
-                                elementMapping.getElementMappingPerKey(),
+                        toMappedInstanceObjectPerKey(
+                                objectMapping.getObjectMappingPerKey(),
                                 instance,
-                                selectedCollectionElementsByCollectionIndex
+                                selectedCollectionObjectsByCollectionIndex
                         ),
                         toMappedInstanceElementCollectionPerKey(
-                                elementMapping.getElementCollectionMappingPerKey(),
+                                this::toMappedInstanceValue,
+                                objectMapping.getValueCollectionMappingPerKey(),
                                 instance,
-                                selectedCollectionElementsByCollectionIndex
+                                selectedCollectionObjectsByCollectionIndex
+                        ),
+                        toMappedInstanceElementCollectionPerKey(
+                                this::toMappedInstanceObject,
+                                objectMapping.getObjectCollectionMappingPerKey(),
+                                instance,
+                                selectedCollectionObjectsByCollectionIndex
                         )
                 )
                 .map(Map::entrySet)
@@ -57,112 +65,130 @@ public class InstanceMappingService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<String, String> toValuePerKey(
+    private Map<String, String> toMappedInstanceValuePerKey(
             Map<String, ValueMapping> valueMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return valueMappingPerKey
                 .keySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        key -> valueMappingService.toValue(
+                        key -> toMappedInstanceValue(
                                 valueMappingPerKey.get(key),
-                                instance.getValuePerKey(),
-                                selectedCollectionElementsByCollectionIndex
+                                instance,
+                                selectedCollectionObjectsByCollectionIndex
                         )
                 ));
     }
 
-    private Map<String, Map<String, ?>> toMappedInstanceElementPerKey(
-            Map<String, ElementMapping> elementMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+    private String toMappedInstanceValue(
+            ValueMapping valueMapping,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return elementMappingPerKey
+        return valueMappingService.toValue(
+                valueMapping,
+                instance.getValuePerKey(),
+                selectedCollectionObjectsByCollectionIndex
+        );
+    }
+
+    private Map<String, Map<String, ?>> toMappedInstanceObjectPerKey(
+            Map<String, ObjectMapping> objectMappingPerKey,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
+    ) {
+        return objectMappingPerKey
                 .keySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        key -> toMappedInstanceElement(
-                                elementMappingPerKey.get(key),
+                        key -> toMappedInstanceObject(
+                                objectMappingPerKey.get(key),
                                 instance,
-                                selectedCollectionElementsByCollectionIndex
+                                selectedCollectionObjectsByCollectionIndex
                         )
                 ));
     }
 
-    private Map<String, Collection<Map<String, ?>>> toMappedInstanceElementCollectionPerKey(
-            Map<String, ElementCollectionMapping> elementCollectionMappingPerKey,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+    private <T, R> Map<String, Collection<R>> toMappedInstanceElementCollectionPerKey(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            Map<String, CollectionMapping<T>> collectionMappingPerKey,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return elementCollectionMappingPerKey
+        return collectionMappingPerKey
                 .keySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
                         key -> toMappedInstanceElements(
-                                elementCollectionMappingPerKey.get(key),
+                                elementMappingFunction,
+                                collectionMappingPerKey.get(key),
                                 instance,
-                                selectedCollectionElementsByCollectionIndex
+                                selectedCollectionObjectsByCollectionIndex
                         )
                 ));
     }
 
-    private Collection<Map<String, ?>> toMappedInstanceElements(
-            ElementCollectionMapping elementCollectionMapping,
-            InstanceElement instance,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+    private <T, R> Collection<R> toMappedInstanceElements(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            CollectionMapping<T> elementCollectionMapping,
+            InstanceObject instance,
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         return Stream.concat(
                         elementCollectionMapping.getElementMappings()
                                 .stream()
-                                .map(elementMapping -> toMappedInstanceElement(elementMapping, instance, selectedCollectionElementsByCollectionIndex)),
-                        elementCollectionMapping.getElementsFromCollectionMappings()
+                                .map(objectMapping -> elementMappingFunction.apply(objectMapping, instance, selectedCollectionObjectsByCollectionIndex)),
+                        elementCollectionMapping.getFromCollectionMappings()
                                 .stream()
-                                .map(elementsFromCollectionMapping -> toMappedInstanceElements(
-                                        elementsFromCollectionMapping.getElementMapping(),
+                                .map(fromCollectionMapping -> toMappedInstanceElements(
+                                        elementMappingFunction,
+                                        fromCollectionMapping.getElementMapping(),
                                         instance,
-                                        elementsFromCollectionMapping.getInstanceCollectionReferencesOrdered().toArray(new String[0]),
+                                        fromCollectionMapping.getInstanceCollectionReferencesOrdered().toArray(new String[0]),
                                         0,
-                                        selectedCollectionElementsByCollectionIndex
+                                        selectedCollectionObjectsByCollectionIndex
                                 ))
                                 .flatMap(Collection::stream)
                 )
                 .collect(Collectors.toList());
     }
 
-    private Collection<Map<String, ?>> toMappedInstanceElements(
-            ElementMapping elementMapping,
-            InstanceElement instance,
+    private <T, R> Collection<R> toMappedInstanceElements(
+            TriFunction<T, InstanceObject, InstanceObject[], R> elementMappingFunction,
+            T elementMapping,
+            InstanceObject instance,
             String[] instanceCollectionReferencesByCollectionIndex,
             int nextCollectionIndex,
-            InstanceElement[] selectedCollectionElementsByCollectionIndex
+            InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
         if (nextCollectionIndex == instanceCollectionReferencesByCollectionIndex.length) {
-            return List.of(toMappedInstanceElement(elementMapping, instance, selectedCollectionElementsByCollectionIndex));
+            return List.of(elementMappingFunction.apply(elementMapping, instance, selectedCollectionObjectsByCollectionIndex));
         }
 
-        Collection<InstanceElement> nextCollection = instanceReferenceService.getInstanceElementCollection(
+        Collection<InstanceObject> nextCollection = instanceReferenceService.getInstanceObjectCollection(
                 instanceCollectionReferencesByCollectionIndex[nextCollectionIndex],
-                instance.getElementCollectionPerKey(),
-                selectedCollectionElementsByCollectionIndex
+                instance.getObjectCollectionPerKey(),
+                selectedCollectionObjectsByCollectionIndex
         );
 
         return nextCollection
                 .stream()
-                .map(instanceElement -> {
-                    InstanceElement[] newselectedCollectionElementsByCollectionIndex =
-                            Arrays.copyOf(selectedCollectionElementsByCollectionIndex, selectedCollectionElementsByCollectionIndex.length + 1);
-                    newselectedCollectionElementsByCollectionIndex[selectedCollectionElementsByCollectionIndex.length] = instanceElement;
+                .map(instanceObject -> {
+                    InstanceObject[] newSelectedCollectionObjectsByCollectionIndex =
+                            Arrays.copyOf(selectedCollectionObjectsByCollectionIndex, selectedCollectionObjectsByCollectionIndex.length + 1);
+                    newSelectedCollectionObjectsByCollectionIndex[selectedCollectionObjectsByCollectionIndex.length] = instanceObject;
                     return toMappedInstanceElements(
+                            elementMappingFunction,
                             elementMapping,
                             instance,
                             instanceCollectionReferencesByCollectionIndex,
                             nextCollectionIndex + 1,
-                            newselectedCollectionElementsByCollectionIndex
+                            newSelectedCollectionObjectsByCollectionIndex
                     );
                 })
                 .flatMap(Collection::stream)

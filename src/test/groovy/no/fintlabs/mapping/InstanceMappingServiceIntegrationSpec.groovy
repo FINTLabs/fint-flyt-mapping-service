@@ -1,11 +1,10 @@
 package no.fintlabs.mapping
 
-
-import no.fintlabs.model.configuration.ElementCollectionMapping
-import no.fintlabs.model.configuration.ElementMapping
-import no.fintlabs.model.configuration.ElementsFromCollectionMapping
+import no.fintlabs.model.configuration.CollectionMapping
+import no.fintlabs.model.configuration.FromCollectionMapping
+import no.fintlabs.model.configuration.ObjectMapping
 import no.fintlabs.model.configuration.ValueMapping
-import no.fintlabs.model.instance.InstanceElement
+import no.fintlabs.model.instance.InstanceObject
 import spock.lang.Specification
 
 class InstanceMappingServiceIntegrationSpec extends Specification {
@@ -21,14 +20,14 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
 
     def 'should map instance based on mapping from configuration'() {
         given:
-        ElementMapping elementMapping = ElementMapping
+        ObjectMapping objectMapping = ObjectMapping
                 .builder()
                 .valueMappingPerKey(Map.of(
                         "kombinert tittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Livsmotto: \$if{tittel1}, \$if{tittel2}").build())
                 )
-                .elementMappingPerKey(Map.of(
+                .objectMappingPerKey(Map.of(
                         "adresse",
-                        ElementMapping
+                        ObjectMapping
                                 .builder()
                                 .valueMappingPerKey(Map.of(
                                         "mottakernavn", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$if{person2.navn}").build(),
@@ -36,45 +35,73 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 ))
                                 .build()
                 ))
-                .elementCollectionMappingPerKey(Map.of(
+                .objectCollectionMappingPerKey(Map.of(
                         "parter",
-                        ElementCollectionMapping
-                                .builder()
+                        CollectionMapping
+                                .<ObjectMapping> builder()
                                 .elementMappings(List.of(
-                                        ElementMapping
+                                        ObjectMapping
                                                 .builder()
                                                 .valueMappingPerKey(Map.of(
                                                         "navn", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$if{person1.navn}").build(),
                                                         "publikasjon", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Ole Brumm - Ukjent").build(),
                                                         "vedleggTittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Filopplastning_128920").build()
                                                 ))
-                                                .elementCollectionMappingPerKey(Map.of(
-                                                        "priser", ElementCollectionMapping.builder().build()
+                                                .objectCollectionMappingPerKey(Map.of(
+                                                        "priser", CollectionMapping.<ObjectMapping> builder().build()
                                                 ))
                                                 .build()
                                 ))
-                                .elementsFromCollectionMappings(List.of(
-                                        ElementsFromCollectionMapping
-                                                .builder()
+                                .fromCollectionMappings(List.of(
+                                        FromCollectionMapping
+                                                .<ObjectMapping> builder()
                                                 .instanceCollectionReferencesOrdered(List.of(
                                                         "\$if{saksparter}",
                                                         "\$icf{0}{publikasjoner}",
                                                         "\$if{dokumenter}"
                                                 ))
                                                 .elementMapping(
-                                                        ElementMapping
+                                                        ObjectMapping
                                                                 .builder()
                                                                 .valueMappingPerKey(Map.of(
                                                                         "navn", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{0}{navn}").build(),
                                                                         "publikasjon", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{1}{tittel} - \$icf{1}{utgiver}").build(),
                                                                         "vedleggTittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{2}{tittel}").build()
                                                                 ))
-                                                                .elementCollectionMappingPerKey(Map.of(
-                                                                        "priser",
-                                                                        ElementCollectionMapping
-                                                                                .builder()
+                                                                .valueCollectionMappingPerKey(Map.of(
+                                                                        "venner",
+                                                                        CollectionMapping
+                                                                                .<ValueMapping> builder()
                                                                                 .elementMappings(List.of(
-                                                                                        ElementMapping
+                                                                                        ValueMapping
+                                                                                                .builder()
+                                                                                                .type(ValueMapping.Type.STRING)
+                                                                                                .mappingString("Ole Brum")
+                                                                                                .build(),
+                                                                                ))
+                                                                                .fromCollectionMappings(List.of(
+                                                                                        FromCollectionMapping
+                                                                                                .<ValueMapping> builder()
+                                                                                                .instanceCollectionReferencesOrdered(List.of(
+                                                                                                        "\$if{saksparter}"
+                                                                                                ))
+                                                                                                .elementMapping(
+                                                                                                        ValueMapping
+                                                                                                                .builder()
+                                                                                                                .type(ValueMapping.Type.DYNAMIC_STRING)
+                                                                                                                .mappingString("\$icf{3}{navn}")
+                                                                                                                .build()
+                                                                                                )
+                                                                                                .build()
+                                                                                ))
+                                                                                .build()
+                                                                ))
+                                                                .objectCollectionMappingPerKey(Map.of(
+                                                                        "priser",
+                                                                        CollectionMapping
+                                                                                .<ObjectMapping> builder()
+                                                                                .elementMappings(List.of(
+                                                                                        ObjectMapping
                                                                                                 .builder()
                                                                                                 .valueMappingPerKey(Map.of(
                                                                                                         "pristittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("pris-\$icf{1}{tittel}-\$icf{2}{tittel}").build()
@@ -83,16 +110,16 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                                                                 ))
                                                                                 .build(),
                                                                         "dokumenter",
-                                                                        ElementCollectionMapping
-                                                                                .builder()
-                                                                                .elementsFromCollectionMappings(List.of(
-                                                                                        ElementsFromCollectionMapping
-                                                                                                .builder()
+                                                                        CollectionMapping
+                                                                                .<ObjectMapping> builder()
+                                                                                .fromCollectionMappings(List.of(
+                                                                                        FromCollectionMapping
+                                                                                                .<ObjectMapping> builder()
                                                                                                 .instanceCollectionReferencesOrdered(List.of(
                                                                                                         "\$if{dokumenter}"
                                                                                                 ))
                                                                                                 .elementMapping(
-                                                                                                        ElementMapping.builder()
+                                                                                                        ObjectMapping.builder()
                                                                                                                 .valueMappingPerKey(Map.of(
                                                                                                                         "tittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{3}{tittel}").build()
                                                                                                                 ))
@@ -110,7 +137,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                 ))
                 .build()
 
-        InstanceElement instance = InstanceElement
+        InstanceObject instance = InstanceObject
                 .builder()
                 .valuePerKey(Map.of(
                         "tittel1", "Hei på deg",
@@ -119,23 +146,23 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         "person2.navn", "Navn Navnesen",
                         "person2.by", "Oslo",
                 ))
-                .elementCollectionPerKey(Map.of(
+                .objectCollectionPerKey(Map.of(
                         "saksparter", List.of(
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Nora Noradottir"
                                 ))
-                                .elementCollectionPerKey(Map.of(
+                                .objectCollectionPerKey(Map.of(
                                         "publikasjoner", List.of(
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Min barnebok",
                                                         "utgiver", "Bokprodusenten"
                                                 ))
                                                 .build(),
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Ludde",
@@ -145,14 +172,14 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 )
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "navn", "Eirik Eiriksson"
                                 ))
-                                .elementCollectionPerKey(Map.of(
+                                .objectCollectionPerKey(Map.of(
                                         "publikasjoner", List.of(
-                                        InstanceElement
+                                        InstanceObject
                                                 .builder()
                                                 .valuePerKey(Map.of(
                                                         "tittel", "Den lille mulvarpen",
@@ -164,13 +191,13 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 .build()
                 ),
                         "dokumenter", List.of(
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "tittel", "Dokument1"
                                 ))
                                 .build(),
-                        InstanceElement
+                        InstanceObject
                                 .builder()
                                 .valuePerKey(Map.of(
                                         "tittel", "Dokument2"
@@ -181,8 +208,8 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                 .build()
 
         when:
-        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceElement(
-                elementMapping,
+        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceObject(
+                objectMapping,
                 instance
         )
 
@@ -208,42 +235,48 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument1")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument2")],
-                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")]
+                                "dokumenter", [Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")],
+                                "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         )
                 )
         )
