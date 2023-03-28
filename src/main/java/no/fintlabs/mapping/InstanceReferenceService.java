@@ -1,6 +1,7 @@
 package no.fintlabs.mapping;
 
-import lombok.Data;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.InstanceFieldNotFoundException;
 import no.fintlabs.model.instance.InstanceObject;
@@ -22,7 +23,10 @@ public class InstanceReferenceService {
     private static final Pattern instanceCollectionFieldReferencePattern = Pattern.compile("\\$icf" + curlyBracketsWrapper + curlyBracketsWrapper);
     private static final Pattern referencePattern = Pattern.compile(instanceFieldReferencePattern + "|" + instanceCollectionFieldReferencePattern);
 
-    @Data
+    @Getter
+    @Builder(toBuilder = true)
+    @Jacksonized
+    @EqualsAndHashCode
     private static class CollectionFieldKey {
         private final int collectionIndex;
         private final String collectionFieldKey;
