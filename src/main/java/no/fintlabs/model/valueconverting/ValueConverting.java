@@ -11,7 +11,7 @@ import java.util.Map;
 @Jacksonized
 public class ValueConverting {
     private final Long id;
-    private final String fromApplicationId;
+    private final Long fromApplicationId;
     private final String fromTypeId;
     private final String toApplicationId;
     private final String toTypeId;
