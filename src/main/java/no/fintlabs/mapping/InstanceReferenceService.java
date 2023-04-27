@@ -42,6 +42,21 @@ public class InstanceReferenceService {
         });
     }
 
+    public String getFirstInstanceValue(
+            String mappingString,
+            Map<String, String> instanceValuePerKey,
+            InstanceObject[] selectedCollectionObjectsPerKey
+    ) {
+        Matcher matcher = referencePattern.matcher(mappingString);
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Mapping string contains no valid instance field reference");
+        }
+        String matchedReference = matcher.group(0);
+        return instanceFieldReferencePattern.matcher(matchedReference).matches()
+                ? getInstanceValue(matchedReference, instanceValuePerKey)
+                : getCollectionFieldValue(matchedReference, selectedCollectionObjectsPerKey);
+    }
+
     private String getInstanceValue(String ifReference, Map<String, String> instanceValuePerKey) {
         String instanceValueKey = getInstanceFieldKey(ifReference);
         if (!instanceValuePerKey.containsKey(instanceValueKey)) {

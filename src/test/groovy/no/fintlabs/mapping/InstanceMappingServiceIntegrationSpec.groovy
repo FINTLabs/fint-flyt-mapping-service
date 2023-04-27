@@ -1,20 +1,32 @@
 package no.fintlabs.mapping
 
+import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService
 import no.fintlabs.model.configuration.CollectionMapping
 import no.fintlabs.model.configuration.FromCollectionMapping
 import no.fintlabs.model.configuration.ObjectMapping
 import no.fintlabs.model.configuration.ValueMapping
 import no.fintlabs.model.instance.InstanceObject
+import no.fintlabs.model.valueconverting.ValueConverting
 import spock.lang.Specification
 
 class InstanceMappingServiceIntegrationSpec extends Specification {
 
+    ValueConvertingRequestProducerService valueConvertingRequestProducerService
     InstanceMappingService instanceMappingService
 
     def setup() {
+        valueConvertingRequestProducerService = Mock(ValueConvertingRequestProducerService.class)
+        InstanceReferenceService instanceReferenceService = new InstanceReferenceService()
         instanceMappingService = new InstanceMappingService(
-                new InstanceReferenceService(),
-                new ValueMappingService(new InstanceReferenceService())
+                instanceReferenceService,
+                new ValueMappingService(
+                        new InstanceReferenceService(),
+                        new ValueConvertingService(
+                                valueConvertingRequestProducerService,
+                                instanceReferenceService,
+                                new ValueConvertingReferenceService()
+                        )
+                )
         )
     }
 
@@ -32,6 +44,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 .valueMappingPerKey(Map.of(
                                         "mottakernavn", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$if{person2.navn}").build(),
                                         "by", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$if{person2.by}").build(),
+                                        "byKortnavn", ValueMapping.builder().type(ValueMapping.Type.VALUE_CONVERTING).mappingString("\$vc{0}\$if{person2.by}").build()
                                 ))
                                 .build()
                 ))
@@ -65,6 +78,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                                                 .builder()
                                                                 .valueMappingPerKey(Map.of(
                                                                         "navn", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{0}{navn}").build(),
+                                                                        "publikasjonTittelFørsteBokstav", ValueMapping.builder().type(ValueMapping.Type.VALUE_CONVERTING).mappingString("\$vc{2}\$icf{1}{tittel}").build(),
                                                                         "publikasjon", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{1}{tittel} - \$icf{1}{utgiver}").build(),
                                                                         "vedleggTittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("\$icf{2}{tittel}").build()
                                                                 ))
@@ -214,13 +228,34 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
         )
 
         then:
+        1 * valueConvertingRequestProducerService.get(0) >> Optional.of(
+                ValueConverting
+                        .builder()
+                        .convertingMap(Map.of(
+                                "Trondheim", "TRD",
+                                "Oslo", "OSL"
+                        ))
+                        .build()
+        )
+
+        6 * valueConvertingRequestProducerService.get(2) >> Optional.of(
+                ValueConverting
+                        .builder()
+                        .convertingMap(Map.of(
+                                "Min barnebok", "M",
+                                "Ludde", "L",
+                                "Den lille mulvarpen", "D"
+                        ))
+                        .build()
+        )
 
         mappedInstance == Map.of(
                 "kombinert tittel", "Livsmotto: Hei på deg, her er jeg",
                 "adresse",
                 Map.of(
                         "mottakernavn", "Navn Navnesen",
-                        "by", "Oslo"
+                        "by", "Oslo",
+                        "byKortnavn", "OSL"
                 ),
                 "parter",
                 List.<Object> of(
@@ -232,6 +267,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "M",
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument1")],
@@ -240,6 +276,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "M",
                                 "publikasjon", "Min barnebok - Bokprodusenten",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Min barnebok-Dokument2")],
@@ -248,6 +285,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "L",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument1")],
@@ -256,6 +294,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "L",
                                 "publikasjon", "Ludde - Alletiders",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Ludde-Dokument2")],
@@ -264,6 +303,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
+                                "publikasjonTittelFørsteBokstav", "D",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument1",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument1")],
@@ -272,6 +312,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                         ),
                         Map.of(
                                 "navn", "Eirik Eiriksson",
+                                "publikasjonTittelFørsteBokstav", "D",
                                 "publikasjon", "Den lille mulvarpen - ABC",
                                 "vedleggTittel", "Dokument2",
                                 "priser", [Map.of("pristittel", "pris-Den lille mulvarpen-Dokument2")],

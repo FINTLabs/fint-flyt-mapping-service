@@ -11,9 +11,14 @@ import java.util.Map;
 public class ValueMappingService {
 
     private final InstanceReferenceService instanceReferenceService;
+    private final ValueConvertingService valueConvertingService;
 
-    public ValueMappingService(InstanceReferenceService instanceReferenceService) {
+    public ValueMappingService(
+            InstanceReferenceService instanceReferenceService,
+            ValueConvertingService valueConvertingService
+    ) {
         this.instanceReferenceService = instanceReferenceService;
+        this.valueConvertingService = valueConvertingService;
     }
 
     public String toValue(
@@ -26,6 +31,11 @@ public class ValueMappingService {
                 : switch (valueMapping.getType()) {
             case STRING, URL, BOOLEAN -> valueMapping.getMappingString();
             case FILE, DYNAMIC_STRING -> instanceReferenceService.replaceIfReferencesWithInstanceValues(
+                    valueMapping.getMappingString(),
+                    instanceValuePerKey,
+                    selectedCollectionObjectsPerKey
+            );
+            case VALUE_CONVERTING -> valueConvertingService.convertValue(
                     valueMapping.getMappingString(),
                     instanceValuePerKey,
                     selectedCollectionObjectsPerKey
