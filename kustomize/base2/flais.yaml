@@ -1,11 +1,11 @@
 apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
-  name: fint-flyt-egrunnerverv-instance-gateway
+  name: fint-flyt-mapping-service
   namespace: fintlabs-no
   labels:
-    app.kubernetes.io/name: fint-flyt-egrunnerverv-instance-gateway
-    app.kubernetes.io/instance: fint-flyt-egrunnerverv-instance-gateway_fintlabs_no
+    app.kubernetes.io/name: fint-flyt-mapping-service
+    app.kubernetes.io/instance: fint-flyt-mapping-service_fintlabs_no
     app.kubernetes.io/version: latest
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: fint-flyt
