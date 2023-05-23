@@ -24,7 +24,7 @@ public class InstanceReferenceService {
     private static final Pattern referencePattern = Pattern.compile(instanceFieldReferencePattern + "|" + instanceCollectionFieldReferencePattern);
 
     @Getter
-    @Builder(toBuilder = true)
+    @Builder
     @Jacksonized
     @EqualsAndHashCode
     private static class CollectionFieldKey {
