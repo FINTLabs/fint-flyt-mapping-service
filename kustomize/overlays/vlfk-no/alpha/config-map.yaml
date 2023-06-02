@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fint-flyt-mapping-service
-data:
-  fint.org-id: 'vlfk.no'
