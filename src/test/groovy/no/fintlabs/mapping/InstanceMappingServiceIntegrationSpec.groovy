@@ -35,7 +35,9 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
         ObjectMapping objectMapping = ObjectMapping
                 .builder()
                 .valueMappingPerKey(Map.of(
-                        "kombinert tittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Livsmotto: \$if{tittel1}, \$if{tittel2}").build())
+                        "kombinert tittel", ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("Livsmotto: \$if{tittel1}, \$if{tittel2}").build(),
+                        "ferdigstilt", ValueMapping.builder().type(ValueMapping.Type.BOOLEAN).mappingString("true").build()
+                )
                 )
                 .objectMappingPerKey(Map.of(
                         "adresse",
@@ -251,6 +253,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
 
         mappedInstance == Map.of(
                 "kombinert tittel", "Livsmotto: Hei på deg, her er jeg",
+                "ferdigstilt", true,
                 "adresse",
                 Map.of(
                         "mottakernavn", "Navn Navnesen",

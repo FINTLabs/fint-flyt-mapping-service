@@ -65,7 +65,7 @@ public class InstanceMappingService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<String, String> toMappedInstanceValuePerKey(
+    private Map<String, ?> toMappedInstanceValuePerKey(
             Map<String, ValueMapping> valueMappingPerKey,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
@@ -83,7 +83,7 @@ public class InstanceMappingService {
                 ));
     }
 
-    private String toMappedInstanceValue(
+    private Object toMappedInstanceValue(
             ValueMapping valueMapping,
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex

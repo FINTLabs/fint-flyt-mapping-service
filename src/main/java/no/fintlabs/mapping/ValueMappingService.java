@@ -21,7 +21,7 @@ public class ValueMappingService {
         this.valueConvertingService = valueConvertingService;
     }
 
-    public String toValue(
+    public Object toValue(
             ValueMapping valueMapping,
             Map<String, String> instanceValuePerKey,
             InstanceObject[] selectedCollectionObjectsPerKey
@@ -29,7 +29,8 @@ public class ValueMappingService {
         return valueMapping.getMappingString() == null
                 ? null
                 : switch (valueMapping.getType()) {
-            case STRING, URL, BOOLEAN -> valueMapping.getMappingString();
+            case BOOLEAN -> Boolean.parseBoolean(valueMapping.getMappingString());
+            case STRING, URL -> valueMapping.getMappingString();
             case FILE, DYNAMIC_STRING -> instanceReferenceService.replaceIfReferencesWithInstanceValues(
                     valueMapping.getMappingString(),
                     instanceValuePerKey,
