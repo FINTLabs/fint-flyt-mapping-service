@@ -68,13 +68,9 @@ jobs:
         #          - aks-beta-fint-2021-11-23
         #          - aks-api-fint-2022-02-08
         #          - aks-pwf-fint-2021-10-20
-#        include:
-#          - org: fintlabs-no
-#            cluster: aks-alpha-fint-2021-11-18
-#          - org: visma-com
-#            cluster: aks-alpha-fint-2021-11-18
-#          - org: visma-com
-#            cluster: aks-beta-fint-2021-11-23
+        include:
+          - org: fintlabs-no
+            cluster: aks-alpha-fint-2021-11-18
 
     steps:
       - name: Checkout repository
@@ -102,7 +98,7 @@ jobs:
           kustomizationPath: 'kustomize/overlays/${{ matrix.org }}/${{ steps.environment.outputs.result }}'
 
       - name: Set the target cluster
-        uses: azure/aks-set-context@v3.2
+        uses: azure/aks-set-context@v1
         with:
           creds: "${{ secrets[format('AKS_{0}_FINT_GITHUB', steps.environment.outputs.result)] }}"
           cluster-name: '${{ matrix.cluster }}'
