@@ -7,9 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  CLUSTER_API: aks-api-fint-2022-02-08
-  CLUSTER_BETA: aks-beta-fint-2021-11-23
-  CLUSTER_ALPHA: aks-alpha-fint-2021-11-18
 
 jobs:
   build-and-push:
@@ -60,11 +57,11 @@ jobs:
           - vlfk-no
           - trondelagfylke-no
         cluster:
-          - ${{ env.CLUSTER_API }}
-          - ${{ env.CLUSTER_BETA }}
+          - aks-api-fint-2022-02-08
+          - aks-beta-fint-2021-11-23
         include:
           - org: vlfk-no
-            cluster: ${{ env.CLUSTER_ALPHA }}
+            cluster: aks-alpha-fint-2021-11-18
             branches:
               - main
 
@@ -110,7 +107,7 @@ jobs:
           namespace: ${{ matrix.org }}
 
       - name: Deploy (vlfk-no to alpha)
-        if: github.ref == 'refs/heads/alpha' && matrix.org == 'vlfk-no' && matrix.cluster == env.CLUSTER_ALPHA
+        if: github.ref == 'refs/heads/alpha' && matrix.org == 'vlfk-no' && matrix.cluster == aks-alpha-fint-2021-11-18
         uses: azure/k8s-deploy@v4.9
         with:
           action: deploy
