@@ -101,7 +101,7 @@ jobs:
           kustomizationPath: 'kustomize/overlays/${{ matrix.org }}/${{ steps.environment.outputs.result }}'
 
       - name: Set the target cluster
-        uses: azure/aks-set-context@v1
+        uses: azure/aks-set-context@v3.2
         with:
           creds: "${{ secrets[format('AKS_{0}_FINT_GITHUB', steps.environment.outputs.result)] }}"
           cluster-name: '${{ matrix.cluster }}'
