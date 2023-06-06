@@ -53,24 +53,24 @@ jobs:
     strategy:
       matrix:
         org:
+          - viken-no
+          - vlfk-no
+          - trondelagfylke-no
           #          - agderfk-no
           #          - innlandetfylke-no
           #          - mrfylke-no
           #          - nfk-no
           #          - tffk-no
-          - trondelagfylke-no
           #          - ude-oslo-kommune-no
-          - viken-no
-          - vlfk-no
-        #          - vtfk-no
+          #          - vtfk-no
         cluster:
-          - aks-alpha-fint-2021-11-18
-        #          - aks-beta-fint-2021-11-23
-        #          - aks-api-fint-2022-02-08
-        #          - aks-pwf-fint-2021-10-20
-#        include:
-#          - org: fintlabs-no
-#            cluster: aks-alpha-fint-2021-11-18
+          #          - aks-alpha-fint-2021-11-18
+          - aks-beta-fint-2021-11-23
+          - aks-api-fint-2022-02-08
+          #          - aks-pwf-fint-2021-10-20
+        include:
+          - org: vlfk-no
+            cluster: aks-alpha-fint-2021-11-18
 
     steps:
       - name: Checkout repository
