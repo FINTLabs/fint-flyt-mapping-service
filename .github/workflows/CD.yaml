@@ -52,28 +52,28 @@ jobs:
       packages: write
     strategy:
       matrix:
-        org:
-          - viken-no
-          - vlfk-no
-          - trondelagfylke-no
-          #          - agderfk-no
-          #          - innlandetfylke-no
-          #          - mrfylke-no
-          #          - nfk-no
-          #          - tffk-no
-          #          - ude-oslo-kommune-no
-          #          - vtfk-no
-        cluster:
-          #          - aks-alpha-fint-2021-11-18
-          - aks-beta-fint-2021-11-23
-          - aks-api-fint-2022-02-08
-          #          - aks-pwf-fint-2021-10-20
+#        org:
+#          - viken-no
+#          - vlfk-no
+#          - trondelagfylke-no
+#        cluster:
+#          - aks-beta-fint-2021-11-23
+#          - aks-api-fint-2022-02-08
         include:
           - org: vlfk-no
             cluster: aks-alpha-fint-2021-11-18
             branches:
               - main
               - alpha
+          - org: vlfk-no
+            cluster: aks-beta-fint-2021-11-23
+            branches:
+              - main
+          - org: vlfk-no
+            cluster: aks-api-fint-2022-02-08
+            branches:
+              - main
+
 
     steps:
       - name: Checkout repository
