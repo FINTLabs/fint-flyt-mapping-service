@@ -71,6 +71,9 @@ jobs:
         include:
           - org: vlfk-no
             cluster: aks-alpha-fint-2021-11-18
+            branches:
+              - main
+              - alpha
 
     steps:
       - name: Checkout repository
