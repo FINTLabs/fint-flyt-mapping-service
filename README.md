@@ -1,5 +1,3 @@
 # FINT Skjema Mapping Service
 
 
-
-

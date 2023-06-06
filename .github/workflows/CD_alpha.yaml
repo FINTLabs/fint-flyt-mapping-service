@@ -1,8 +1,8 @@
-name: CD
+name: CD_alpha
 
 on:
   repository_dispatch:
-    types: [ trigger-cd ]
+    types: [ trigger-cd-alpha ]
 
 env:
   REGISTRY: ghcr.io
@@ -53,17 +53,9 @@ jobs:
     strategy:
       matrix:
         org:
-          - viken-no
           - vlfk-no
-          - trondelagfylke-no
         cluster:
-          - aks-beta-fint-2021-11-23
-          - aks-api-fint-2022-02-08
-        include:
-          - org: vlfk-no
-            cluster: aks-alpha-fint-2021-11-18
-            branches:
-              - main
+          - aks-alpha-fint-2021-11-18
 
     steps:
       - name: Checkout repository
