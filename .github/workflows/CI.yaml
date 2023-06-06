@@ -45,6 +45,7 @@ jobs:
           path: ./data/app.jar
 
       - name: Trigger CD
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/alpha'
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GITHUBACTION_TOKEN }}
