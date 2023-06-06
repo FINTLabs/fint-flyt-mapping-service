@@ -52,13 +52,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-#        org:
-#          - viken-no
-#          - vlfk-no
-#          - trondelagfylke-no
-#        cluster:
-#          - aks-beta-fint-2021-11-23
-#          - aks-api-fint-2022-02-08
+
         include:
           - org: vlfk-no
             cluster: aks-alpha-fint-2021-11-18
