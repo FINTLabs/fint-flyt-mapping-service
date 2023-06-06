@@ -77,7 +77,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.5.2
 
       - name: Get environment
         uses: actions/github-script@v6
@@ -101,7 +101,7 @@ jobs:
           kustomizationPath: 'kustomize/overlays/${{ matrix.org }}/${{ steps.environment.outputs.result }}'
 
       - name: Set the target cluster
-        uses: azure/aks-set-context@v3.2
+        uses: azure/aks-set-context@v1
         with:
           creds: "${{ secrets[format('AKS_{0}_FINT_GITHUB', steps.environment.outputs.result)] }}"
           cluster-name: '${{ matrix.cluster }}'
