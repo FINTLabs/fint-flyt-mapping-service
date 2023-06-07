@@ -52,18 +52,24 @@ jobs:
       packages: write
     strategy:
       matrix:
-        org:
-          - viken-no
-          - vlfk-no
-          - trondelagfylke-no
-        cluster:
-          - aks-api-fint-2022-02-08
-          - aks-beta-fint-2021-11-23
+#        org:
+#          - viken-no
+#          - vlfk-no
+#          - trondelagfylke-no
+#        cluster:
+#          - aks-api-fint-2022-02-08
+#          - aks-beta-fint-2021-11-23
+#          - aks-alpha-fint-2021-11-18
         include:
+          - org: viken-no
+            cluster: aks-beta-fint-2021-11-23
+
+          - org: vlfk-no
+            cluster: aks-api-fint-2022-02-08
+          - org: vlfk-no
+            cluster: aks-beta-fint-2021-11-23
           - org: vlfk-no
             cluster: aks-alpha-fint-2021-11-18
-            branches:
-              - main
 
     steps:
       - name: Checkout repository
