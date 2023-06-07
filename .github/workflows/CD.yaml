@@ -105,12 +105,3 @@ jobs:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: ${{ needs.build-and-push.outputs.tags }}
           namespace: ${{ matrix.org }}
-
-      - name: Deploy (vlfk-no to alpha)
-        if: github.ref == 'refs/heads/alpha' && matrix.org == 'vlfk-no' && matrix.cluster == 'aks-alpha-fint-2021-11-18'
-        uses: azure/k8s-deploy@v4.9
-        with:
-          action: deploy
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          images: ${{ needs.build-and-push.outputs.tags }}
-          namespace: ${{ matrix.org }}

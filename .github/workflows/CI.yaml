@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - alpha
 
 jobs:
   build:
@@ -51,11 +50,3 @@ jobs:
           token: ${{ secrets.GITHUBACTION_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-cd
-
-      - name: Trigger CD Alpha
-        if: github.ref == 'refs/heads/alpha'
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.GITHUBACTION_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: trigger-cd-alpha

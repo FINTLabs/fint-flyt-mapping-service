@@ -18,13 +18,9 @@ on:
         default: 'warning'
         type: choice
         options:
-          - vlfk-no
           - viken-no
-          - rogfk-no
-          - vtfk-no
+          - vlfk-no
           - trondelagfylke-no
-          - innlandet-no
-          - agderfk-no
 
 env:
   REGISTRY: ghcr.io
@@ -72,7 +68,7 @@ jobs:
           echo "Environment: ${{ steps.environment.outputs.result }}"
           echo "OrgId: $ORG"
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.5.2
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2.1.0
@@ -90,7 +86,7 @@ jobs:
             type=sha,enable=true,priority=100,prefix=sha-,suffix=,format=short
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
@@ -98,7 +94,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Bake manifests with Kustomize
-        uses: azure/k8s-bake@v2.2
+        uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'kustomize'
           kustomizationPath: 'kustomize/overlays/${{ env.ORG}}/${{ steps.environment.outputs.result }}'
@@ -112,7 +108,7 @@ jobs:
           resource-group: ${{ steps.rg.outputs.result }}
 
       - name: Deploy to ${{ env.CLUSTER_NAME }}
-        uses: azure/k8s-deploy@v4.4
+        uses: azure/k8s-deploy@v4.9
         with:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           images: |
