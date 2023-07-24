@@ -10,6 +10,7 @@ import no.fintlabs.model.valueconverting.ValueConverting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -232,10 +233,7 @@ class InstanceMappingServiceIntegrationTest {
                 ))
                 .build();
 
-//        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceObject(
-//                objectMapping,
-//                instance
-//        );
+
 
         // Given
         ValueConverting valueConverting1 = ValueConverting
@@ -277,83 +275,87 @@ class InstanceMappingServiceIntegrationTest {
             assertEquals(Optional.of(valueConverting2), result2);
         }
 
+        Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceObject(
+                objectMapping,
+                instance
+        );
 
-//        Map<String, ?> expectedInstance = Map.of(
-//                "kombinert tittel", "Livsmotto: Hei på deg, her er jeg",
-//                "ferdigstilt", true,
-//                "adresse",
-//                Map.of(
-//                        "mottakernavn", "Navn Navnesen",
-//                        "by", "Oslo",
-//                        "byKortnavn", "OSL"
-//                ),
-//                "parter",
-//                List.<Object>of(
-//                        Map.of(
-//                                "navn", "Arne Arnesen",
-//                                "publikasjon", "Ole Brumm - Ukjent",
-//                                "vedleggTittel", "Filopplastning_128920",
-//                                "priser", Collections.emptyList()
-//                        ),
-//                        Map.of(
-//                                "navn", "Nora Noradottir",
-//                                "publikasjonTittelFørsteBokstav", "M",
-//                                "publikasjon", "Min barnebok - Bokprodusenten",
-//                                "vedleggTittel", "Dokument1",
-//                                "priser", List.of(Map.of("pristittel", "pris-Min barnebok-Dokument1")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        ),
-//                        Map.of(
-//                                "navn", "Nora Noradottir",
-//                                "publikasjonTittelFørsteBokstav", "M",
-//                                "publikasjon", "Min barnebok - Bokprodusenten",
-//                                "vedleggTittel", "Dokument2",
-//                                "priser", List.of(Map.of("pristittel", "pris-Min barnebok-Dokument2")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        ),
-//                        Map.of(
-//                                "navn", "Nora Noradottir",
-//                                "publikasjonTittelFørsteBokstav", "L",
-//                                "publikasjon", "Ludde - Alletiders",
-//                                "vedleggTittel", "Dokument1",
-//                                "priser", List.of(Map.of("pristittel", "pris-Ludde-Dokument1")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        ),
-//                        Map.of(
-//                                "navn", "Nora Noradottir",
-//                                "publikasjonTittelFørsteBokstav", "L",
-//                                "publikasjon", "Ludde - Alletiders",
-//                                "vedleggTittel", "Dokument2",
-//                                "priser", List.of(Map.of("pristittel", "pris-Ludde-Dokument2")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        ),
-//                        Map.of(
-//                                "navn", "Eirik Eiriksson",
-//                                "publikasjonTittelFørsteBokstav", "D",
-//                                "publikasjon", "Den lille mulvarpen - ABC",
-//                                "vedleggTittel", "Dokument1",
-//                                "priser", List.of(Map.of("pristittel", "pris-Den lille mulvarpen-Dokument1")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        ),
-//                        Map.of(
-//                                "navn", "Eirik Eiriksson",
-//                                "publikasjonTittelFørsteBokstav", "D",
-//                                "publikasjon", "Den lille mulvarpen - ABC",
-//                                "vedleggTittel", "Dokument2",
-//                                "priser", List.of(Map.of("pristittel", "pris-Den lille mulvarpen-Dokument2")),
-//                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
-//                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
-//                        )
-//                )
-//        );
-//
-//
-//        assertEquals(mappedInstance, expectedInstance);
+        Map<String, ?> expectedInstance = Map.of(
+                "kombinert tittel", "Livsmotto: Hei på deg, her er jeg",
+                "ferdigstilt", true,
+                "adresse",
+                Map.of(
+                        "mottakernavn", "Navn Navnesen",
+                        "by", "Oslo",
+                        "byKortnavn", "OSL"
+                ),
+                "parter",
+                List.<Object>of(
+                        Map.of(
+                                "navn", "Arne Arnesen",
+                                "publikasjon", "Ole Brumm - Ukjent",
+                                "vedleggTittel", "Filopplastning_128920",
+                                "priser", Collections.emptyList()
+                        ),
+                        Map.of(
+                                "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "M",
+                                "publikasjon", "Min barnebok - Bokprodusenten",
+                                "vedleggTittel", "Dokument1",
+                                "priser", List.of(Map.of("pristittel", "pris-Min barnebok-Dokument1")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        ),
+                        Map.of(
+                                "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "M",
+                                "publikasjon", "Min barnebok - Bokprodusenten",
+                                "vedleggTittel", "Dokument2",
+                                "priser", List.of(Map.of("pristittel", "pris-Min barnebok-Dokument2")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        ),
+                        Map.of(
+                                "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "L",
+                                "publikasjon", "Ludde - Alletiders",
+                                "vedleggTittel", "Dokument1",
+                                "priser", List.of(Map.of("pristittel", "pris-Ludde-Dokument1")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        ),
+                        Map.of(
+                                "navn", "Nora Noradottir",
+                                "publikasjonTittelFørsteBokstav", "L",
+                                "publikasjon", "Ludde - Alletiders",
+                                "vedleggTittel", "Dokument2",
+                                "priser", List.of(Map.of("pristittel", "pris-Ludde-Dokument2")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        ),
+                        Map.of(
+                                "navn", "Eirik Eiriksson",
+                                "publikasjonTittelFørsteBokstav", "D",
+                                "publikasjon", "Den lille mulvarpen - ABC",
+                                "vedleggTittel", "Dokument1",
+                                "priser", List.of(Map.of("pristittel", "pris-Den lille mulvarpen-Dokument1")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        ),
+                        Map.of(
+                                "navn", "Eirik Eiriksson",
+                                "publikasjonTittelFørsteBokstav", "D",
+                                "publikasjon", "Den lille mulvarpen - ABC",
+                                "vedleggTittel", "Dokument2",
+                                "priser", List.of(Map.of("pristittel", "pris-Den lille mulvarpen-Dokument2")),
+                                "dokumenter", List.of(Map.of("tittel", "Dokument1"), Map.of("tittel", "Dokument2")),
+                                "venner", List.of("Ole Brum", "Nora Noradottir", "Eirik Eiriksson")
+                        )
+                )
+        );
+
+
+        assertEquals(mappedInstance, expectedInstance);
 
     }
 
