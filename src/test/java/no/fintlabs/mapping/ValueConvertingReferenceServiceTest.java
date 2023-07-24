@@ -10,7 +10,7 @@ public class ValueConvertingReferenceServiceTest {
     private final ValueConvertingReferenceService service = new ValueConvertingReferenceService();
 
     @Test
-    public void testGetFirstValueConverterId_ValidInput() {
+    void testGetFirstValueConverterId_ValidInput() {
         String mappingString = "something $vc{123} something";
 
         Long result = service.getFirstValueConverterId(mappingString);
@@ -19,7 +19,7 @@ public class ValueConvertingReferenceServiceTest {
     }
 
     @Test
-    public void testGetFirstValueConverterId_NoValueConvertingReference() {
+    void testGetFirstValueConverterId_NoValueConvertingReference() {
         String mappingString = "something {123} something";
 
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
@@ -33,7 +33,7 @@ public class ValueConvertingReferenceServiceTest {
     }
 
     @Test
-    public void testGetFirstValueConverterId_InvalidNumber() {
+    void testGetFirstValueConverterId_InvalidNumber() {
         String mappingString = "something $vc{abc} something";
 
         Exception exception = assertThrows(NumberFormatException.class, () ->

@@ -26,24 +26,24 @@ public class ValueMappingServiceTest {
     private ValueConvertingService valueConvertingService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testToValue_StringType() {
+    void testToValue_StringType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.STRING).mappingString("test_string").build();
         assertEquals("test_string", valueMappingService.toValue(valueMapping, Map.of(), new InstanceObject[0]));
     }
 
     @Test
-    public void testToValue_BooleanType() {
+    void testToValue_BooleanType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.BOOLEAN).mappingString("true").build();
         assertEquals(true, valueMappingService.toValue(valueMapping, Map.of(), new InstanceObject[0]));
     }
 
     @Test
-    public void testToValue_FileType() {
+    void testToValue_FileType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.FILE).mappingString("file_key").build();
         when(instanceReferenceService.replaceIfReferencesWithInstanceValues(eq("file_key"), any(), any())).thenReturn("test_value");
 
@@ -51,7 +51,7 @@ public class ValueMappingServiceTest {
     }
 
     @Test
-    public void testToValue_ValueConvertingType() {
+    void testToValue_ValueConvertingType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.VALUE_CONVERTING).mappingString("value_key").build();
         when(valueConvertingService.convertValue(eq("value_key"), any(), any())).thenReturn("test_value");
 
@@ -59,13 +59,13 @@ public class ValueMappingServiceTest {
     }
 
     @Test
-    public void testToValue_UrlType() {
+    void testToValue_UrlType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.URL).mappingString("https://example.com").build();
         assertEquals("https://example.com", valueMappingService.toValue(valueMapping, Map.of(), new InstanceObject[0]));
     }
 
     @Test
-    public void testToValue_DynamicStringType() {
+    void testToValue_DynamicStringType() {
         ValueMapping valueMapping = ValueMapping.builder().type(ValueMapping.Type.DYNAMIC_STRING).mappingString("dynamic_key").build();
         when(instanceReferenceService.replaceIfReferencesWithInstanceValues(eq("dynamic_key"), any(), any())).thenReturn("dynamic_value");
 

@@ -1,22 +1,25 @@
-package no.fintlabs.mapping
+package no.fintlabs.mapping;
 
-import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService
-import no.fintlabs.model.configuration.CollectionMapping
-import no.fintlabs.model.configuration.FromCollectionMapping
-import no.fintlabs.model.configuration.ObjectMapping
-import no.fintlabs.model.configuration.ValueMapping
-import no.fintlabs.model.instance.InstanceObject
-import no.fintlabs.model.valueconverting.ValueConverting
-import spock.lang.Specification
+import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService;
+import no.fintlabs.model.configuration.CollectionMapping;
+import no.fintlabs.model.configuration.FromCollectionMapping;
+import no.fintlabs.model.configuration.ObjectMapping;
+import no.fintlabs.model.configuration.ValueMapping;
+import no.fintlabs.model.instance.InstanceObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class InstanceMappingServiceIntegrationSpec extends Specification {
+class InstanceMappingServiceIntegrationTest {
 
-    ValueConvertingRequestProducerService valueConvertingRequestProducerService
-    InstanceMappingService instanceMappingService
+    private ValueConvertingRequestProducerService valueConvertingRequestProducerService;
+    private InstanceMappingService instanceMappingService;
 
-    def setup() {
-        valueConvertingRequestProducerService = Mock(ValueConvertingRequestProducerService.class)
-        InstanceReferenceService instanceReferenceService = new InstanceReferenceService()
+    @BeforeEach
+    void setup() {
+        valueConvertingRequestProducerService = mock(ValueConvertingRequestProducerService.class);
+        InstanceReferenceService instanceReferenceService = new InstanceReferenceService();
         instanceMappingService = new InstanceMappingService(
                 instanceReferenceService,
                 new ValueMappingService(
@@ -27,11 +30,11 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 new ValueConvertingReferenceService()
                         )
                 )
-        )
+        );
     }
 
-    def 'should map instance based on mapping from configuration'() {
-        given:
+    @Test
+    void shouldMapInstanceBasedOnMappingFromConfiguration() {
         ObjectMapping objectMapping = ObjectMapping
                 .builder()
                 .valueMappingPerKey(Map.of(
@@ -151,7 +154,7 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 ))
                                 .build()
                 ))
-                .build()
+                .build();
 
         InstanceObject instance = InstanceObject
                 .builder()
@@ -221,37 +224,39 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 .build()
                 )
                 ))
-                .build()
+                .build();
 
-        when:
+        when(valueConvertingRequestProducerService.get(0)).
+                thenReturn(Optional.of(
+                        ValueConverting
+                                .builder()
+                                .convertingMap(Map.of(
+                                        "Trondheim", "TRD",
+                                        "Oslo", "OSL"
+                                ))
+                                .build()
+                ));
+
+        verify(valueConvertingRequestProducerService, times(1)).get(0);
+
+        when(valueConvertingRequestProducerService.get(2))
+                .thenReturn(Optional.of(
+                        ValueConverting.builder()
+                                .convertingMap(Map.of(
+                                        "Min barnebok", "M",
+                                        "Ludde", "L",
+                                        "Den lille mulvarpen", "D"
+                                ))
+                ));
+
+        verify(valueConvertingRequestProducerService, times(6)).get(2);
+
         Map<String, ?> mappedInstance = instanceMappingService.toMappedInstanceObject(
                 objectMapping,
                 instance
-        )
+        );
 
-        then:
-        1 * valueConvertingRequestProducerService.get(0) >> Optional.of(
-                ValueConverting
-                        .builder()
-                        .convertingMap(Map.of(
-                                "Trondheim", "TRD",
-                                "Oslo", "OSL"
-                        ))
-                        .build()
-        )
-
-        6 * valueConvertingRequestProducerService.get(2) >> Optional.of(
-                ValueConverting
-                        .builder()
-                        .convertingMap(Map.of(
-                                "Min barnebok", "M",
-                                "Ludde", "L",
-                                "Den lille mulvarpen", "D"
-                        ))
-                        .build()
-        )
-
-        mappedInstance == Map.of(
+        Map<String, ?> expectedMappedInstance = Map.of(
                 "kombinert tittel", "Livsmotto: Hei på deg, her er jeg",
                 "ferdigstilt", true,
                 "adresse",
@@ -323,7 +328,10 @@ class InstanceMappingServiceIntegrationSpec extends Specification {
                                 "venner", ["Ole Brum", "Nora Noradottir", "Eirik Eiriksson"]
                         )
                 )
-        )
+        );
+
+        assertEquals(expectedMappedInstance, mappedInstance);
+
     }
 
 }

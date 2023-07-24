@@ -4,7 +4,7 @@ import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService;
 import no.fintlabs.model.instance.InstanceObject;
 import no.fintlabs.model.valueconverting.ValueConverting;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,13 +12,12 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 public class ValueConvertingServiceTest {
 
-    private final ValueConvertingRequestProducerService valueConvertingRequestProducerService = Mockito.mock(ValueConvertingRequestProducerService.class);
-    private final InstanceReferenceService instanceReferenceService = Mockito.mock(InstanceReferenceService.class);
-    private final ValueConvertingReferenceService valueConvertingReferenceService = Mockito.mock(ValueConvertingReferenceService.class);
+    private final ValueConvertingRequestProducerService valueConvertingRequestProducerService = mock(ValueConvertingRequestProducerService.class);
+    private final InstanceReferenceService instanceReferenceService = mock(InstanceReferenceService.class);
+    private final ValueConvertingReferenceService valueConvertingReferenceService = mock(ValueConvertingReferenceService.class);
     private final ValueConvertingService service = new ValueConvertingService(valueConvertingRequestProducerService, instanceReferenceService, valueConvertingReferenceService);
 
     @Test
@@ -44,7 +43,7 @@ public class ValueConvertingServiceTest {
     }
 
     @Test
-    public void testConvertValue_MissingValueConverting() {
+    void testConvertValue_MissingValueConverting() {
         String mappingString = "mapping string";
         Map<String, String> instanceValuePerKey = new HashMap<>();
         InstanceObject[] selectedCollectionObjectsPerKey = new InstanceObject[0];
@@ -66,7 +65,7 @@ public class ValueConvertingServiceTest {
     }
 
     @Test
-    public void testConvertValue_MissingInstanceValueInConvertingMap() {
+    void testConvertValue_MissingInstanceValueInConvertingMap() {
         String mappingString = "mapping string";
         Map<String, String> instanceValuePerKey = new HashMap<>();
         InstanceObject[] selectedCollectionObjectsPerKey = new InstanceObject[0];
