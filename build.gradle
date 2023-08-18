@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.10'
+    id 'org.springframework.boot' version '2.7.14'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
 }
@@ -40,9 +40,9 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'org.springframework.kafka:spring-kafka:2.8.3'
-    implementation 'no.fintlabs:fint-kafka:2.3.0'
-    implementation 'no.fintlabs:fint-flyt-kafka:2.3.0'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'no.fintlabs:fint-kafka:2.4.1'
+    implementation 'no.fintlabs:fint-flyt-kafka:2.4.2'
 
     implementation 'org.apache.commons:commons-lang3'
 
