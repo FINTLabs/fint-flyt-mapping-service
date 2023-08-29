@@ -22,4 +22,9 @@ public class InstanceObject {
     @Builder.Default
     private Map<String, Collection<InstanceObject>> objectCollectionPerKey = new HashMap<>();
 
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
+
 }
