@@ -32,4 +32,9 @@ public class ObjectMapping {
     private final Map<String, ObjectMapping> objectMappingPerKey;
     private final Map<String, CollectionMapping<ObjectMapping>> objectCollectionMappingPerKey;
 
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
+
 }

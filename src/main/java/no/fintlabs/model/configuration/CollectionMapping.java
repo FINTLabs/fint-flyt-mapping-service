@@ -27,4 +27,9 @@ public class CollectionMapping<T> {
 
     private final Collection<FromCollectionMapping<T>> fromCollectionMappings;
 
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
+
 }

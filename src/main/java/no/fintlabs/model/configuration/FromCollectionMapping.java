@@ -25,4 +25,9 @@ public class FromCollectionMapping<T> {
 
     private final T elementMapping;
 
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
+
 }
