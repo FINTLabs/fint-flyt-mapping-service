@@ -50,6 +50,23 @@ public class InstanceMappingErrorEventProducerService {
         );
     }
 
+    public void publishMissingValueConverterErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId) {
+        instanceFlowErrorEventProducer.send(
+                InstanceFlowErrorEventProducerRecord
+                        .builder()
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .errorCollection(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(ErrorCode.VALUE_CONVERTER_NOT_FOUND.getCode())
+                                .args(Map.of(
+                                        "valueConvertingId", String.valueOf(valueConvertingId)
+                                ))
+                                .build()))
+                        .build()
+        );
+    }
+
     public void publishGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
         publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.GENERAL_SYSTEM_ERROR);
     }
