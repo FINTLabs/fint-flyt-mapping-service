@@ -1,5 +1,9 @@
 package no.fintlabs;
 
+import no.fintlabs.exception.ConfigurationNotFoundException;
+import no.fintlabs.exception.InstanceFieldNotFoundException;
+import no.fintlabs.exception.ValueConvertingNotFoundException;
+import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
 import no.fintlabs.flyt.kafka.InstanceFlowErrorHandler;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeadersMapper;
@@ -26,9 +30,16 @@ public class InstanceMappingErrorHandlerService extends InstanceFlowErrorHandler
             instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
         }
         if (cause instanceof ValueConvertingNotFoundException) {
-            instanceMappingErrorEventProducerService.publishMissingValueConverterErrorEvent(
+            instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
                     instanceFlowHeaders,
                     ((ValueConvertingNotFoundException) cause).getValueConvertingId()
+            );
+        }
+        if (cause instanceof ValueConvertingKeyNotFoundException) {
+            instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
+                    instanceFlowHeaders,
+                    ((ValueConvertingKeyNotFoundException) cause).getValueConvertingId(),
+                    ((ValueConvertingKeyNotFoundException) cause).getValueConvertingKey()
             );
         }
         if (cause instanceof InstanceFieldNotFoundException) {

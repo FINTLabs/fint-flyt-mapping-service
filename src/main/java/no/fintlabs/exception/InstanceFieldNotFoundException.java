@@ -1,10 +1,10 @@
-package no.fintlabs;
+package no.fintlabs.exception;
 
 import lombok.Getter;
 
+@Getter
 public class InstanceFieldNotFoundException extends RuntimeException {
 
-    @Getter
     private final String instanceFieldKey;
 
     public InstanceFieldNotFoundException(String instanceFieldKey) {

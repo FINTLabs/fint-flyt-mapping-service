@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.exception;
 
 public class ConfigurationNotFoundException extends RuntimeException {
 

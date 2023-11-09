@@ -1,6 +1,7 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.ValueConvertingNotFoundException;
+import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
+import no.fintlabs.exception.ValueConvertingNotFoundException;
 import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService;
 import no.fintlabs.model.instance.InstanceObject;
 import no.fintlabs.model.valueconverting.ValueConverting;
@@ -40,7 +41,7 @@ public class ValueConvertingService {
                 .orElseThrow(() -> new ValueConvertingNotFoundException(valueConvertingId));
         Map<String, String> convertingMap = valueConverting.getConvertingMap();
         if (!convertingMap.containsKey(instanceValue)) {
-            throw new IllegalArgumentException("Value converting map does not contain key=" + instanceValue);
+            throw new ValueConvertingKeyNotFoundException(valueConvertingId, instanceValue);
         }
         return valueConverting.getConvertingMap().get(instanceValue);
     }

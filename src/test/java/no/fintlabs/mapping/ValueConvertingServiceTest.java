@@ -1,6 +1,7 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.ValueConvertingNotFoundException;
+import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
+import no.fintlabs.exception.ValueConvertingNotFoundException;
 import no.fintlabs.kafka.configuration.ValueConvertingRequestProducerService;
 import no.fintlabs.model.instance.InstanceObject;
 import no.fintlabs.model.valueconverting.ValueConverting;
@@ -81,11 +82,11 @@ public class ValueConvertingServiceTest {
         when(valueConvertingReferenceService.getFirstValueConverterId(mappingString)).thenReturn(valueConvertingId);
         when(valueConvertingRequestProducerService.get(valueConvertingId)).thenReturn(Optional.of(valueConverting));
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
+        Exception exception = assertThrows(ValueConvertingKeyNotFoundException.class, () ->
                 service.convertValue(mappingString, instanceValuePerKey, selectedCollectionObjectsPerKey)
         );
 
-        String expectedMessage = "Value converting map does not contain key=" + instanceValue;
+        String expectedMessage = "Value converting map does not contain key=" + instanceValue + " in value converter with id=" + valueConvertingId;
         String actualMessage = exception.getMessage();
 
         assertEquals(expectedMessage, actualMessage);

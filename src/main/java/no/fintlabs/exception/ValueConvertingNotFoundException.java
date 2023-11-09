@@ -1,10 +1,10 @@
-package no.fintlabs;
+package no.fintlabs.exception;
 
 import lombok.Getter;
 
+@Getter
 public class ValueConvertingNotFoundException extends RuntimeException {
 
-    @Getter
     private final Long valueConvertingId;
 
     public ValueConvertingNotFoundException(Long valueConvertingId) {

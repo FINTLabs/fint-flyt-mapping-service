@@ -50,7 +50,7 @@ public class InstanceMappingErrorEventProducerService {
         );
     }
 
-    public void publishMissingValueConverterErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId) {
+    public void publishMissingValueConvertingErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId) {
         instanceFlowErrorEventProducer.send(
                 InstanceFlowErrorEventProducerRecord
                         .builder()
@@ -58,9 +58,27 @@ public class InstanceMappingErrorEventProducerService {
                         .instanceFlowHeaders(instanceFlowHeaders)
                         .errorCollection(new ErrorCollection(Error
                                 .builder()
-                                .errorCode(ErrorCode.VALUE_CONVERTER_NOT_FOUND.getCode())
+                                .errorCode(ErrorCode.VALUE_CONVERTING_NOT_FOUND.getCode())
                                 .args(Map.of(
                                         "valueConvertingId", String.valueOf(valueConvertingId)
+                                ))
+                                .build()))
+                        .build()
+        );
+    }
+
+    public void publishMissingValueConvertingKeyErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId, String valueConvertingKey) {
+        instanceFlowErrorEventProducer.send(
+                InstanceFlowErrorEventProducerRecord
+                        .builder()
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .errorCollection(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(ErrorCode.VALUE_CONVERTING_KEY_NOT_FOUND.getCode())
+                                .args(Map.of(
+                                        "valueConvertingId", String.valueOf(valueConvertingId),
+                                        "valueConvertingKey", valueConvertingKey
                                 ))
                                 .build()))
                         .build()
