@@ -50,6 +50,41 @@ public class InstanceMappingErrorEventProducerService {
         );
     }
 
+    public void publishMissingValueConvertingErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId) {
+        instanceFlowErrorEventProducer.send(
+                InstanceFlowErrorEventProducerRecord
+                        .builder()
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .errorCollection(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(ErrorCode.VALUE_CONVERTING_NOT_FOUND.getCode())
+                                .args(Map.of(
+                                        "valueConvertingId", String.valueOf(valueConvertingId)
+                                ))
+                                .build()))
+                        .build()
+        );
+    }
+
+    public void publishMissingValueConvertingKeyErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId, String valueConvertingKey) {
+        instanceFlowErrorEventProducer.send(
+                InstanceFlowErrorEventProducerRecord
+                        .builder()
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .errorCollection(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(ErrorCode.VALUE_CONVERTING_KEY_NOT_FOUND.getCode())
+                                .args(Map.of(
+                                        "valueConvertingId", String.valueOf(valueConvertingId),
+                                        "valueConvertingKey", valueConvertingKey
+                                ))
+                                .build()))
+                        .build()
+        );
+    }
+
     public void publishGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
         publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.GENERAL_SYSTEM_ERROR);
     }

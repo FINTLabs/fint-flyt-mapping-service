@@ -3,7 +3,7 @@ package no.fintlabs.mapping;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.InstanceFieldNotFoundException;
+import no.fintlabs.exception.InstanceFieldNotFoundException;
 import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
 

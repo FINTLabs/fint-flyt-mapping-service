@@ -1,6 +1,6 @@
 package no.fintlabs.mapping;
 
-import no.fintlabs.InstanceFieldNotFoundException;
+import no.fintlabs.exception.InstanceFieldNotFoundException;
 import no.fintlabs.model.instance.InstanceObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

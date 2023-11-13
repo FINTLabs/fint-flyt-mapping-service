@@ -1,5 +1,7 @@
 package no.fintlabs;
 
+import no.fintlabs.exception.ConfigurationNotFoundException;
+import no.fintlabs.exception.InstanceFieldNotFoundException;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.error.InstanceMappingErrorEventProducerService;
 import org.junit.jupiter.api.BeforeEach;

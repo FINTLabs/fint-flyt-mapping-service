@@ -1,5 +1,6 @@
 package no.fintlabs;
 
+import no.fintlabs.exception.ConfigurationNotFoundException;
 import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.InstanceMappedEventProducerService;
