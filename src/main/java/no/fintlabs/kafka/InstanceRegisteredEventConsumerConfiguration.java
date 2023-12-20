@@ -1,7 +1,6 @@
 package no.fintlabs.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.InstanceMappingErrorHandlerService;
 import no.fintlabs.InstanceProcessingService;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
@@ -17,14 +16,11 @@ public class InstanceRegisteredEventConsumerConfiguration {
     @Bean
     public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRegisteredEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
-            InstanceProcessingService instanceProcessingService,
-            InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
+            InstanceProcessingService instanceProcessingService
     ) {
-        return instanceFlowEventConsumerFactoryService.createFactory(
+        return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 InstanceObject.class,
-                instanceProcessingService::process,
-                instanceMappingErrorHandlerService,
-                false
+                instanceProcessingService::process
         ).createContainer(
                 EventTopicNameParameters.builder()
                         .eventName("instance-registered")
@@ -35,14 +31,11 @@ public class InstanceRegisteredEventConsumerConfiguration {
     @Bean
     public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRequestedForRetryEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
-            InstanceProcessingService instanceProcessingService,
-            InstanceMappingErrorHandlerService instanceMappingErrorHandlerService
+            InstanceProcessingService instanceProcessingService
     ) {
-        return instanceFlowEventConsumerFactoryService.createFactory(
+        return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 InstanceObject.class,
-                instanceProcessingService::process,
-                instanceMappingErrorHandlerService,
-                false
+                instanceProcessingService::process
         ).createContainer(
                 EventTopicNameParameters.builder()
                         .eventName("instance-requested-for-retry")
