@@ -1,22 +1,22 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: fintlabs-no
+namespace: afk-no
 
 resources:
   - ../../../base
 
 commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_fintlabs_no
-  fintlabs.no/org-id: fintlabs.no
+  app.kubernetes.io/instance: fint-flyt-mapping-service_afk_no
+  fintlabs.no/org-id: afk.no
 
 patches:
   - patch: |-
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "fintlabs-no.flyt.*"
+        value: "afk-no.flyt.*"
       - op: replace
         path: "/spec/orgId"
-        value: "fintlabs.no"
+        value: "afk.no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
