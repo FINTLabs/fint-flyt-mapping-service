@@ -2,18 +2,20 @@ package no.fintlabs;
 
 import no.fintlabs.exception.ConfigurationNotFoundException;
 import no.fintlabs.exception.InstanceFieldNotFoundException;
+import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
+import no.fintlabs.exception.ValueConvertingNotFoundException;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.error.InstanceMappingErrorEventProducerService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
 class InstanceMappingErrorHandlerServiceTest {
 
@@ -46,6 +48,28 @@ class InstanceMappingErrorHandlerServiceTest {
         instanceMappingErrorHandlerService.handleInstanceFlowRecord(cause, instanceFlowHeaders, consumerRecord);
 
         verify(instanceMappingErrorEventProducerService).publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
+    }
+
+    @Test
+    void shouldHandleValueConvertingNotFoundException() {
+        Throwable cause = new ValueConvertingNotFoundException(3L);
+
+        instanceMappingErrorHandlerService.handleInstanceFlowRecord(cause, instanceFlowHeaders, consumerRecord);
+
+        verify(instanceMappingErrorEventProducerService).publishMissingValueConvertingErrorEvent(instanceFlowHeaders, 3L);
+    }
+
+    @Test
+    void shouldHandleValueConvertingKeyNotFoundException() {
+        Throwable cause = new ValueConvertingKeyNotFoundException(4L, "testKey");
+
+        instanceMappingErrorHandlerService.handleInstanceFlowRecord(cause, instanceFlowHeaders, consumerRecord);
+
+        verify(instanceMappingErrorEventProducerService).publishMissingValueConvertingKeyErrorEvent(
+                instanceFlowHeaders,
+                4L,
+                "testKey"
+        );
     }
 
     @Test
