@@ -1,15 +1,20 @@
 package no.fintlabs;
 
-import no.fintlabs.exception.ConfigurationNotFoundException;
+import no.fintlabs.exception.InstanceFieldNotFoundException;
+import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
+import no.fintlabs.exception.ValueConvertingNotFoundException;
 import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.InstanceMappedEventProducerService;
 import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.fintlabs.kafka.configuration.ConfigurationMappingRequestProducerService;
+import no.fintlabs.kafka.error.InstanceMappingErrorEventProducerService;
 import no.fintlabs.mapping.InstanceMappingService;
 import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class InstanceProcessingService {
@@ -18,39 +23,82 @@ public class InstanceProcessingService {
     private final InstanceMappedEventProducerService instanceMappedEventProducerService;
     private final ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService;
     private final InstanceMappingService instanceMappingService;
+    private final InstanceMappingErrorEventProducerService instanceMappingErrorEventProducerService;
 
     public InstanceProcessingService(
             ConfigurationMappingRequestProducerService configurationMappingRequestProducerService,
             InstanceMappedEventProducerService instanceMappedEventProducerService,
             ActiveConfigurationIdRequestProducerService activeConfigurationIdRequestProducerService,
-            InstanceMappingService instanceMappingService
+            InstanceMappingService instanceMappingService,
+            InstanceMappingErrorEventProducerService instanceMappingErrorEventProducerService
     ) {
         this.configurationMappingRequestProducerService = configurationMappingRequestProducerService;
         this.instanceMappedEventProducerService = instanceMappedEventProducerService;
         this.activeConfigurationIdRequestProducerService = activeConfigurationIdRequestProducerService;
         this.instanceMappingService = instanceMappingService;
+        this.instanceMappingErrorEventProducerService = instanceMappingErrorEventProducerService;
     }
 
     public void process(InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord) {
-        InstanceFlowHeaders consumerRecordInstanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders();
+        try {
+            Optional<Long> configurationIdOptional = this.activeConfigurationIdRequestProducerService.get(
+                    flytConsumerRecord.getInstanceFlowHeaders().getIntegrationId()
+            );
+            if (configurationIdOptional.isEmpty()) {
+                instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                        flytConsumerRecord.getInstanceFlowHeaders()
+                );
+                return;
+            }
+            Long configurationId = configurationIdOptional.get();
 
-        InstanceObject instance = flytConsumerRecord.getConsumerRecord().value();
+            Optional<ObjectMapping> objectMappingOptional = this.configurationMappingRequestProducerService.get(configurationId);
+            if (objectMappingOptional.isEmpty()) {
+                instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                        flytConsumerRecord.getInstanceFlowHeaders()
+                );
+                return;
+            }
+            ObjectMapping objectMapping = objectMappingOptional.get();
 
-        Long integrationId = consumerRecordInstanceFlowHeaders.getIntegrationId();
+            Object mappedInstance;
+            try {
+                mappedInstance = instanceMappingService.toMappedInstanceObject(
+                        objectMapping,
+                        flytConsumerRecord.getConsumerRecord().value()
+                );
+            } catch (ValueConvertingNotFoundException e) {
+                instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
+                        flytConsumerRecord.getInstanceFlowHeaders(),
+                        e.getValueConvertingId()
+                );
+                return;
+            } catch (ValueConvertingKeyNotFoundException e) {
+                instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
+                        flytConsumerRecord.getInstanceFlowHeaders(),
+                        e.getValueConvertingId(),
+                        e.getValueConvertingKey()
+                );
+                return;
+            } catch (InstanceFieldNotFoundException e) {
+                instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
+                        flytConsumerRecord.getInstanceFlowHeaders(),
+                        e.getInstanceFieldKey()
+                );
+                return;
+            }
 
-        Long configurationId = this.activeConfigurationIdRequestProducerService.get(integrationId)
-                .orElseThrow(() -> ConfigurationNotFoundException.fromIntegrationId(integrationId));
+            InstanceFlowHeaders instanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders().toBuilder()
+                    .configurationId(configurationId)
+                    .build();
 
-        ObjectMapping objectMapping = this.configurationMappingRequestProducerService.get(configurationId)
-                .orElseThrow(() -> ConfigurationNotFoundException.fromConfigurationId(configurationId));
+            instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
 
-        Object mappedInstance = this.instanceMappingService.toMappedInstanceObject(objectMapping, instance);
-
-        InstanceFlowHeaders instanceFlowHeaders = consumerRecordInstanceFlowHeaders.toBuilder()
-                .configurationId(configurationId)
-                .build();
-
-        instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
+        } catch (RuntimeException e) {
+            instanceMappingErrorEventProducerService.publishGeneralSystemErrorEvent(
+                    flytConsumerRecord.getInstanceFlowHeaders()
+            );
+        }
     }
 
 }
