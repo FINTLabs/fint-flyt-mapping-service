@@ -23,14 +23,14 @@ spec:
         topic: 'no-permission'
   env:
     - name: JAVA_TOOL_OPTIONS
-      value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+      value: '-XX:+ExitOnOutOfMemoryError -Xmx350M -Xms300M'
   resources:
     limits:
-      memory: "2048Mi"
-      cpu: "1"
-    requests:
       memory: "512Mi"
-      cpu: "100m"
+      cpu: "150m"
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
   restartPolicy: Always
   replicas: 1
   strategy:
