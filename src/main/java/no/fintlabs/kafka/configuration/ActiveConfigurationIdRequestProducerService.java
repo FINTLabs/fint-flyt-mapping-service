@@ -29,7 +29,7 @@ public class ActiveConfigurationIdRequestProducerService {
                 .resource("active-configuration-id")
                 .build();
 
-        replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
+        replyTopicService.ensureTopic(replyTopicNameParameters, 345600000, TopicCleanupPolicyParameters.builder().build());
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .resource("active-configuration-id")
