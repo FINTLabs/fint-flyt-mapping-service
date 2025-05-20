@@ -30,7 +30,7 @@ public class ValueConvertingRequestProducerService {
                 .resource("value-converting")
                 .build();
 
-        replyTopicService.ensureTopic(replyTopicNameParameters, 345600000, TopicCleanupPolicyParameters.builder().build());
+        replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .resource("value-converting")

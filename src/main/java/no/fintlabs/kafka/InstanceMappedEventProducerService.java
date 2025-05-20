@@ -23,7 +23,7 @@ public class InstanceMappedEventProducerService {
         this.eventTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("instance-mapped")
                 .build();
-        eventTopicService.ensureTopic(eventTopicNameParameters, 345600000);
+        eventTopicService.ensureTopic(eventTopicNameParameters, 0);
     }
 
     public void publish(InstanceFlowHeaders instanceFlowHeaders, Object mappedInstance) {

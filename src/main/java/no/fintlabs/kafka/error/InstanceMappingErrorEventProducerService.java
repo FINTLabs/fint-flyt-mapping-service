@@ -26,7 +26,7 @@ public class InstanceMappingErrorEventProducerService {
                 .errorEventName("instance-mapping-error")
                 .build();
 
-        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, 345600000);
+        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, 0);
     }
 
     public void publishConfigurationNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
