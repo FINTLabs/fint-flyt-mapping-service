@@ -7,6 +7,7 @@ import no.fintlabs.kafka.event.error.Error;
 import no.fintlabs.kafka.event.error.ErrorCollection;
 import no.fintlabs.kafka.event.error.topic.ErrorEventTopicNameParameters;
 import no.fintlabs.kafka.event.error.topic.ErrorEventTopicService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -19,14 +20,15 @@ public class InstanceMappingErrorEventProducerService {
 
     public InstanceMappingErrorEventProducerService(
             InstanceFlowErrorEventProducer instanceFlowErrorEventProducer,
-            ErrorEventTopicService errorEventTopicService
+            ErrorEventTopicService errorEventTopicService,
+            @Value("${fint.kafka.topic.instance-retention-ms}") long retentionMs
     ) {
         this.instanceFlowErrorEventProducer = instanceFlowErrorEventProducer;
         this.errorEventTopicNameParameters = ErrorEventTopicNameParameters.builder()
                 .errorEventName("instance-mapping-error")
                 .build();
 
-        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, 0);
+        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, retentionMs);
     }
 
     public void publishConfigurationNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
