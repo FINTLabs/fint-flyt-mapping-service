@@ -7,6 +7,7 @@ import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -18,12 +19,14 @@ public class InstanceMappedEventProducerService {
 
     public InstanceMappedEventProducerService(
             InstanceFlowEventProducerFactory instanceFlowEventProducerFactory,
-            EventTopicService eventTopicService) {
+            EventTopicService eventTopicService,
+            @Value("${fint.kafka.topic.instance-retention-ms}") long retentionMs
+    ) {
         this.instanceFlowEventProducer = instanceFlowEventProducerFactory.createProducer(Object.class);
         this.eventTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("instance-mapped")
                 .build();
-        eventTopicService.ensureTopic(eventTopicNameParameters, 0);
+        eventTopicService.ensureTopic(eventTopicNameParameters, retentionMs);
     }
 
     public void publish(InstanceFlowHeaders instanceFlowHeaders, Object mappedInstance) {
