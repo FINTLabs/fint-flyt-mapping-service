@@ -1,7 +1,7 @@
 fint:
   application-id: fint-flyt-mapping-service
   flyt:
-    instance-service:
+    mapping-service:
       kafka:
         topic:
           instance-processing-events-retention-time-ms: 345600000
