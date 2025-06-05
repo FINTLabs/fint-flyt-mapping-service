@@ -1,5 +1,10 @@
 fint:
   application-id: fint-flyt-mapping-service
+  flyt:
+    mapping-service:
+      kafka:
+        topic:
+          instance-processing-events-retention-time-ms: 345600000
   cache:
     defaultCacheEntryTimeToLiveMillis: 518400000
     defaultCacheHeapSize: 1000000
