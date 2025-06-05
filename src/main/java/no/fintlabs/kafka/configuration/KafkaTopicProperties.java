@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "fint.flyt.instance-service.kafka.topic")
+@ConfigurationProperties(prefix = "fint.flyt.mapping-service.kafka.topic")
 public class KafkaTopicProperties {
 
     private long instanceProcessingEventsRetentionTimeMs;
