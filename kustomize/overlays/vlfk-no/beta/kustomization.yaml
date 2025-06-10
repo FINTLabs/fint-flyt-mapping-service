@@ -18,9 +18,6 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "vlfk.no"
-      - op: replace
-        path: "/spec/probes/readiness/path"
-        value: "/beta/vlfk-no/actuator/health"
     target:
       kind: Application
       name: fint-flyt-mapping-service

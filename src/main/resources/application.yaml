@@ -11,4 +11,3 @@ spring:
     include:
       - flyt-kafka
       - flyt-logging
-      - flyt-resource-server
