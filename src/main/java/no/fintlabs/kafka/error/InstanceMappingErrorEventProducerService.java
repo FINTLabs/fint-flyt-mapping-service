@@ -3,6 +3,7 @@ package no.fintlabs.kafka.error;
 import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducer;
 import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducerRecord;
 import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
+import no.fintlabs.kafka.configuration.KafkaTopicProperties;
 import no.fintlabs.kafka.event.error.Error;
 import no.fintlabs.kafka.event.error.ErrorCollection;
 import no.fintlabs.kafka.event.error.topic.ErrorEventTopicNameParameters;
@@ -19,14 +20,15 @@ public class InstanceMappingErrorEventProducerService {
 
     public InstanceMappingErrorEventProducerService(
             InstanceFlowErrorEventProducer instanceFlowErrorEventProducer,
-            ErrorEventTopicService errorEventTopicService
+            ErrorEventTopicService errorEventTopicService,
+            KafkaTopicProperties kafkaTopicProperties
     ) {
         this.instanceFlowErrorEventProducer = instanceFlowErrorEventProducer;
         this.errorEventTopicNameParameters = ErrorEventTopicNameParameters.builder()
                 .errorEventName("instance-mapping-error")
                 .build();
 
-        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, 0);
+        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, kafkaTopicProperties.getInstanceProcessingEventsRetentionTimeMs());
     }
 
     public void publishConfigurationNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
