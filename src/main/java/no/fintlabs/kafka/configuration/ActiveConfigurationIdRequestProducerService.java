@@ -2,6 +2,7 @@ package no.fintlabs.kafka.configuration;
 
 import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.RequestProducer;
+import no.fintlabs.kafka.requestreply.RequestProducerConfiguration;
 import no.fintlabs.kafka.requestreply.RequestProducerFactory;
 import no.fintlabs.kafka.requestreply.RequestProducerRecord;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicNameParameters;
@@ -11,6 +12,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Service
@@ -39,7 +41,8 @@ public class ActiveConfigurationIdRequestProducerService {
         this.requestProducer = requestProducerFactory.createProducer(
                 replyTopicNameParameters,
                 Long.class,
-                Long.class
+                Long.class,
+                RequestProducerConfiguration.builder().defaultReplyTimeout(Duration.ofMinutes(2)).build()
         );
     }
 
