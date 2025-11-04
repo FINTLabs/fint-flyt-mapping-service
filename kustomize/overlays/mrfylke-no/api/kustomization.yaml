@@ -17,6 +17,9 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "mrfylke.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "mrfylke-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
