@@ -5,9 +5,10 @@ namespace: bfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_bfk_no
-  fintlabs.no/org-id: bfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-value-mapping-service_bfk_no
+      fintlabs.no/org-id: bfk.no
 
 patches:
   - patch: |-

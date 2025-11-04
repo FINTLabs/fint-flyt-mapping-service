@@ -5,9 +5,10 @@ namespace: nfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_nfk_no
-  fintlabs.no/org-id: nfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-value-mapping-service_nfk_no
+      fintlabs.no/org-id: nfk.no
 
 patches:
   - patch: |-
