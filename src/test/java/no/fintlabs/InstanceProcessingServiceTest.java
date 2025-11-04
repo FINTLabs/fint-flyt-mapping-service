@@ -3,8 +3,8 @@ package no.fintlabs;
 import no.fintlabs.exception.InstanceFieldNotFoundException;
 import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
 import no.fintlabs.exception.ValueConvertingNotFoundException;
-import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
+import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
+import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.InstanceMappedEventProducerService;
 import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.fintlabs.kafka.configuration.ConfigurationMappingRequestProducerService;
@@ -24,8 +24,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class InstanceProcessingServiceTest {
 

@@ -5,11 +5,14 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "fint.flyt.mapping-service.kafka.topic")
-public class KafkaTopicProperties {
+@ConfigurationProperties(prefix = "fint.flyt.mapping-service.kafka.request-reply")
+public class KafkaRequestReplyProperties {
 
-    private long instanceProcessingEventsRetentionTimeMs;
+    private Duration replyTimeout;
+    private Duration replyRetentionTime;
 }

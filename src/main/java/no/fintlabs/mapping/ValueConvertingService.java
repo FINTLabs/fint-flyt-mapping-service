@@ -43,7 +43,7 @@ public class ValueConvertingService {
         if (!convertingMap.containsKey(instanceValue)) {
             throw new ValueConvertingKeyNotFoundException(valueConvertingId, instanceValue);
         }
-        return valueConverting.getConvertingMap().get(instanceValue);
+        return convertingMap.get(instanceValue);
     }
 
 }

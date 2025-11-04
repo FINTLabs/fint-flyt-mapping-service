@@ -6,6 +6,7 @@ import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class ValueMappingService {
@@ -26,9 +27,7 @@ public class ValueMappingService {
             Map<String, String> instanceValuePerKey,
             InstanceObject[] selectedCollectionObjectsPerKey
     ) {
-        return valueMapping.getMappingString() == null
-                ? null
-                : switch (valueMapping.getType()) {
+        return Objects.isNull(valueMapping.getMappingString()) ? null : switch (valueMapping.getType()) {
             case BOOLEAN -> Boolean.parseBoolean(valueMapping.getMappingString());
             case STRING, URL -> valueMapping.getMappingString();
             case FILE, DYNAMIC_STRING -> instanceReferenceService.replaceIfReferencesWithInstanceValues(

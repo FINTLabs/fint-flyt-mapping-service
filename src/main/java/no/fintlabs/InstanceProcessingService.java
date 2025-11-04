@@ -3,8 +3,8 @@ package no.fintlabs;
 import no.fintlabs.exception.InstanceFieldNotFoundException;
 import no.fintlabs.exception.ValueConvertingKeyNotFoundException;
 import no.fintlabs.exception.ValueConvertingNotFoundException;
-import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
+import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
+import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.fintlabs.kafka.InstanceMappedEventProducerService;
 import no.fintlabs.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.fintlabs.kafka.configuration.ConfigurationMappingRequestProducerService;
@@ -13,8 +13,6 @@ import no.fintlabs.mapping.InstanceMappingService;
 import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.instance.InstanceObject;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class InstanceProcessingService {
@@ -41,25 +39,11 @@ public class InstanceProcessingService {
 
     public void process(InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord) {
         try {
-            Optional<Long> configurationIdOptional = this.activeConfigurationIdRequestProducerService.get(
-                    flytConsumerRecord.getInstanceFlowHeaders().getIntegrationId()
-            );
-            if (configurationIdOptional.isEmpty()) {
-                instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders()
-                );
-                return;
-            }
-            Long configurationId = configurationIdOptional.get();
+            Long configurationId = getConfigurationIdOrPublishError(flytConsumerRecord);
+            if (configurationId == null) return;
 
-            Optional<ObjectMapping> objectMappingOptional = this.configurationMappingRequestProducerService.get(configurationId);
-            if (objectMappingOptional.isEmpty()) {
-                instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders()
-                );
-                return;
-            }
-            ObjectMapping objectMapping = objectMappingOptional.get();
+            ObjectMapping objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId);
+            if (objectMapping == null) return;
 
             Object mappedInstance;
             try {
@@ -99,6 +83,30 @@ public class InstanceProcessingService {
                     flytConsumerRecord.getInstanceFlowHeaders()
             );
         }
+    }
+
+    private Long getConfigurationIdOrPublishError(InstanceFlowConsumerRecord<InstanceObject> record) {
+        var configurationIdOptional = activeConfigurationIdRequestProducerService.get(
+                record.getInstanceFlowHeaders().getIntegrationId()
+        );
+        if (configurationIdOptional.isEmpty()) {
+            instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                    record.getInstanceFlowHeaders()
+            );
+            return null;
+        }
+        return configurationIdOptional.get();
+    }
+
+    private ObjectMapping getObjectMappingOrPublishError(InstanceFlowConsumerRecord<InstanceObject> record, Long configurationId) {
+        var objectMappingOptional = configurationMappingRequestProducerService.get(configurationId);
+        if (objectMappingOptional.isEmpty()) {
+            instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                    record.getInstanceFlowHeaders()
+            );
+            return null;
+        }
+        return objectMappingOptional.get();
     }
 
 }

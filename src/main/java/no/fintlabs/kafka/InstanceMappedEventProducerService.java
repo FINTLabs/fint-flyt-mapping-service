@@ -1,39 +1,50 @@
 package no.fintlabs.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducer;
-import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerFactory;
-import no.fintlabs.flyt.kafka.event.InstanceFlowEventProducerRecord;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
-import no.fintlabs.kafka.configuration.KafkaTopicProperties;
-import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
-import no.fintlabs.kafka.event.topic.EventTopicService;
+import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowProducerRecord;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplate;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplateFactory;
+import no.fintlabs.kafka.configuration.KafkaEventProperties;
+import no.fintlabs.kafka.topic.EventTopicService;
+import no.fintlabs.kafka.topic.configuration.EventCleanupFrequency;
+import no.fintlabs.kafka.topic.configuration.EventTopicConfiguration;
+import no.fintlabs.kafka.topic.name.EventTopicNameParameters;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class InstanceMappedEventProducerService {
 
-    private final InstanceFlowEventProducer<Object> instanceFlowEventProducer;
     private final EventTopicNameParameters eventTopicNameParameters;
 
+    private static final int PARTITIONS = 1;
+    private final InstanceFlowTemplate<Object> instanceFlowTemplate;
+
     public InstanceMappedEventProducerService(
-            InstanceFlowEventProducerFactory instanceFlowEventProducerFactory,
+            InstanceFlowTemplateFactory instanceFlowTemplateFactory,
             EventTopicService eventTopicService,
-            KafkaTopicProperties kafkaTopicProperties
+            KafkaEventProperties kafkaEventProperties
     ) {
-        this.instanceFlowEventProducer = instanceFlowEventProducerFactory.createProducer(Object.class);
+        this.instanceFlowTemplate = instanceFlowTemplateFactory.createTemplate(Object.class);
         this.eventTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("instance-mapped")
                 .build();
-        eventTopicService.ensureTopic(eventTopicNameParameters, kafkaTopicProperties.getInstanceProcessingEventsRetentionTimeMs());
+        eventTopicService.createOrModifyTopic(eventTopicNameParameters, EventTopicConfiguration
+                .builder()
+                .partitions(PARTITIONS)
+                .retentionTime(kafkaEventProperties.getInstanceProcessingEventsRetentionTime())
+                .cleanupFrequency(EventCleanupFrequency.NORMAL)
+                .build()
+        );
     }
 
     public void publish(InstanceFlowHeaders instanceFlowHeaders, Object mappedInstance) {
-        instanceFlowEventProducer.send(
-                InstanceFlowEventProducerRecord.builder()
-                        .topicNameParameters(eventTopicNameParameters)
+        instanceFlowTemplate.send(
+                InstanceFlowProducerRecord
+                        .builder()
                         .instanceFlowHeaders(instanceFlowHeaders)
+                        .topicNameParameters(eventTopicNameParameters)
                         .value(mappedInstance)
                         .build()
         );

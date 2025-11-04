@@ -1,13 +1,16 @@
 package no.fintlabs.kafka.error;
 
-import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducer;
-import no.fintlabs.flyt.kafka.event.error.InstanceFlowErrorEventProducerRecord;
-import no.fintlabs.flyt.kafka.headers.InstanceFlowHeaders;
-import no.fintlabs.kafka.configuration.KafkaTopicProperties;
-import no.fintlabs.kafka.event.error.Error;
-import no.fintlabs.kafka.event.error.ErrorCollection;
-import no.fintlabs.kafka.event.error.topic.ErrorEventTopicNameParameters;
-import no.fintlabs.kafka.event.error.topic.ErrorEventTopicService;
+import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowProducerRecord;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplate;
+import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplateFactory;
+import no.fintlabs.kafka.configuration.KafkaEventProperties;
+import no.fintlabs.kafka.model.Error;
+import no.fintlabs.kafka.model.ErrorCollection;
+import no.fintlabs.kafka.topic.ErrorEventTopicService;
+import no.fintlabs.kafka.topic.configuration.EventCleanupFrequency;
+import no.fintlabs.kafka.topic.configuration.EventTopicConfiguration;
+import no.fintlabs.kafka.topic.name.ErrorEventTopicNameParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -15,20 +18,30 @@ import java.util.Map;
 @Service
 public class InstanceMappingErrorEventProducerService {
 
-    private final InstanceFlowErrorEventProducer instanceFlowErrorEventProducer;
     private final ErrorEventTopicNameParameters errorEventTopicNameParameters;
+    private final InstanceFlowTemplate<ErrorCollection> instanceFlowTemplate;
+
+    private static final int PARTITIONS = 1;
 
     public InstanceMappingErrorEventProducerService(
-            InstanceFlowErrorEventProducer instanceFlowErrorEventProducer,
+            InstanceFlowTemplateFactory instanceFlowTemplateFactory,
             ErrorEventTopicService errorEventTopicService,
-            KafkaTopicProperties kafkaTopicProperties
+            KafkaEventProperties kafkaEventProperties
     ) {
-        this.instanceFlowErrorEventProducer = instanceFlowErrorEventProducer;
+        this.instanceFlowTemplate = instanceFlowTemplateFactory.createTemplate(
+                ErrorCollection.class
+        );
         this.errorEventTopicNameParameters = ErrorEventTopicNameParameters.builder()
                 .errorEventName("instance-mapping-error")
                 .build();
 
-        errorEventTopicService.ensureTopic(errorEventTopicNameParameters, kafkaTopicProperties.getInstanceProcessingEventsRetentionTimeMs());
+        errorEventTopicService.createOrModifyTopic(errorEventTopicNameParameters, EventTopicConfiguration
+                .builder()
+                .partitions(PARTITIONS)
+                .retentionTime(kafkaEventProperties.getInstanceProcessingEventsRetentionTime())
+                .cleanupFrequency(EventCleanupFrequency.NORMAL)
+                .build()
+        );
     }
 
     public void publishConfigurationNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
@@ -36,68 +49,64 @@ public class InstanceMappingErrorEventProducerService {
     }
 
     public void publishInstanceFieldNotFoundErrorEvent(InstanceFlowHeaders instanceFlowHeaders, String instanceFieldKey) {
-        instanceFlowErrorEventProducer.send(
-                InstanceFlowErrorEventProducerRecord
-                        .builder()
-                        .topicNameParameters(errorEventTopicNameParameters)
-                        .instanceFlowHeaders(instanceFlowHeaders)
-                        .errorCollection(new ErrorCollection(Error
-                                .builder()
-                                .errorCode(ErrorCode.INSTANCE_FIELD_NOT_FOUND.getCode())
-                                .args(Map.of(
-                                        "instanceFieldKey", instanceFieldKey
-                                ))
-                                .build()))
-                        .build()
-        );
+        publishErrorEvent(
+                instanceFlowHeaders,
+                ErrorCode.INSTANCE_FIELD_NOT_FOUND,
+                Map.of(
+                        "instanceFieldKey", instanceFieldKey
+                ));
     }
 
     public void publishMissingValueConvertingErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId) {
-        instanceFlowErrorEventProducer.send(
-                InstanceFlowErrorEventProducerRecord
-                        .builder()
-                        .topicNameParameters(errorEventTopicNameParameters)
-                        .instanceFlowHeaders(instanceFlowHeaders)
-                        .errorCollection(new ErrorCollection(Error
-                                .builder()
-                                .errorCode(ErrorCode.VALUE_CONVERTING_NOT_FOUND.getCode())
-                                .args(Map.of(
-                                        "valueConvertingId", String.valueOf(valueConvertingId)
-                                ))
-                                .build()))
-                        .build()
-        );
+        publishErrorEvent(
+                instanceFlowHeaders,
+                ErrorCode.VALUE_CONVERTING_NOT_FOUND,
+                Map.of(
+                        "valueConvertingId", String.valueOf(valueConvertingId)
+                ));
     }
 
     public void publishMissingValueConvertingKeyErrorEvent(InstanceFlowHeaders instanceFlowHeaders, Long valueConvertingId, String valueConvertingKey) {
-        instanceFlowErrorEventProducer.send(
-                InstanceFlowErrorEventProducerRecord
-                        .builder()
-                        .topicNameParameters(errorEventTopicNameParameters)
-                        .instanceFlowHeaders(instanceFlowHeaders)
-                        .errorCollection(new ErrorCollection(Error
-                                .builder()
-                                .errorCode(ErrorCode.VALUE_CONVERTING_KEY_NOT_FOUND.getCode())
-                                .args(Map.of(
-                                        "valueConvertingId", String.valueOf(valueConvertingId),
-                                        "valueConvertingKey", valueConvertingKey
-                                ))
-                                .build()))
-                        .build()
-        );
+        publishErrorEvent(
+                instanceFlowHeaders,
+                ErrorCode.VALUE_CONVERTING_KEY_NOT_FOUND,
+                Map.of(
+                        "valueConvertingId", String.valueOf(valueConvertingId),
+                        "valueConvertingKey", valueConvertingKey
+                ));
     }
 
     public void publishGeneralSystemErrorEvent(InstanceFlowHeaders instanceFlowHeaders) {
         publishErrorEventWithASingleErrorCode(instanceFlowHeaders, ErrorCode.GENERAL_SYSTEM_ERROR);
     }
 
-    private void publishErrorEventWithASingleErrorCode(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode) {
-        instanceFlowErrorEventProducer.send(
-                InstanceFlowErrorEventProducerRecord
-                        .builder()
-                        .topicNameParameters(errorEventTopicNameParameters)
+
+    private void publishErrorEvent(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode, Map<String, String> args) {
+        instanceFlowTemplate.send(
+                InstanceFlowProducerRecord
+                        .<ErrorCollection>builder()
                         .instanceFlowHeaders(instanceFlowHeaders)
-                        .errorCollection(new ErrorCollection(Error.builder().errorCode(errorCode.getCode()).build()))
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .value(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(errorCode.getCode())
+                                .args(args)
+                                .build()))
+                        .build()
+        );
+    }
+
+
+    private void publishErrorEventWithASingleErrorCode(InstanceFlowHeaders instanceFlowHeaders, ErrorCode errorCode) {
+        instanceFlowTemplate.send(
+                InstanceFlowProducerRecord
+                        .<ErrorCollection>builder()
+                        .instanceFlowHeaders(instanceFlowHeaders)
+                        .topicNameParameters(errorEventTopicNameParameters)
+                        .value(new ErrorCollection(Error
+                                .builder()
+                                .errorCode(errorCode.getCode())
+                                .build()))
                         .build()
         );
     }

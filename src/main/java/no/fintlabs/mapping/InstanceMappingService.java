@@ -1,6 +1,7 @@
 package no.fintlabs.mapping;
 
 import no.fintlabs.model.configuration.CollectionMapping;
+import no.fintlabs.model.configuration.FromCollectionMapping;
 import no.fintlabs.model.configuration.ObjectMapping;
 import no.fintlabs.model.configuration.ValueMapping;
 import no.fintlabs.model.instance.InstanceObject;
@@ -8,7 +9,6 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,16 +70,11 @@ public class InstanceMappingService {
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return valueMappingPerKey
-                .keySet()
+        return valueMappingPerKey.entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                        Function.identity(),
-                        key -> toMappedInstanceValue(
-                                valueMappingPerKey.get(key),
-                                instance,
-                                selectedCollectionObjectsByCollectionIndex
-                        )
+                        Map.Entry::getKey,
+                        e -> toMappedInstanceValue(e.getValue(), instance, selectedCollectionObjectsByCollectionIndex)
                 ));
     }
 
@@ -100,16 +95,11 @@ public class InstanceMappingService {
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return objectMappingPerKey
-                .keySet()
+        return objectMappingPerKey.entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                        Function.identity(),
-                        key -> toMappedInstanceObject(
-                                objectMappingPerKey.get(key),
-                                instance,
-                                selectedCollectionObjectsByCollectionIndex
-                        )
+                        Map.Entry::getKey,
+                        e -> toMappedInstanceObject(e.getValue(), instance, selectedCollectionObjectsByCollectionIndex)
                 ));
     }
 
@@ -119,17 +109,11 @@ public class InstanceMappingService {
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
-        return collectionMappingPerKey
-                .keySet()
+        return collectionMappingPerKey.entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                        Function.identity(),
-                        key -> toMappedInstanceElements(
-                                elementMappingFunction,
-                                collectionMappingPerKey.get(key),
-                                instance,
-                                selectedCollectionObjectsByCollectionIndex
-                        )
+                        Map.Entry::getKey,
+                        e -> toMappedInstanceElements(elementMappingFunction, e.getValue(), instance, selectedCollectionObjectsByCollectionIndex)
                 ));
     }
 
@@ -139,12 +123,13 @@ public class InstanceMappingService {
             InstanceObject instance,
             InstanceObject[] selectedCollectionObjectsByCollectionIndex
     ) {
+        Collection<T> elementMappings = elementCollectionMapping.getElementMappings();
+        Collection<FromCollectionMapping<T>> fromCollectionMappings = elementCollectionMapping.getFromCollectionMappings();
+
         return Stream.concat(
-                        elementCollectionMapping.getElementMappings()
-                                .stream()
+                        elementMappings.stream()
                                 .map(objectMapping -> elementMappingFunction.apply(objectMapping, instance, selectedCollectionObjectsByCollectionIndex)),
-                        elementCollectionMapping.getFromCollectionMappings()
-                                .stream()
+                        fromCollectionMappings.stream()
                                 .map(fromCollectionMapping -> toMappedInstanceElements(
                                         elementMappingFunction,
                                         fromCollectionMapping.getElementMapping(),

@@ -1,14 +1,15 @@
 package no.fintlabs.kafka.configuration;
 
-import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
-import no.fintlabs.kafka.requestreply.RequestProducer;
-import no.fintlabs.kafka.requestreply.RequestProducerFactory;
+import no.fintlabs.kafka.consuming.ListenerConfiguration;
 import no.fintlabs.kafka.requestreply.RequestProducerRecord;
-import no.fintlabs.kafka.requestreply.topic.ReplyTopicNameParameters;
+import no.fintlabs.kafka.requestreply.RequestTemplate;
+import no.fintlabs.kafka.requestreply.RequestTemplateFactory;
 import no.fintlabs.kafka.requestreply.topic.ReplyTopicService;
-import no.fintlabs.kafka.requestreply.topic.RequestTopicNameParameters;
+import no.fintlabs.kafka.requestreply.topic.configuration.ReplyTopicConfiguration;
+import no.fintlabs.kafka.requestreply.topic.name.ReplyTopicNameParameters;
+import no.fintlabs.kafka.requestreply.topic.name.RequestTopicNameParameters;
+import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
 import no.fintlabs.model.configuration.ObjectMapping;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,38 +19,65 @@ import java.util.Optional;
 public class ConfigurationMappingRequestProducerService {
 
     private final RequestTopicNameParameters requestTopicNameParameters;
-    private final RequestProducer<Long, ObjectMapping> configurationRequestProducer;
+    private final RequestTemplate<Long, ObjectMapping> requestTemplate;
 
     public ConfigurationMappingRequestProducerService(
             @Value("${fint.kafka.application-id}") String applicationId,
-            RequestProducerFactory requestProducerFactory,
-            ReplyTopicService replyTopicService
+            RequestTemplateFactory requestTemplateFactory,
+            ReplyTopicService replyTopicService,
+            KafkaRequestReplyProperties kafkaRequestReplyProperties
     ) {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
+                .topicNamePrefixParameters(TopicNamePrefixParameters
+                        .builder()
+                        .orgIdApplicationDefault()
+                        .domainContextApplicationDefault()
+                        .build()
+                )
                 .applicationId(applicationId)
-                .resource("mapping")
+                .resourceName("mapping")
                 .build();
 
-        replyTopicService.ensureTopic(replyTopicNameParameters, 0, TopicCleanupPolicyParameters.builder().build());
+        replyTopicService.createOrModifyTopic(replyTopicNameParameters, ReplyTopicConfiguration
+                .builder()
+                .retentionTime(kafkaRequestReplyProperties.getReplyRetentionTime())
+                .build()
+        );
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
-                .resource("mapping")
+                .topicNamePrefixParameters(TopicNamePrefixParameters
+                        .builder()
+                        .orgIdApplicationDefault()
+                        .domainContextApplicationDefault()
+                        .build()
+                )
+                .resourceName("mapping")
                 .parameterName("configuration-id")
                 .build();
 
-        this.configurationRequestProducer = requestProducerFactory.createProducer(
+        this.requestTemplate = requestTemplateFactory.createTemplate(
                 replyTopicNameParameters,
                 Long.class,
-                ObjectMapping.class
+                ObjectMapping.class,
+                kafkaRequestReplyProperties.getReplyTimeout(),
+                ListenerConfiguration
+                        .stepBuilder()
+                        .groupIdApplicationDefault()
+                        .maxPollRecordsKafkaDefault()
+                        .maxPollIntervalKafkaDefault()
+                        .continueFromPreviousOffsetOnAssignment()
+                        .build()
         );
     }
 
     public Optional<ObjectMapping> get(Long configurationId) {
-        return configurationRequestProducer.requestAndReceive(
-                RequestProducerRecord.<Long>builder()
-                        .topicNameParameters(requestTopicNameParameters)
-                        .value(configurationId)
-                        .build()
-        ).map(ConsumerRecord::value);
+        return Optional.ofNullable(
+                requestTemplate.requestAndReceive(
+                        RequestProducerRecord.<Long>builder()
+                                .topicNameParameters(requestTopicNameParameters)
+                                .value(configurationId)
+                                .build()
+                ).value()
+        );
     }
 }
