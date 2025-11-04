@@ -11,6 +11,7 @@ import no.fintlabs.kafka.topic.ErrorEventTopicService;
 import no.fintlabs.kafka.topic.configuration.EventCleanupFrequency;
 import no.fintlabs.kafka.topic.configuration.EventTopicConfiguration;
 import no.fintlabs.kafka.topic.name.ErrorEventTopicNameParameters;
+import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -33,6 +34,13 @@ public class InstanceMappingErrorEventProducerService {
         );
         this.errorEventTopicNameParameters = ErrorEventTopicNameParameters.builder()
                 .errorEventName("instance-mapping-error")
+                .topicNamePrefixParameters(
+                        TopicNamePrefixParameters
+                                .builder()
+                                .orgIdApplicationDefault()
+                                .domainContextApplicationDefault()
+                                .build()
+                )
                 .build();
 
         errorEventTopicService.createOrModifyTopic(errorEventTopicNameParameters, EventTopicConfiguration

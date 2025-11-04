@@ -10,6 +10,7 @@ import no.fintlabs.kafka.topic.EventTopicService;
 import no.fintlabs.kafka.topic.configuration.EventCleanupFrequency;
 import no.fintlabs.kafka.topic.configuration.EventTopicConfiguration;
 import no.fintlabs.kafka.topic.name.EventTopicNameParameters;
+import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -29,6 +30,13 @@ public class InstanceMappedEventProducerService {
         this.instanceFlowTemplate = instanceFlowTemplateFactory.createTemplate(Object.class);
         this.eventTopicNameParameters = EventTopicNameParameters.builder()
                 .eventName("instance-mapped")
+                .topicNamePrefixParameters(
+                        TopicNamePrefixParameters
+                                .builder()
+                                .orgIdApplicationDefault()
+                                .domainContextApplicationDefault()
+                                .build()
+                )
                 .build();
         eventTopicService.createOrModifyTopic(eventTopicNameParameters, EventTopicConfiguration
                 .builder()
