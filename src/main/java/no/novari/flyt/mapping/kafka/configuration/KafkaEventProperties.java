@@ -10,7 +10,7 @@ import java.time.Duration;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "fint.flyt.mapping-service.kafka.event")
+@ConfigurationProperties(prefix = "novari.flyt.mapping-service.kafka.event")
 public class KafkaEventProperties {
 
     private Duration instanceProcessingEventsRetentionTime;

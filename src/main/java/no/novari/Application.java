@@ -1,12 +1,9 @@
-package no.novari.flyt.mapping;
+package no.novari;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {
-        "no.novari",
-        "no.fintlabs"
-})
+@SpringBootApplication
 public class Application {
 
     public static void main(String[] args) {

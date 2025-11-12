@@ -1,14 +1,14 @@
 package no.novari.flyt.mapping.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
 import no.novari.flyt.mapping.InstanceProcessingService;
-import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
-import no.fintlabs.kafka.consuming.ErrorHandlerConfiguration;
-import no.fintlabs.kafka.consuming.ErrorHandlerFactory;
-import no.fintlabs.kafka.consuming.ListenerConfiguration;
-import no.fintlabs.kafka.topic.name.EventTopicNameParameters;
-import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
+import no.novari.kafka.consuming.ErrorHandlerConfiguration;
+import no.novari.kafka.consuming.ErrorHandlerFactory;
+import no.novari.kafka.consuming.ListenerConfiguration;
+import no.novari.kafka.topic.name.EventTopicNameParameters;
+import no.novari.kafka.topic.name.TopicNamePrefixParameters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;

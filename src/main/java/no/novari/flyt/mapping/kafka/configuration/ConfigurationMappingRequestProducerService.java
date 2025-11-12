@@ -1,14 +1,14 @@
 package no.novari.flyt.mapping.kafka.configuration;
 
-import no.fintlabs.kafka.consuming.ListenerConfiguration;
-import no.fintlabs.kafka.requestreply.RequestProducerRecord;
-import no.fintlabs.kafka.requestreply.RequestTemplate;
-import no.fintlabs.kafka.requestreply.RequestTemplateFactory;
-import no.fintlabs.kafka.requestreply.topic.ReplyTopicService;
-import no.fintlabs.kafka.requestreply.topic.configuration.ReplyTopicConfiguration;
-import no.fintlabs.kafka.requestreply.topic.name.ReplyTopicNameParameters;
-import no.fintlabs.kafka.requestreply.topic.name.RequestTopicNameParameters;
-import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
+import no.novari.kafka.consuming.ListenerConfiguration;
+import no.novari.kafka.requestreply.RequestProducerRecord;
+import no.novari.kafka.requestreply.RequestTemplate;
+import no.novari.kafka.requestreply.RequestTemplateFactory;
+import no.novari.kafka.requestreply.topic.ReplyTopicService;
+import no.novari.kafka.requestreply.topic.configuration.ReplyTopicConfiguration;
+import no.novari.kafka.requestreply.topic.name.ReplyTopicNameParameters;
+import no.novari.kafka.requestreply.topic.name.RequestTopicNameParameters;
+import no.novari.kafka.topic.name.TopicNamePrefixParameters;
 import no.novari.flyt.mapping.model.configuration.ObjectMapping;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class ConfigurationMappingRequestProducerService {
     private final RequestTemplate<Long, ObjectMapping> requestTemplate;
 
     public ConfigurationMappingRequestProducerService(
-            @Value("${fint.kafka.application-id}") String applicationId,
+            @Value("${novari.kafka.application-id}") String applicationId,
             RequestTemplateFactory requestTemplateFactory,
             ReplyTopicService replyTopicService,
             KafkaRequestReplyProperties kafkaRequestReplyProperties

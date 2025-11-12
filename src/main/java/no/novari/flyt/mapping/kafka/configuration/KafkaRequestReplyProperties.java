@@ -10,7 +10,7 @@ import java.time.Duration;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "fint.flyt.mapping-service.kafka.request-reply")
+@ConfigurationProperties(prefix = "novari.flyt.mapping-service.kafka.request-reply")
 public class KafkaRequestReplyProperties {
 
     private Duration replyTimeout;

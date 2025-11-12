@@ -1,9 +1,15 @@
 fint:
   org-id: fintlabs.no
+
+novari:
   kafka:
     default-replicas: 1
+    topic:
+      org-id: fintlabs-no
+
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+
 server:
   port: 8088

@@ -1,17 +1,17 @@
 package no.novari.flyt.mapping;
 
+import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
+import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException;
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException;
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException;
-import no.fintlabs.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
-import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService;
 import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService;
 import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService;
-import no.novari.flyt.mapping.service.InstanceMappingService;
 import no.novari.flyt.mapping.model.configuration.ObjectMapping;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
+import no.novari.flyt.mapping.service.InstanceMappingService;
 import org.springframework.stereotype.Service;
 
 @Service

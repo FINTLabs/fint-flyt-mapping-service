@@ -1,17 +1,17 @@
 package no.novari.flyt.mapping.kafka.error;
 
-import no.fintlabs.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
-import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowProducerRecord;
-import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplate;
-import no.fintlabs.flyt.kafka.instanceflow.producing.InstanceFlowTemplateFactory;
+import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
+import no.novari.flyt.kafka.instanceflow.producing.InstanceFlowProducerRecord;
+import no.novari.flyt.kafka.instanceflow.producing.InstanceFlowTemplate;
+import no.novari.flyt.kafka.instanceflow.producing.InstanceFlowTemplateFactory;
 import no.novari.flyt.mapping.kafka.configuration.KafkaEventProperties;
-import no.fintlabs.kafka.model.Error;
-import no.fintlabs.kafka.model.ErrorCollection;
-import no.fintlabs.kafka.topic.ErrorEventTopicService;
-import no.fintlabs.kafka.topic.configuration.EventCleanupFrequency;
-import no.fintlabs.kafka.topic.configuration.EventTopicConfiguration;
-import no.fintlabs.kafka.topic.name.ErrorEventTopicNameParameters;
-import no.fintlabs.kafka.topic.name.TopicNamePrefixParameters;
+import no.novari.kafka.model.Error;
+import no.novari.kafka.model.ErrorCollection;
+import no.novari.kafka.topic.ErrorEventTopicService;
+import no.novari.kafka.topic.configuration.EventCleanupFrequency;
+import no.novari.kafka.topic.configuration.EventTopicConfiguration;
+import no.novari.kafka.topic.name.ErrorEventTopicNameParameters;
+import no.novari.kafka.topic.name.TopicNamePrefixParameters;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
