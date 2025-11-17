@@ -47,9 +47,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     implementation("org.springframework.kafka:spring-kafka")
-    implementation("no.novari:flyt-resource-server:6.0.0-rc-20")
-    implementation("no.novari:kafka:5.0.0-rc-16")
-    implementation("no.novari:flyt-kafka:4.0.0-rc-4")
+    implementation("no.novari:flyt-resource-server:6.0.0-rc-22")
+    implementation("no.novari:kafka:5.0.0-rc-18")
+    implementation("no.novari:flyt-kafka:4.0.0-rc-6")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
