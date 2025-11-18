@@ -32,14 +32,14 @@ public class InstanceMappedEventProducerService {
                 .eventName("instance-mapped")
                 .topicNamePrefixParameters(
                         TopicNamePrefixParameters
-                                .builder()
+                                .stepBuilder()
                                 .orgIdApplicationDefault()
                                 .domainContextApplicationDefault()
                                 .build()
                 )
                 .build();
         eventTopicService.createOrModifyTopic(eventTopicNameParameters, EventTopicConfiguration
-                .builder()
+                .stepBuilder()
                 .partitions(PARTITIONS)
                 .retentionTime(kafkaEventProperties.getInstanceProcessingEventsRetentionTime())
                 .cleanupFrequency(EventCleanupFrequency.NORMAL)

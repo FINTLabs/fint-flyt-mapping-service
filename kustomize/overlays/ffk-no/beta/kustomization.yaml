@@ -7,7 +7,7 @@ resources:
 
 labels:
   - pairs:
-      app.kubernetes.io/instance: fint-flyt-value-mapping-service_ffk_no
+      app.kubernetes.io/instance: fint-flyt-mapping-service_ffk_no
       fintlabs.no/org-id: ffk.no
 
 patches:
@@ -18,10 +18,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "ffk.no"
-      - op: replace
-        path: "/spec/env/1/value"
-        value: "ffk-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.kafka.topic.orgId"
+          value: "ffk-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
-

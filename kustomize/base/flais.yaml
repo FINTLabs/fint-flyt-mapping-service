@@ -24,8 +24,6 @@ spec:
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx450M -Xms350M'
-    - name: novari.kafka.topic.orgId
-      value: fintlabs-no
   resources:
     limits:
       memory: "512Mi"

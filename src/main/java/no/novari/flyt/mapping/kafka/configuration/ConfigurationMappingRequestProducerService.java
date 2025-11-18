@@ -29,7 +29,7 @@ public class ConfigurationMappingRequestProducerService {
     ) {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()
@@ -46,7 +46,7 @@ public class ConfigurationMappingRequestProducerService {
 
         this.requestTopicNameParameters = RequestTopicNameParameters.builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()

@@ -45,7 +45,7 @@ public class InstanceRegisteredEventConsumerConfiguration {
         ).createContainer(EventTopicNameParameters
                 .builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()

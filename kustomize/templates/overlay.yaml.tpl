@@ -1,28 +1,28 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: mrfylke-no
+namespace: $NAMESPACE
 
 resources:
   - ../../../base
 
 labels:
   - pairs:
-      app.kubernetes.io/instance: fint-flyt-mapping-service_mrfylke_no
-      fintlabs.no/org-id: mrfylke.no
+      app.kubernetes.io/instance: $APP_INSTANCE
+      fintlabs.no/org-id: $ORG_ID
 
 patches:
   - patch: |-
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "mrfylke-no.flyt.*"
+        value: "$KAFKA_TOPIC"
       - op: replace
         path: "/spec/orgId"
-        value: "mrfylke.no"
+        value: "$ORG_ID"
       - op: add
         path: "/spec/env/-"
         value:
           name: "novari.kafka.topic.orgId"
-          value: "mrfylke-no"
+          value: "$FINT_KAFKA_TOPIC_ORGID"
     target:
       kind: Application
       name: fint-flyt-mapping-service

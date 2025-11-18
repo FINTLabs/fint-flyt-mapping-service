@@ -36,7 +36,7 @@ public class InstanceMappingErrorEventProducerService {
                 .errorEventName("instance-mapping-error")
                 .topicNamePrefixParameters(
                         TopicNamePrefixParameters
-                                .builder()
+                                .stepBuilder()
                                 .orgIdApplicationDefault()
                                 .domainContextApplicationDefault()
                                 .build()
@@ -44,7 +44,7 @@ public class InstanceMappingErrorEventProducerService {
                 .build();
 
         errorEventTopicService.createOrModifyTopic(errorEventTopicNameParameters, EventTopicConfiguration
-                .builder()
+                .stepBuilder()
                 .partitions(PARTITIONS)
                 .retentionTime(kafkaEventProperties.getInstanceProcessingEventsRetentionTime())
                 .cleanupFrequency(EventCleanupFrequency.NORMAL)

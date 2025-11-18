@@ -28,7 +28,7 @@ public class ActiveConfigurationIdRequestProducerService {
     ) {
         ReplyTopicNameParameters replyTopicNameParameters = ReplyTopicNameParameters.builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()
@@ -46,7 +46,7 @@ public class ActiveConfigurationIdRequestProducerService {
         this.requestTopicNameParameters = RequestTopicNameParameters
                 .builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
-                        .builder()
+                        .stepBuilder()
                         .orgIdApplicationDefault()
                         .domainContextApplicationDefault()
                         .build()

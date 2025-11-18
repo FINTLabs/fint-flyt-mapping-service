@@ -7,7 +7,7 @@ resources:
 
 labels:
   - pairs:
-      app.kubernetes.io/instance: fint-flyt-value-mapping-service_telemarkfylke_no
+      app.kubernetes.io/instance: fint-flyt-mapping-service_telemarkfylke_no
       fintlabs.no/org-id: telemarkfylke.no
 
 patches:
@@ -18,10 +18,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "telemarkfylke.no"
-      - op: replace
-        path: "/spec/env/1/value"
-        value: "telemarkfylke-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.kafka.topic.orgId"
+          value: "telemarkfylke-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
-
