@@ -7,8 +7,7 @@ plugins {
 
 group = "no.novari"
 version = "0.0.1-SNAPSHOT"
-
-val apiVersion: String by project
+var fintModelVersion = "3.21.10"
 
 java {
     toolchain {
@@ -30,9 +29,11 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
-    implementation("no.fint:fint-arkiv-resource-model-java:$apiVersion")
+    implementation("org.springframework.kafka:spring-kafka")
+
     implementation("org.apache.commons:commons-lang3:3.18.0")
 
     compileOnly("org.projectlombok:lombok")
@@ -40,10 +41,10 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
 
-    implementation("org.springframework.kafka:spring-kafka")
-    implementation("no.novari:flyt-resource-server:6.0.0-rc-25")
-    implementation("no.novari:kafka:5.0.0-rc-19")
-    implementation("no.novari:flyt-kafka:4.0.0-rc-7")
+    implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
+    implementation("no.novari:flyt-resource-server:6.0.0-rc-26")
+    implementation("no.novari:kafka:5.0.0-rc-20")
+    implementation("no.novari:flyt-kafka:4.0.0-rc-8")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")

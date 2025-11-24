@@ -1,6 +1,8 @@
 package no.novari.flyt.mapping.service;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException;

@@ -1,5 +1,6 @@
 package no.novari.flyt.mapping.kafka.configuration;
 
+import no.novari.flyt.mapping.model.valueconverting.ValueConverting;
 import no.novari.kafka.consuming.ListenerConfiguration;
 import no.novari.kafka.requestreply.RequestProducerRecord;
 import no.novari.kafka.requestreply.RequestTemplate;
@@ -9,7 +10,6 @@ import no.novari.kafka.requestreply.topic.configuration.ReplyTopicConfiguration;
 import no.novari.kafka.requestreply.topic.name.ReplyTopicNameParameters;
 import no.novari.kafka.requestreply.topic.name.RequestTopicNameParameters;
 import no.novari.kafka.topic.name.TopicNamePrefixParameters;
-import no.novari.flyt.mapping.model.valueconverting.ValueConverting;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

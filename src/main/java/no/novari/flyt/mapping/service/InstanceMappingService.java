@@ -8,7 +8,11 @@ import no.novari.flyt.mapping.model.instance.InstanceObject;
 import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

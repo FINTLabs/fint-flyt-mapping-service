@@ -1,11 +1,11 @@
 package no.novari.flyt.mapping.model.configuration;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

@@ -6,7 +6,6 @@ import no.novari.flyt.mapping.kafka.configuration.ValueConvertingRequestProducer
 import no.novari.flyt.mapping.model.instance.InstanceObject;
 import no.novari.flyt.mapping.model.valueconverting.ValueConverting;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +13,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ValueConvertingServiceTest {
 
