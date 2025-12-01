@@ -34,7 +34,6 @@ dependencies {
 
     implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
     implementation("no.novari:flyt-resource-server:6.0.0")
-    implementation("no.novari:kafka:5.0.0")
     implementation("no.novari:flyt-kafka:4.0.0")
 
     implementation("org.apache.commons:commons-lang3:3.18.0")
