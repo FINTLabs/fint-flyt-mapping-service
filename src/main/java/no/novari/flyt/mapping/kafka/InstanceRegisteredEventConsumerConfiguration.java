@@ -33,7 +33,7 @@ public class InstanceRegisteredEventConsumerConfiguration {
                         .groupIdApplicationDefault()
                         .maxPollRecordsKafkaDefault()
                         .maxPollIntervalKafkaDefault()
-                        .seekToBeginningOnAssignment()
+                        .continueFromPreviousOffsetOnAssignment()
                         .build(),
                 errorHandlerFactory.createErrorHandler(
                         ErrorHandlerConfiguration
