@@ -5,9 +5,10 @@ namespace: bfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_bfk_no
-  fintlabs.no/org-id: bfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-mapping-service_bfk_no
+      fintlabs.no/org-id: bfk.no
 
 patches:
   - patch: |-
@@ -17,7 +18,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "bfk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.kafka.topic.orgId"
+          value: "bfk-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
-

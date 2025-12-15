@@ -1,18 +1,26 @@
 fint:
   application-id: fint-flyt-mapping-service
+
+novari:
   flyt:
     mapping-service:
       kafka:
-        topic:
-          instance-processing-events-retention-time-ms: 345600000
-  cache:
-    defaultCacheEntryTimeToLiveMillis: 518400000
-    defaultCacheHeapSize: 1000000
+        request-reply:
+          reply-timeout: "5s"
+          reply-retention-time: "5m"
+        event:
+          instance-processing-events-retention-time: "4d"
+
 logging:
   level:
-    no.fintlabs.cache.ehcache.FintEhCacheEventLogger: WARN
+    no.novari.cache.ehcache.FintEhCacheEventLogger: WARN
+
 spring:
   profiles:
     include:
       - flyt-kafka
       - flyt-logging
+
+  output:
+    ansi:
+      enabled: always

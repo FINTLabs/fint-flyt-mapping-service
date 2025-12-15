@@ -5,9 +5,10 @@ namespace: agderfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_agderfk_no
-  fintlabs.no/org-id: agderfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-mapping-service_agderfk_no
+      fintlabs.no/org-id: agderfk.no
 
 patches:
   - patch: |-
@@ -17,7 +18,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "agderfk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.kafka.topic.orgId"
+          value: "agderfk-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
-

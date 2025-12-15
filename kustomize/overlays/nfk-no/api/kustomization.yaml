@@ -5,9 +5,10 @@ namespace: nfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-mapping-service_nfk_no
-  fintlabs.no/org-id: nfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-mapping-service_nfk_no
+      fintlabs.no/org-id: nfk.no
 
 patches:
   - patch: |-
@@ -17,7 +18,11 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "nfk.no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.kafka.topic.orgId"
+          value: "nfk-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
-
