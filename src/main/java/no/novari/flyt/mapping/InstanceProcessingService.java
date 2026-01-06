@@ -2,9 +2,6 @@ package no.novari.flyt.mapping;
 
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
-import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException;
-import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException;
-import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException;
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService;
 import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService;
 import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService;
@@ -38,51 +35,22 @@ public class InstanceProcessingService {
     }
 
     public void process(InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord) {
-        try {
-            Long configurationId = getConfigurationIdOrPublishError(flytConsumerRecord);
-            if (configurationId == null) return;
+        Long configurationId = getConfigurationIdOrPublishError(flytConsumerRecord);
+        if (configurationId == null) return;
 
-            ObjectMapping objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId);
-            if (objectMapping == null) return;
+        ObjectMapping objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId);
+        if (objectMapping == null) return;
 
-            Object mappedInstance;
-            try {
-                mappedInstance = instanceMappingService.toMappedInstanceObject(
-                        objectMapping,
-                        flytConsumerRecord.getConsumerRecord().value()
-                );
-            } catch (ValueConvertingNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getValueConvertingId()
-                );
-                return;
-            } catch (ValueConvertingKeyNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getValueConvertingId(),
-                        e.getValueConvertingKey()
-                );
-                return;
-            } catch (InstanceFieldNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getInstanceFieldKey()
-                );
-                return;
-            }
+        Object mappedInstance = instanceMappingService.toMappedInstanceObject(
+                objectMapping,
+                flytConsumerRecord.getConsumerRecord().value()
+        );
 
-            InstanceFlowHeaders instanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders().toBuilder()
-                    .configurationId(configurationId)
-                    .build();
+        InstanceFlowHeaders instanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders().toBuilder()
+                .configurationId(configurationId)
+                .build();
 
-            instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
-
-        } catch (RuntimeException e) {
-            instanceMappingErrorEventProducerService.publishGeneralSystemErrorEvent(
-                    flytConsumerRecord.getInstanceFlowHeaders()
-            );
-        }
+        instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
     }
 
     private Long getConfigurationIdOrPublishError(InstanceFlowConsumerRecord<InstanceObject> record) {

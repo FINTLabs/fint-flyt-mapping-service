@@ -1,12 +1,11 @@
 plugins {
-    id("org.springframework.boot") version "3.5.7"
-    id("io.spring.dependency-management") version "1.1.7"
     id("java")
     id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 group = "no.novari"
 version = "0.0.1-SNAPSHOT"
+val springBootVersion = "3.5.9"
 var fintModelVersion = "3.21.10"
 
 java {
@@ -28,13 +27,17 @@ repositories {
 }
 
 dependencies {
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
+    annotationProcessor(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
+    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
-    implementation("no.novari:flyt-resource-server:6.0.0")
-    implementation("no.novari:flyt-kafka:4.0.0")
+    implementation("no.novari:flyt-resource-server:6.0.2-rc-1")
+    implementation("no.novari:flyt-kafka:5.0.0")
 
     implementation("org.apache.commons:commons-lang3:3.18.0")
 
@@ -45,6 +48,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 }
 
 tasks.test {
