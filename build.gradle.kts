@@ -1,11 +1,12 @@
 plugins {
     id("java")
+    id("org.springframework.boot") version "3.5.9"
+    id("io.spring.dependency-management") version "1.1.7"
     id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 group = "no.novari"
 version = "0.0.1-SNAPSHOT"
-val springBootVersion = "3.5.9"
 var fintModelVersion = "3.21.10"
 
 java {
@@ -27,10 +28,6 @@ repositories {
 }
 
 dependencies {
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
-    annotationProcessor(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
-    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))
-
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
