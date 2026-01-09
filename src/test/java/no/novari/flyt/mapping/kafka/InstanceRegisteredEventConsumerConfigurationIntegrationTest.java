@@ -5,9 +5,6 @@ import no.novari.Application;
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders;
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeadersMapper;
 import no.novari.flyt.mapping.InstanceProcessingService;
-import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException;
-import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException;
-import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException;
 import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
 import no.novari.flyt.resourceserver.security.client.sourceapplication.SourceApplicationAuthorizationRequestService;
@@ -108,7 +105,7 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
 
     @Test
     void shouldApplyExponentialBackoffAndRecover() {
-        doThrow(new ValueConvertingKeyNotFoundException(678L, "testKey"))
+        doThrow(new RuntimeException("boom"))
                 .when(instanceProcessingService)
                 .process(any());
 
@@ -122,11 +119,7 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
         sendInstanceRegisteredEvent(instanceFlowHeaders);
 
         verify(instanceMappingErrorEventProducerService, timeout(2000))
-                .publishMissingValueConvertingKeyErrorEvent(
-                        eq(instanceFlowHeaders),
-                        eq(678L),
-                        eq("testKey")
-                );
+                .publishGeneralSystemErrorEvent(eq(instanceFlowHeaders));
 
         assertThat(instanceRegisteredEventConsumer.getCommonErrorHandler())
                 .isInstanceOf(DefaultErrorHandler.class);
@@ -153,69 +146,6 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
         assertThat(exponentialBackOff.getMultiplier()).isEqualTo(1.5);
         assertThat(exponentialBackOff.getMaxInterval()).isEqualTo(2_000L);
         assertThat(exponentialBackOff.getMaxRetries()).isEqualTo(2);
-    }
-
-    @Test
-    void shouldRecoverValueConvertingNotFoundException() {
-        doThrow(new ValueConvertingNotFoundException(123L))
-                .when(instanceProcessingService)
-                .process(any());
-
-        InstanceFlowHeaders instanceFlowHeaders = InstanceFlowHeaders
-                .builder()
-                .sourceApplicationId(1L)
-                .correlationId(UUID.randomUUID())
-                .integrationId(456L)
-                .build();
-
-        sendInstanceRegisteredEvent(instanceFlowHeaders);
-
-        verify(instanceMappingErrorEventProducerService, timeout(2000))
-                .publishMissingValueConvertingErrorEvent(
-                        eq(instanceFlowHeaders),
-                        eq(123L)
-                );
-    }
-
-    @Test
-    void shouldRecoverInstanceFieldNotFoundException() {
-        doThrow(new InstanceFieldNotFoundException("missing-field"))
-                .when(instanceProcessingService)
-                .process(any());
-
-        InstanceFlowHeaders instanceFlowHeaders = InstanceFlowHeaders
-                .builder()
-                .sourceApplicationId(1L)
-                .correlationId(UUID.randomUUID())
-                .integrationId(789L)
-                .build();
-
-        sendInstanceRegisteredEvent(instanceFlowHeaders);
-
-        verify(instanceMappingErrorEventProducerService, timeout(2000))
-                .publishInstanceFieldNotFoundErrorEvent(
-                        eq(instanceFlowHeaders),
-                        eq("missing-field")
-                );
-    }
-
-    @Test
-    void shouldRecoverGeneralSystemError() {
-        doThrow(new RuntimeException("boom"))
-                .when(instanceProcessingService)
-                .process(any());
-
-        InstanceFlowHeaders instanceFlowHeaders = InstanceFlowHeaders
-                .builder()
-                .sourceApplicationId(1L)
-                .correlationId(UUID.randomUUID())
-                .integrationId(654L)
-                .build();
-
-        sendInstanceRegisteredEvent(instanceFlowHeaders);
-
-        verify(instanceMappingErrorEventProducerService, timeout(2000))
-                .publishGeneralSystemErrorEvent(eq(instanceFlowHeaders));
     }
 
     private void sendInstanceRegisteredEvent(InstanceFlowHeaders instanceFlowHeaders) {

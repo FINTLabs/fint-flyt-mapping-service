@@ -6,9 +6,6 @@ import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerConfi
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerFactory;
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
 import no.novari.flyt.mapping.InstanceProcessingService;
-import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException;
-import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException;
-import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException;
 import no.novari.flyt.mapping.kafka.configuration.KafkaConsumerProperties;
 import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
@@ -20,8 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ListenerExecutionFailedException;
-
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -77,11 +72,7 @@ public class InstanceRegisteredEventConsumerConfiguration {
                         backoff.getMaxInterval(),
                         backoff.getMaxRetries()
                 )
-                .excludeExceptionsFromRetry(List.of(
-                        ValueConvertingNotFoundException.class,
-                        ValueConvertingKeyNotFoundException.class,
-                        InstanceFieldNotFoundException.class
-                ))
+                .useDefaultRetryClassification()
                 .restartRetryOnExceptionChange()
                 .recoverFailedRecords(new InstanceFlowErrorHandlerConfiguration.InstanceFlowRecoverer<>() {
                     @Override
@@ -90,38 +81,10 @@ public class InstanceRegisteredEventConsumerConfiguration {
                             Exception exception
                     ) {
                         Exception unwrappedException = unwrapException(exception);
-                        switch (unwrappedException) {
-                            case ValueConvertingNotFoundException e: {
-                                log.debug("ValueConvertingNotFoundException handled using publishMissingValueConvertingErrorEvent");
-                                errorEventProducerService.publishMissingValueConvertingErrorEvent(
-                                        record.getInstanceFlowHeaders(),
-                                        e.getValueConvertingId()
-                                );
-                                return;
-                            }
-                            case ValueConvertingKeyNotFoundException e: {
-                                log.debug("ValueConvertingKeyNotFoundException handled using publishMissingValueConvertingKeyErrorEvent");
-                                errorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
-                                        record.getInstanceFlowHeaders(),
-                                        e.getValueConvertingId(),
-                                        e.getValueConvertingKey()
-                                );
-                                return;
-                            }
-                            case InstanceFieldNotFoundException e: {
-                                log.debug("InstanceFieldNotFoundException handled using publishInstanceFieldNotFoundErrorEvent");
-                                errorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
-                                        record.getInstanceFlowHeaders(),
-                                        e.getInstanceFieldKey()
-                                );
-                                return;
-                            }
-                            default:
-                                log.debug("{} handled using publishInstanceFieldNotFoundErrorEvent", unwrappedException.getClass());
-                                errorEventProducerService.publishGeneralSystemErrorEvent(
-                                        record.getInstanceFlowHeaders()
-                                );
-                        }
+                        log.debug("{} handled using publishGeneralSystemErrorEvent", unwrappedException.getClass());
+                        errorEventProducerService.publishGeneralSystemErrorEvent(
+                                record.getInstanceFlowHeaders()
+                        );
                     }
 
                     @Override

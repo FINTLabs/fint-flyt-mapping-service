@@ -33,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
-    implementation("no.novari:flyt-resource-server:6.0.2-rc-1")
+    implementation("no.novari:flyt-resource-server:6.1.0")
     implementation("no.novari:flyt-kafka:5.0.0")
 
     implementation("org.apache.commons:commons-lang3:3.18.0")

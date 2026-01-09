@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -81,7 +80,7 @@ class InstanceProcessingServiceTest {
                 .when(instanceMappingService)
                 .toMappedInstanceObject(objectMapping, instance);
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
         verify(instanceMappedEventProducerService).publish(ArgumentMatchers.argThat(
                 ifh -> ifh.getSourceApplicationId() == 1L
@@ -102,7 +101,7 @@ class InstanceProcessingServiceTest {
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.empty());
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
         verify(instanceMappingErrorEventProducerService)
                 .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
@@ -121,7 +120,7 @@ class InstanceProcessingServiceTest {
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.empty());
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
         verify(instanceMappingErrorEventProducerService)
                 .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
@@ -145,12 +144,11 @@ class InstanceProcessingServiceTest {
         when(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
                 .thenThrow(new ValueConvertingNotFoundException(678L));
 
-        assertThrows(ValueConvertingNotFoundException.class, () ->
-                instanceProcessingService.process(flytConsumerRecord)
-        );
+        instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, never())
-                .publishMissingValueConvertingErrorEvent(any(), anyLong());
+        verify(instanceMappingErrorEventProducerService)
+                .publishMissingValueConvertingErrorEvent(instanceFlowHeaders, 678L);
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
@@ -171,12 +169,11 @@ class InstanceProcessingServiceTest {
         when(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
                 .thenThrow(new ValueConvertingKeyNotFoundException(678L, "testKey"));
 
-        assertThrows(ValueConvertingKeyNotFoundException.class, () ->
-                instanceProcessingService.process(flytConsumerRecord)
-        );
+        instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, never())
-                .publishMissingValueConvertingErrorEvent(any(), anyLong());
+        verify(instanceMappingErrorEventProducerService)
+                .publishMissingValueConvertingKeyErrorEvent(instanceFlowHeaders, 678L, "testKey");
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
@@ -197,12 +194,11 @@ class InstanceProcessingServiceTest {
         when(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
                 .thenThrow(new InstanceFieldNotFoundException("testKey"));
 
-        assertThrows(InstanceFieldNotFoundException.class, () ->
-                instanceProcessingService.process(flytConsumerRecord)
-        );
+        instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, never())
-                .publishInstanceFieldNotFoundErrorEvent(any(), anyString());
+        verify(instanceMappingErrorEventProducerService)
+                .publishInstanceFieldNotFoundErrorEvent(instanceFlowHeaders, "testKey");
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
