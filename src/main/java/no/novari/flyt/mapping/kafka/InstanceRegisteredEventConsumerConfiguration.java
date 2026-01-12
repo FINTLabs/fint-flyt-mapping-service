@@ -1,32 +1,44 @@
 package no.novari.flyt.mapping.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord;
+import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerConfiguration;
+import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerFactory;
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService;
 import no.novari.flyt.mapping.InstanceProcessingService;
+import no.novari.flyt.mapping.kafka.configuration.KafkaConsumerProperties;
+import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
-import no.novari.kafka.consuming.ErrorHandlerConfiguration;
-import no.novari.kafka.consuming.ErrorHandlerFactory;
 import no.novari.kafka.consuming.ListenerConfiguration;
 import no.novari.kafka.topic.name.EventTopicNameParameters;
 import no.novari.kafka.topic.name.TopicNamePrefixParameters;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.util.backoff.FixedBackOff;
-
-import java.time.Duration;
+import org.springframework.kafka.listener.ListenerExecutionFailedException;
 
 @Slf4j
 @Configuration
 public class InstanceRegisteredEventConsumerConfiguration {
 
+    private final KafkaConsumerProperties consumerProperties;
+
+    public InstanceRegisteredEventConsumerConfiguration(KafkaConsumerProperties consumerProperties) {
+        this.consumerProperties = consumerProperties;
+    }
+
     private ConcurrentMessageListenerContainer<String, InstanceObject> createConsumer(
-            InstanceFlowListenerFactoryService instanceFlowListenerFactoryService,
-            ErrorHandlerFactory errorHandlerFactory,
+            InstanceFlowListenerFactoryService factoryService,
+            InstanceFlowErrorHandlerFactory errorHandlerFactory,
+            InstanceMappingErrorEventProducerService errorEventProducerService,
             InstanceProcessingService processingService,
             String eventName
     ) {
-        return instanceFlowListenerFactoryService.createRecordListenerContainerFactory(
+        InstanceFlowErrorHandlerConfiguration<InstanceObject> errorHandlerConfig =
+                createErrorHandlerConfig(errorEventProducerService);
+
+        return factoryService.createRecordListenerContainerFactory(
                 InstanceObject.class,
                 processingService::process,
                 ListenerConfiguration.stepBuilder()
@@ -35,15 +47,7 @@ public class InstanceRegisteredEventConsumerConfiguration {
                         .maxPollIntervalKafkaDefault()
                         .continueFromPreviousOffsetOnAssignment()
                         .build(),
-                errorHandlerFactory.createErrorHandler(
-                        ErrorHandlerConfiguration
-                                .stepBuilder()
-                                .retryWithFixedInterval(Duration.ofMillis(FixedBackOff.DEFAULT_INTERVAL), 0)
-                                .useDefaultRetryClassification()
-                                .restartRetryOnExceptionChange()
-                                .skipFailedRecords()
-                                .build()
-                )
+                errorHandlerFactory.createErrorHandler(errorHandlerConfig)
         ).createContainer(EventTopicNameParameters
                 .builder()
                 .topicNamePrefixParameters(TopicNamePrefixParameters
@@ -57,30 +61,84 @@ public class InstanceRegisteredEventConsumerConfiguration {
         );
     }
 
-    @Bean
-    public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRegisteredEventConsumer(
-            InstanceFlowListenerFactoryService instanceFlowListenerFactoryService,
-            ErrorHandlerFactory errorHandlerFactory,
-            InstanceProcessingService processingService
+    private InstanceFlowErrorHandlerConfiguration<InstanceObject> createErrorHandlerConfig(
+            InstanceMappingErrorEventProducerService errorEventProducerService
     ) {
-        return createConsumer(
-                instanceFlowListenerFactoryService,
-                errorHandlerFactory,
-                processingService,
-                "instance-registered");
+        KafkaConsumerProperties.BackoffProperties backoff = consumerProperties.getInstanceProcessingBackoff();
+        return InstanceFlowErrorHandlerConfiguration.<InstanceObject>stepBuilder()
+                .retryWithExponentialInterval(
+                        backoff.getInitialInterval(),
+                        backoff.getMultiplier(),
+                        backoff.getMaxInterval(),
+                        backoff.getMaxRetries()
+                )
+                .useDefaultRetryClassification()
+                .restartRetryOnExceptionChange()
+                .recoverFailedRecords(new InstanceFlowErrorHandlerConfiguration.InstanceFlowRecoverer<>() {
+                    @Override
+                    public void recover(
+                            InstanceFlowConsumerRecord<InstanceObject> record,
+                            Exception exception
+                    ) {
+                        Exception unwrappedException = unwrapException(exception);
+                        log.debug("{} handled using publishGeneralSystemErrorEvent", unwrappedException.getClass());
+                        errorEventProducerService.publishGeneralSystemErrorEvent(
+                                record.getInstanceFlowHeaders()
+                        );
+                    }
+
+                    @Override
+                    public void recoverForMissingInstanceFlowHeaders(
+                            ConsumerRecord<String, InstanceObject> record,
+                            Exception exception
+                    ) {
+                        log.warn("Missing headers on record, skipping", exception);
+                    }
+                })
+                .skipRecordOnRecoveryFailure()
+                .build();
+    }
+
+    private static Exception unwrapException(Exception exception) {
+        Throwable current = exception;
+        while (current instanceof ListenerExecutionFailedException
+                && current.getCause() != null
+                && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current instanceof Exception ? (Exception) current : exception;
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRequestedForRetryEventConsumer(
+    public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRegisteredEventConsumer(
             InstanceFlowListenerFactoryService factoryService,
-            ErrorHandlerFactory errorHandlerFactory,
+            InstanceFlowErrorHandlerFactory errorHandlerFactory,
+            InstanceMappingErrorEventProducerService errorEventProducerService,
             InstanceProcessingService processingService
     ) {
         return createConsumer(
                 factoryService,
                 errorHandlerFactory,
+                errorEventProducerService,
                 processingService,
-                "instance-requested-for-retry");
+                "instance-registered"
+        );
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, InstanceObject> instanceRequestedForRetryEventConsumer(
+            InstanceFlowListenerFactoryService factoryService,
+            InstanceFlowErrorHandlerFactory errorHandlerFactory,
+            InstanceMappingErrorEventProducerService errorEventProducerService,
+            InstanceProcessingService processingService
+    ) {
+        return createConsumer(
+                factoryService,
+                errorHandlerFactory,
+                errorEventProducerService,
+                processingService,
+                "instance-requested-for-retry"
+        );
     }
 
 }

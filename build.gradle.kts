@@ -1,7 +1,7 @@
 plugins {
-    id("org.springframework.boot") version "3.5.7"
-    id("io.spring.dependency-management") version "1.1.7"
     id("java")
+    id("org.springframework.boot") version "3.5.9"
+    id("io.spring.dependency-management") version "1.1.7"
     id("com.github.ben-manes.versions") version "0.52.0"
 }
 
@@ -33,8 +33,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
-    implementation("no.novari:flyt-resource-server:6.0.0")
-    implementation("no.novari:flyt-kafka:4.0.0")
+    implementation("no.novari:flyt-resource-server:6.1.0")
+    implementation("no.novari:flyt-kafka:5.0.0")
 
     implementation("org.apache.commons:commons-lang3:3.18.0")
 
@@ -45,6 +45,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 }
 
 tasks.test {

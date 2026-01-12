@@ -38,51 +38,44 @@ public class InstanceProcessingService {
     }
 
     public void process(InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord) {
+        Long configurationId = getConfigurationIdOrPublishError(flytConsumerRecord);
+        if (configurationId == null) return;
+
+        ObjectMapping objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId);
+        if (objectMapping == null) return;
+
+        Object mappedInstance;
         try {
-            Long configurationId = getConfigurationIdOrPublishError(flytConsumerRecord);
-            if (configurationId == null) return;
-
-            ObjectMapping objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId);
-            if (objectMapping == null) return;
-
-            Object mappedInstance;
-            try {
-                mappedInstance = instanceMappingService.toMappedInstanceObject(
-                        objectMapping,
-                        flytConsumerRecord.getConsumerRecord().value()
-                );
-            } catch (ValueConvertingNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getValueConvertingId()
-                );
-                return;
-            } catch (ValueConvertingKeyNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getValueConvertingId(),
-                        e.getValueConvertingKey()
-                );
-                return;
-            } catch (InstanceFieldNotFoundException e) {
-                instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
-                        flytConsumerRecord.getInstanceFlowHeaders(),
-                        e.getInstanceFieldKey()
-                );
-                return;
-            }
-
-            InstanceFlowHeaders instanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders().toBuilder()
-                    .configurationId(configurationId)
-                    .build();
-
-            instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
-
-        } catch (RuntimeException e) {
-            instanceMappingErrorEventProducerService.publishGeneralSystemErrorEvent(
-                    flytConsumerRecord.getInstanceFlowHeaders()
+            mappedInstance = instanceMappingService.toMappedInstanceObject(
+                    objectMapping,
+                    flytConsumerRecord.getConsumerRecord().value()
             );
+        } catch (ValueConvertingNotFoundException exception) {
+            instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
+                    flytConsumerRecord.getInstanceFlowHeaders(),
+                    exception.getValueConvertingId()
+            );
+            return;
+        } catch (ValueConvertingKeyNotFoundException exception) {
+            instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
+                    flytConsumerRecord.getInstanceFlowHeaders(),
+                    exception.getValueConvertingId(),
+                    exception.getValueConvertingKey()
+            );
+            return;
+        } catch (InstanceFieldNotFoundException exception) {
+            instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
+                    flytConsumerRecord.getInstanceFlowHeaders(),
+                    exception.getInstanceFieldKey()
+            );
+            return;
         }
+
+        InstanceFlowHeaders instanceFlowHeaders = flytConsumerRecord.getInstanceFlowHeaders().toBuilder()
+                .configurationId(configurationId)
+                .build();
+
+        instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance);
     }
 
     private Long getConfigurationIdOrPublishError(InstanceFlowConsumerRecord<InstanceObject> record) {

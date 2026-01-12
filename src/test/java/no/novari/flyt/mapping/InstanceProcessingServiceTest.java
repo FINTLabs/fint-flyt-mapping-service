@@ -13,22 +13,27 @@ import no.novari.flyt.mapping.model.configuration.ObjectMapping;
 import no.novari.flyt.mapping.model.instance.InstanceObject;
 import no.novari.flyt.mapping.service.InstanceMappingService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class InstanceProcessingServiceTest {
 
     @InjectMocks
@@ -49,11 +54,6 @@ class InstanceProcessingServiceTest {
     @Mock
     private InstanceMappingErrorEventProducerService instanceMappingErrorEventProducerService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     void shouldProcessSuccessfully() {
         Long integrationId = 123L;
@@ -68,19 +68,19 @@ class InstanceProcessingServiceTest {
         ObjectMapping objectMapping = mock(ObjectMapping.class);
 
         InstanceObject instance = mock(InstanceObject.class);
-        ConsumerRecord<String, InstanceObject> consumerRecord = mock(ConsumerRecord.class);
-        when(consumerRecord.value()).thenReturn(instance);
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
-        when(flytConsumerRecord.getConsumerRecord()).thenReturn(consumerRecord);
+        ConsumerRecord<String, InstanceObject> consumerRecord = newConsumerRecord(instance);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, consumerRecord);
 
-        Map mappedInstance = mock(Map.class);
+        Map<String, Object> mappedInstance = Map.of();
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.of(objectMapping));
-        when(instanceMappingService.toMappedInstanceObject(objectMapping, instance)).thenReturn(mappedInstance);
+        doReturn(mappedInstance)
+                .when(instanceMappingService)
+                .toMappedInstanceObject(objectMapping, instance);
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
         verify(instanceMappedEventProducerService).publish(ArgumentMatchers.argThat(
                 ifh -> ifh.getSourceApplicationId() == 1L
@@ -96,14 +96,14 @@ class InstanceProcessingServiceTest {
         InstanceFlowHeaders instanceFlowHeaders = mock(InstanceFlowHeaders.class);
         when(instanceFlowHeaders.getIntegrationId()).thenReturn(integrationId);
 
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null));
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.empty());
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService)
                 .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
     }
 
@@ -114,15 +114,15 @@ class InstanceProcessingServiceTest {
         InstanceFlowHeaders instanceFlowHeaders = mock(InstanceFlowHeaders.class);
         when(instanceFlowHeaders.getIntegrationId()).thenReturn(integrationId);
 
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null));
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.empty());
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertDoesNotThrow(() -> instanceProcessingService.process(flytConsumerRecord));
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService)
                 .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders);
     }
 
@@ -134,12 +134,10 @@ class InstanceProcessingServiceTest {
         Long configurationId = 456L;
         ObjectMapping objectMapping = mock(ObjectMapping.class);
 
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
         InstanceObject instanceObject = mock(InstanceObject.class);
-        ConsumerRecord consumerRecord = mock(ConsumerRecord.class);
-        when(consumerRecord.value()).thenReturn(instanceObject);
-        when(flytConsumerRecord.getConsumerRecord()).thenReturn(consumerRecord);
+        ConsumerRecord<String, InstanceObject> consumerRecord = newConsumerRecord(instanceObject);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, consumerRecord);
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.of(objectMapping));
@@ -148,8 +146,9 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService)
                 .publishMissingValueConvertingErrorEvent(instanceFlowHeaders, 678L);
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
@@ -160,12 +159,10 @@ class InstanceProcessingServiceTest {
         Long configurationId = 456L;
         ObjectMapping objectMapping = mock(ObjectMapping.class);
 
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
         InstanceObject instanceObject = mock(InstanceObject.class);
-        ConsumerRecord consumerRecord = mock(ConsumerRecord.class);
-        when(consumerRecord.value()).thenReturn(instanceObject);
-        when(flytConsumerRecord.getConsumerRecord()).thenReturn(consumerRecord);
+        ConsumerRecord<String, InstanceObject> consumerRecord = newConsumerRecord(instanceObject);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, consumerRecord);
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.of(objectMapping));
@@ -174,8 +171,9 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService)
                 .publishMissingValueConvertingKeyErrorEvent(instanceFlowHeaders, 678L, "testKey");
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
@@ -186,12 +184,10 @@ class InstanceProcessingServiceTest {
         Long configurationId = 456L;
         ObjectMapping objectMapping = mock(ObjectMapping.class);
 
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
         InstanceObject instanceObject = mock(InstanceObject.class);
-        ConsumerRecord consumerRecord = mock(ConsumerRecord.class);
-        when(consumerRecord.value()).thenReturn(instanceObject);
-        when(flytConsumerRecord.getConsumerRecord()).thenReturn(consumerRecord);
+        ConsumerRecord<String, InstanceObject> consumerRecord = newConsumerRecord(instanceObject);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, consumerRecord);
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(Optional.of(configurationId));
         when(configurationMappingRequestProducerService.get(configurationId)).thenReturn(Optional.of(objectMapping));
@@ -200,8 +196,9 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord);
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService)
                 .publishInstanceFieldNotFoundErrorEvent(instanceFlowHeaders, "testKey");
+        verify(instanceMappedEventProducerService, never()).publish(any(), any());
     }
 
     @Test
@@ -210,15 +207,31 @@ class InstanceProcessingServiceTest {
 
         InstanceFlowHeaders instanceFlowHeaders = mock(InstanceFlowHeaders.class);
         when(instanceFlowHeaders.getIntegrationId()).thenReturn(integrationId);
-        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord = mock(InstanceFlowConsumerRecord.class);
-        when(flytConsumerRecord.getInstanceFlowHeaders()).thenReturn(instanceFlowHeaders);
+        InstanceFlowConsumerRecord<InstanceObject> flytConsumerRecord =
+                newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null));
 
         when(activeConfigurationIdRequestProducerService.get(integrationId)).thenThrow(new RuntimeException());
 
-        instanceProcessingService.process(flytConsumerRecord);
+        assertThrows(RuntimeException.class, () ->
+                instanceProcessingService.process(flytConsumerRecord)
+        );
 
-        verify(instanceMappingErrorEventProducerService, times(1))
+        verify(instanceMappingErrorEventProducerService, never())
                 .publishGeneralSystemErrorEvent(instanceFlowHeaders);
+    }
+
+    private static ConsumerRecord<String, InstanceObject> newConsumerRecord(InstanceObject instanceObject) {
+        return new ConsumerRecord<>("test-topic", 0, 0L, "test-key", instanceObject);
+    }
+
+    private static InstanceFlowConsumerRecord<InstanceObject> newFlytConsumerRecord(
+            InstanceFlowHeaders instanceFlowHeaders,
+            ConsumerRecord<String, InstanceObject> consumerRecord
+    ) {
+        return InstanceFlowConsumerRecord.<InstanceObject>builder()
+                .instanceFlowHeaders(instanceFlowHeaders)
+                .consumerRecord(consumerRecord)
+                .build();
     }
 
 }
