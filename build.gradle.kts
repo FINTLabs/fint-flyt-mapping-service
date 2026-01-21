@@ -7,7 +7,6 @@ plugins {
 
 group = "no.novari"
 version = "0.0.1-SNAPSHOT"
-var fintModelVersion = "3.21.10"
 
 java {
     toolchain {
@@ -32,7 +31,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
-    implementation("no.fint:fint-arkiv-resource-model-java:$fintModelVersion")
     implementation("no.novari:flyt-resource-server:6.1.0")
     implementation("no.novari:flyt-kafka:5.0.0")
 
