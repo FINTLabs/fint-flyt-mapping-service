@@ -137,9 +137,9 @@ class InstanceReferenceService {
     companion object {
         private const val CURLY_BRACKETS_WRAPPER = """[{][^}]+}"""
         private val INSTANCE_FIELD_REFERENCE_PATTERN =
-            Regex("""${'$'}if$CURLY_BRACKETS_WRAPPER""").toPattern()
+            Regex("""[$]if$CURLY_BRACKETS_WRAPPER""").toPattern()
         private val INSTANCE_COLLECTION_FIELD_REFERENCE_PATTERN =
-            Regex("""${'$'}icf$CURLY_BRACKETS_WRAPPER$CURLY_BRACKETS_WRAPPER""").toPattern()
+            Regex("""[$]icf$CURLY_BRACKETS_WRAPPER$CURLY_BRACKETS_WRAPPER""").toPattern()
         private val REFERENCE_PATTERN =
             Regex(
                 "${INSTANCE_FIELD_REFERENCE_PATTERN.pattern()}|${INSTANCE_COLLECTION_FIELD_REFERENCE_PATTERN.pattern()}",

@@ -22,6 +22,6 @@ class ValueConvertingReferenceService {
     }
 
     companion object {
-        private val VALUE_CONVERTING_REFERENCE_PATTERN = Regex("""${'$'}vc[{][^}]+}""").toPattern()
+        private val VALUE_CONVERTING_REFERENCE_PATTERN = Regex("""[$]vc[{][^}]+}""").toPattern()
     }
 }
