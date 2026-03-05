@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 plugins {
     id("org.springframework.boot") version "3.5.11"
     id("io.spring.dependency-management") version "1.1.7"
@@ -12,7 +15,13 @@ group = "no.novari"
 version = "0.0.1-SNAPSHOT"
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(21)
+}
+
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
 }
 
 tasks.jar {
