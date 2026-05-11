@@ -17,7 +17,7 @@ patches:
         value: "bym-oslo-kommune-no.flyt.*"
       - op: replace
         path: "/spec/orgId"
-        value: "ofk.no"
+        value: "bym-oslo-kommune.no"
       - op: add
         path: "/spec/env/-"
         value:
