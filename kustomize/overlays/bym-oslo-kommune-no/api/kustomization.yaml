@@ -7,7 +7,7 @@ resources:
 
 labels:
   - pairs:
-      app.kubernetes.io/instance: fint-flyt-mapping-service_ofk_no
+      app.kubernetes.io/instance: fint-flyt-mapping-service_bym-oslo-kommune_no
       fintlabs.no/org-id: ofk.no
 
 patches:
