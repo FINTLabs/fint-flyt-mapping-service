@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java21
+FROM gcr.io/distroless/java25
 ENV TZ="Europe/Oslo"
 ENV JAVA_TOOL_OPTIONS=-XX:+ExitOnOutOfMemoryError
 WORKDIR /app
