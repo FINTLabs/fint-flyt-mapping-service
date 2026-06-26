@@ -62,9 +62,15 @@ class InstanceProcessingService(
     }
 
     private fun getConfigurationIdOrPublishError(record: InstanceFlowConsumerRecord<InstanceObject>): Long? {
-        return activeConfigurationIdRequestProducerService.get(
-            record.instanceFlowHeaders.integrationId,
-        ) ?: run {
+        val integrationId =
+            record.instanceFlowHeaders.integrationId
+                ?: run {
+                    instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                        record.instanceFlowHeaders,
+                    )
+                    return null
+                }
+        return activeConfigurationIdRequestProducerService.get(integrationId) ?: run {
             instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
             null
         }

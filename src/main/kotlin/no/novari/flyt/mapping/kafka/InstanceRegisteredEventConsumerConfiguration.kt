@@ -107,16 +107,18 @@ class InstanceRegisteredEventConsumerConfiguration(
             .recoverFailedRecords(
                 object : InstanceFlowErrorHandlerConfiguration.InstanceFlowRecoverer<InstanceObject> {
                     override fun recover(
-                        record: InstanceFlowConsumerRecord<InstanceObject>,
+                        instanceFlowConsumerRecord: InstanceFlowConsumerRecord<InstanceObject>,
                         exception: Exception,
                     ) {
                         val unwrappedException = unwrapException(exception)
                         log.debug("{} handled using publishGeneralSystemErrorEvent", unwrappedException.javaClass)
-                        errorEventProducerService.publishGeneralSystemErrorEvent(record.instanceFlowHeaders)
+                        errorEventProducerService.publishGeneralSystemErrorEvent(
+                            instanceFlowConsumerRecord.instanceFlowHeaders,
+                        )
                     }
 
                     override fun recoverForMissingInstanceFlowHeaders(
-                        record: ConsumerRecord<String, InstanceObject>,
+                        consumerRecord: ConsumerRecord<String, InstanceObject>,
                         exception: Exception,
                     ) {
                         log.warn("Missing headers on record, skipping", exception)
