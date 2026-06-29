@@ -44,7 +44,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     implementation("no.novari:flyt-web-resource-server:3.1.0")
-    implementation("no.novari:flyt-kafka:7.0.0")
+    implementation("no.novari:flyt-kafka:7.1.0")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     kapt("org.springframework.boot:spring-boot-configuration-processor")

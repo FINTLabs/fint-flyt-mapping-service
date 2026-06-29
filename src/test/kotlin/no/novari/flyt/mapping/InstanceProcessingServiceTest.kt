@@ -8,7 +8,7 @@ import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService
 import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService
 import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService
-import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService
+import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.flyt.mapping.service.InstanceMappingService
@@ -49,7 +49,7 @@ class InstanceProcessingServiceTest {
     private lateinit var instanceMappingService: InstanceMappingService
 
     @Mock
-    private lateinit var instanceMappingErrorEventProducerService: InstanceMappingErrorEventProducerService
+    private lateinit var instanceErrorEventProducerService: InstanceErrorEventProducerService
 
     @Test
     fun shouldProcessSuccessfully() {
@@ -108,7 +108,7 @@ class InstanceProcessingServiceTest {
 
         assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
 
-        verify(instanceMappingErrorEventProducerService)
+        verify(instanceErrorEventProducerService)
             .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders)
     }
 
@@ -126,7 +126,7 @@ class InstanceProcessingServiceTest {
 
         assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
 
-        verify(instanceMappingErrorEventProducerService)
+        verify(instanceErrorEventProducerService)
             .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders)
     }
 
@@ -149,7 +149,7 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord)
 
-        verify(instanceMappingErrorEventProducerService)
+        verify(instanceErrorEventProducerService)
             .publishMissingValueConvertingErrorEvent(instanceFlowHeaders, 678L)
         verify(instanceMappedEventProducerService, never()).publish(any(), any())
     }
@@ -173,7 +173,7 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord)
 
-        verify(instanceMappingErrorEventProducerService)
+        verify(instanceErrorEventProducerService)
             .publishMissingValueConvertingKeyErrorEvent(instanceFlowHeaders, 678L, "testKey")
         verify(instanceMappedEventProducerService, never()).publish(any(), any())
     }
@@ -197,7 +197,7 @@ class InstanceProcessingServiceTest {
 
         instanceProcessingService.process(flytConsumerRecord)
 
-        verify(instanceMappingErrorEventProducerService)
+        verify(instanceErrorEventProducerService)
             .publishInstanceFieldNotFoundErrorEvent(instanceFlowHeaders, "testKey")
         verify(instanceMappedEventProducerService, never()).publish(any(), any())
     }
@@ -216,7 +216,7 @@ class InstanceProcessingServiceTest {
             instanceProcessingService.process(flytConsumerRecord)
         }
 
-        verify(instanceMappingErrorEventProducerService, never())
+        verify(instanceErrorEventProducerService, never())
             .publishGeneralSystemErrorEvent(instanceFlowHeaders)
     }
 
