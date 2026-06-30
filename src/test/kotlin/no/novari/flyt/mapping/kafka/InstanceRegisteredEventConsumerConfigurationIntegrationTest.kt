@@ -5,7 +5,7 @@ import no.novari.Application
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeadersMapper
 import no.novari.flyt.mapping.InstanceProcessingService
-import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService
+import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.flyt.webresourceserver.security.client.sourceapplication.SourceApplicationAuthorizationRequestService
 import no.novari.kafka.topic.name.EventTopicNameParameters
@@ -86,7 +86,7 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
     private lateinit var instanceProcessingService: InstanceProcessingService
 
     @MockitoBean
-    private lateinit var instanceMappingErrorEventProducerService: InstanceMappingErrorEventProducerService
+    private lateinit var instanceErrorEventProducerService: InstanceErrorEventProducerService
 
     @MockitoBean
     private lateinit var sourceApplicationAuthorizationRequestService: SourceApplicationAuthorizationRequestService
@@ -112,7 +112,7 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
 
         sendInstanceRegisteredEvent(instanceFlowHeaders)
 
-        verify(instanceMappingErrorEventProducerService, timeout(2000))
+        verify(instanceErrorEventProducerService, timeout(2000))
             .publishGeneralSystemErrorEvent(eq(instanceFlowHeaders))
 
         assertThat(instanceRegisteredEventConsumer.commonErrorHandler)
@@ -123,7 +123,7 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
 
         val failureTracker =
             ReflectionTestUtils.invokeMethod<Any>(
-                requireNotNull(errorHandler),
+                errorHandler,
                 "getFailureTracker",
             )
         assertThat(failureTracker).isNotNull()

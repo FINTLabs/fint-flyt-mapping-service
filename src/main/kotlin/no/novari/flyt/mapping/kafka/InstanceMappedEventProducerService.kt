@@ -18,23 +18,21 @@ class InstanceMappedEventProducerService(
     eventTopicService: EventTopicService,
     kafkaEventProperties: KafkaEventProperties,
 ) {
-    private val eventTopicNameParameters: EventTopicNameParameters
-    private val instanceFlowTemplate: InstanceFlowTemplate<Any>
+    private val eventTopicNameParameters: EventTopicNameParameters =
+        EventTopicNameParameters
+            .builder()
+            .eventName("instance-mapped")
+            .topicNamePrefixParameters(
+                TopicNamePrefixParameters
+                    .stepBuilder()
+                    .orgIdApplicationDefault()
+                    .domainContextApplicationDefault()
+                    .build(),
+            ).build()
+    private val instanceFlowTemplate: InstanceFlowTemplate<Any> =
+        instanceFlowTemplateFactory.createTemplate(Any::class.java)
 
     init {
-        instanceFlowTemplate = instanceFlowTemplateFactory.createTemplate(Any::class.java)
-
-        eventTopicNameParameters =
-            EventTopicNameParameters
-                .builder()
-                .eventName("instance-mapped")
-                .topicNamePrefixParameters(
-                    TopicNamePrefixParameters
-                        .stepBuilder()
-                        .orgIdApplicationDefault()
-                        .domainContextApplicationDefault()
-                        .build(),
-                ).build()
 
         eventTopicService.createOrModifyTopic(
             eventTopicNameParameters,
