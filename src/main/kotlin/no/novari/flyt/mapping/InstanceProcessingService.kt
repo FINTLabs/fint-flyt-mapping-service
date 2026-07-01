@@ -7,7 +7,7 @@ import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService
 import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService
 import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService
-import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService
+import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.flyt.mapping.service.InstanceMappingService
@@ -19,7 +19,7 @@ class InstanceProcessingService(
     private val instanceMappedEventProducerService: InstanceMappedEventProducerService,
     private val activeConfigurationIdRequestProducerService: ActiveConfigurationIdRequestProducerService,
     private val instanceMappingService: InstanceMappingService,
-    private val instanceMappingErrorEventProducerService: InstanceMappingErrorEventProducerService,
+    private val instanceErrorEventProducerService: InstanceErrorEventProducerService,
 ) {
     fun process(flytConsumerRecord: InstanceFlowConsumerRecord<InstanceObject>) {
         val configurationId = getConfigurationIdOrPublishError(flytConsumerRecord) ?: return
@@ -32,20 +32,20 @@ class InstanceProcessingService(
                     flytConsumerRecord.consumerRecord.value(),
                 )
             } catch (exception: ValueConvertingNotFoundException) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingErrorEvent(
+                instanceErrorEventProducerService.publishMissingValueConvertingErrorEvent(
                     flytConsumerRecord.instanceFlowHeaders,
                     exception.valueConvertingId,
                 )
                 return
             } catch (exception: ValueConvertingKeyNotFoundException) {
-                instanceMappingErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
+                instanceErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
                     flytConsumerRecord.instanceFlowHeaders,
                     exception.valueConvertingId,
                     exception.valueConvertingKey,
                 )
                 return
             } catch (exception: InstanceFieldNotFoundException) {
-                instanceMappingErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
+                instanceErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
                     flytConsumerRecord.instanceFlowHeaders,
                     exception.instanceFieldKey,
                 )
@@ -65,13 +65,13 @@ class InstanceProcessingService(
         val integrationId =
             record.instanceFlowHeaders.integrationId
                 ?: run {
-                    instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
+                    instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
                         record.instanceFlowHeaders,
                     )
                     return null
                 }
         return activeConfigurationIdRequestProducerService.get(integrationId) ?: run {
-            instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
+            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
             null
         }
     }
@@ -81,7 +81,7 @@ class InstanceProcessingService(
         configurationId: Long,
     ): ObjectMapping? {
         return configurationMappingRequestProducerService.get(configurationId) ?: run {
-            instanceMappingErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
+            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
             null
         }
     }

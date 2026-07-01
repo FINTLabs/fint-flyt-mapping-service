@@ -6,7 +6,7 @@ import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerFacto
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService
 import no.novari.flyt.mapping.InstanceProcessingService
 import no.novari.flyt.mapping.kafka.configuration.KafkaConsumerProperties
-import no.novari.flyt.mapping.kafka.error.InstanceMappingErrorEventProducerService
+import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.kafka.consuming.ListenerConfiguration
 import no.novari.kafka.topic.name.EventTopicNameParameters
@@ -28,7 +28,7 @@ class InstanceRegisteredEventConsumerConfiguration(
     fun instanceRegisteredEventConsumer(
         factoryService: InstanceFlowListenerFactoryService,
         errorHandlerFactory: InstanceFlowErrorHandlerFactory,
-        errorEventProducerService: InstanceMappingErrorEventProducerService,
+        errorEventProducerService: InstanceErrorEventProducerService,
         processingService: InstanceProcessingService,
     ): ConcurrentMessageListenerContainer<String, InstanceObject> {
         return createConsumer(
@@ -44,7 +44,7 @@ class InstanceRegisteredEventConsumerConfiguration(
     fun instanceRequestedForRetryEventConsumer(
         factoryService: InstanceFlowListenerFactoryService,
         errorHandlerFactory: InstanceFlowErrorHandlerFactory,
-        errorEventProducerService: InstanceMappingErrorEventProducerService,
+        errorEventProducerService: InstanceErrorEventProducerService,
         processingService: InstanceProcessingService,
     ): ConcurrentMessageListenerContainer<String, InstanceObject> {
         return createConsumer(
@@ -59,7 +59,7 @@ class InstanceRegisteredEventConsumerConfiguration(
     private fun createConsumer(
         factoryService: InstanceFlowListenerFactoryService,
         errorHandlerFactory: InstanceFlowErrorHandlerFactory,
-        errorEventProducerService: InstanceMappingErrorEventProducerService,
+        errorEventProducerService: InstanceErrorEventProducerService,
         processingService: InstanceProcessingService,
         eventName: String,
     ): ConcurrentMessageListenerContainer<String, InstanceObject> {
@@ -92,7 +92,7 @@ class InstanceRegisteredEventConsumerConfiguration(
     }
 
     private fun createErrorHandlerConfig(
-        errorEventProducerService: InstanceMappingErrorEventProducerService,
+        errorEventProducerService: InstanceErrorEventProducerService,
     ): InstanceFlowErrorHandlerConfiguration<InstanceObject> {
         val backoff = consumerProperties.instanceProcessingBackoff
         return InstanceFlowErrorHandlerConfiguration

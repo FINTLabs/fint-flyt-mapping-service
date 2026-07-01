@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    id("org.springframework.boot") version "3.5.15"
+    id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.ben-manes.versions") version "0.54.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
@@ -44,7 +44,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     implementation("no.novari:flyt-web-resource-server:3.1.0")
-    implementation("no.novari:flyt-kafka:7.0.0")
+    implementation("no.novari:flyt-kafka:7.1.0")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     kapt("org.springframework.boot:spring-boot-configuration-processor")

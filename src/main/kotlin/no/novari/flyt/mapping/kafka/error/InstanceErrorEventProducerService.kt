@@ -6,6 +6,8 @@ import no.novari.flyt.kafka.instanceflow.producing.InstanceFlowTemplate
 import no.novari.flyt.kafka.instanceflow.producing.InstanceFlowTemplateFactory
 import no.novari.flyt.kafka.model.Error
 import no.novari.flyt.kafka.model.ErrorCollection
+import no.novari.flyt.kafka.model.InstanceErrorEvent
+import no.novari.flyt.kafka.model.InstanceErrorOrigin
 import no.novari.flyt.mapping.kafka.configuration.KafkaEventProperties
 import no.novari.kafka.topic.ErrorEventTopicService
 import no.novari.kafka.topic.configuration.EventCleanupFrequency
@@ -15,28 +17,26 @@ import no.novari.kafka.topic.name.TopicNamePrefixParameters
 import org.springframework.stereotype.Service
 
 @Service
-class InstanceMappingErrorEventProducerService(
+class InstanceErrorEventProducerService(
     instanceFlowTemplateFactory: InstanceFlowTemplateFactory,
     errorEventTopicService: ErrorEventTopicService,
     kafkaEventProperties: KafkaEventProperties,
 ) {
-    private val errorEventTopicNameParameters: ErrorEventTopicNameParameters
-    private val instanceFlowTemplate: InstanceFlowTemplate<ErrorCollection>
+    private val errorEventTopicNameParameters: ErrorEventTopicNameParameters =
+        ErrorEventTopicNameParameters
+            .builder()
+            .errorEventName("instance-error")
+            .topicNamePrefixParameters(
+                TopicNamePrefixParameters
+                    .stepBuilder()
+                    .orgIdApplicationDefault()
+                    .domainContextApplicationDefault()
+                    .build(),
+            ).build()
+    private val instanceFlowTemplate: InstanceFlowTemplate<InstanceErrorEvent> =
+        instanceFlowTemplateFactory.createTemplate(InstanceErrorEvent::class.java)
 
     init {
-        instanceFlowTemplate = instanceFlowTemplateFactory.createTemplate(ErrorCollection::class.java)
-
-        errorEventTopicNameParameters =
-            ErrorEventTopicNameParameters
-                .builder()
-                .errorEventName("instance-mapping-error")
-                .topicNamePrefixParameters(
-                    TopicNamePrefixParameters
-                        .stepBuilder()
-                        .orgIdApplicationDefault()
-                        .domainContextApplicationDefault()
-                        .build(),
-                ).build()
 
         errorEventTopicService.createOrModifyTopic(
             errorEventTopicNameParameters,
@@ -101,16 +101,19 @@ class InstanceMappingErrorEventProducerService(
     ) {
         instanceFlowTemplate.send(
             InstanceFlowProducerRecord
-                .builder<ErrorCollection>()
+                .builder<InstanceErrorEvent>()
                 .instanceFlowHeaders(instanceFlowHeaders)
                 .topicNameParameters(errorEventTopicNameParameters)
                 .value(
-                    ErrorCollection(
-                        Error
-                            .builder()
-                            .errorCode(errorCode.getCode())
-                            .args(args)
-                            .build(),
+                    InstanceErrorEvent(
+                        InstanceErrorOrigin.MAPPING,
+                        ErrorCollection(
+                            Error
+                                .builder()
+                                .errorCode(errorCode.getCode())
+                                .args(args)
+                                .build(),
+                        ),
                     ),
                 ).build(),
         )
@@ -122,15 +125,18 @@ class InstanceMappingErrorEventProducerService(
     ) {
         instanceFlowTemplate.send(
             InstanceFlowProducerRecord
-                .builder<ErrorCollection>()
+                .builder<InstanceErrorEvent>()
                 .instanceFlowHeaders(instanceFlowHeaders)
                 .topicNameParameters(errorEventTopicNameParameters)
                 .value(
-                    ErrorCollection(
-                        Error
-                            .builder()
-                            .errorCode(errorCode.getCode())
-                            .build(),
+                    InstanceErrorEvent(
+                        InstanceErrorOrigin.MAPPING,
+                        ErrorCollection(
+                            Error
+                                .builder()
+                                .errorCode(errorCode.getCode())
+                                .build(),
+                        ),
                     ),
                 ).build(),
         )
