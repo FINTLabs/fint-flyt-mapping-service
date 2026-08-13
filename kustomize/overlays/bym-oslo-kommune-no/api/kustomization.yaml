@@ -23,6 +23,11 @@ patches:
         value:
           name: "novari.kafka.topic.orgId"
           value: "bym-oslo-kommune-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.telemetry.org-id"
+          value: "bym.oslo.kommune.no"
     target:
       kind: Application
       name: fint-flyt-mapping-service
