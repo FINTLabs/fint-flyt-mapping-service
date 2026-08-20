@@ -5,6 +5,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE_DIR="$ROOT/kustomize/templates"
 DEFAULT_TEMPLATE="$TEMPLATE_DIR/overlay.yaml.tpl"
 
+app_instance_suffix() {
+  local namespace="$1"
+  case "$namespace" in
+    bym-oslo-kommune-no)
+      printf '%s' "$namespace"
+      ;;
+    *)
+      printf '%s' "${namespace//-/_}"
+      ;;
+  esac
+}
+
 select_template() {
   local namespace="$1"
   local environment="$2"
@@ -49,7 +61,7 @@ while IFS= read -r file; do
 
   export NAMESPACE="$namespace"
   export ORG_ID="${namespace//-/.}"
-  export APP_INSTANCE="fint-flyt-mapping-service_${namespace//-/_}"
+  export APP_INSTANCE="fint-flyt-mapping-service_$(app_instance_suffix "$namespace")"
   export KAFKA_TOPIC="${namespace}.flyt.*"
   export FINT_KAFKA_TOPIC_ORGID="$namespace"
 
