@@ -1,5 +1,6 @@
 package no.novari.flyt.mapping.kafka
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerConfiguration
 import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerFactory
@@ -12,18 +13,17 @@ import no.novari.kafka.consuming.ListenerConfiguration
 import no.novari.kafka.topic.name.EventTopicNameParameters
 import no.novari.kafka.topic.name.TopicNamePrefixParameters
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.kafka.listener.ListenerExecutionFailedException
 
+private val log = KotlinLogging.logger {}
+
 @Configuration
 class InstanceRegisteredEventConsumerConfiguration(
     private val consumerProperties: KafkaConsumerProperties,
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
-
     @Bean
     fun instanceRegisteredEventConsumer(
         factoryService: InstanceFlowListenerFactoryService,
@@ -111,7 +111,7 @@ class InstanceRegisteredEventConsumerConfiguration(
                         exception: Exception,
                     ) {
                         val unwrappedException = unwrapException(exception)
-                        log.debug("{} handled using publishGeneralSystemErrorEvent", unwrappedException.javaClass)
+                        log.debug { "${unwrappedException.javaClass} handled using publishGeneralSystemErrorEvent" }
                         errorEventProducerService.publishGeneralSystemErrorEvent(
                             instanceFlowConsumerRecord.instanceFlowHeaders,
                         )
@@ -121,7 +121,7 @@ class InstanceRegisteredEventConsumerConfiguration(
                         consumerRecord: ConsumerRecord<String, InstanceObject>,
                         exception: Exception,
                     ) {
-                        log.warn("Missing headers on record, skipping", exception)
+                        log.warn(exception) { "Missing headers on record, skipping" }
                     }
                 },
             ).skipRecordOnRecoveryFailure()

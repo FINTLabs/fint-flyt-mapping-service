@@ -64,8 +64,18 @@ while IFS= read -r file; do
   export APP_INSTANCE="fint-flyt-mapping-service_$(app_instance_suffix "$namespace")"
   export KAFKA_TOPIC="${namespace}.flyt.*"
   export FINT_KAFKA_TOPIC_ORGID="$namespace"
+  export OTEL_EXPORTER_OTLP_ENDPOINT_PATCH=""
+
+  if [[ "$env_name" == "beta" ]]; then
+    OTEL_EXPORTER_OTLP_ENDPOINT_PATCH='
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "OTEL_EXPORTER_OTLP_ENDPOINT"
+          value: "http://alloy.flais-system.svc.cluster.local:4318"'
+  fi
 
   tmp="$(mktemp)"
-  envsubst '$NAMESPACE $ORG_ID $APP_INSTANCE $KAFKA_TOPIC $FINT_KAFKA_TOPIC_ORGID' < "$template" > "$tmp"
+  envsubst '$NAMESPACE $ORG_ID $APP_INSTANCE $KAFKA_TOPIC $FINT_KAFKA_TOPIC_ORGID $OTEL_EXPORTER_OTLP_ENDPOINT_PATCH' < "$template" > "$tmp"
   mv "$tmp" "$file"
 done < <(find "$ROOT/kustomize/overlays" -name kustomization.yaml -print | sort)

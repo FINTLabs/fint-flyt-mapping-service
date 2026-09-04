@@ -68,9 +68,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:9.0")
 
-    implementation("no.novari:flyt-web-resource-server:4.0.0")
-    implementation("no.novari:flyt-kafka:7.2.0")
+    implementation("no.novari:flyt-web-resource-server:4.1.0-rc-2")
+    implementation("no.novari:flyt-kafka:7.3.0-rc-2")
+    implementation("no.novari:telemetry-starter:0.0.4")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     kapt("org.springframework.boot:spring-boot-configuration-processor")

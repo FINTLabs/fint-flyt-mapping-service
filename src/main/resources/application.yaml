@@ -16,6 +16,8 @@ logging:
     no.novari.cache.ehcache.FintEhCacheEventLogger: WARN
 
 spring:
+  application:
+    name: ${fint.application-id}
   profiles:
     include:
       - flyt-kafka
