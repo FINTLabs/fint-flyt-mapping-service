@@ -65,7 +65,15 @@ while IFS= read -r file; do
   export KAFKA_TOPIC="${namespace}.flyt.*"
   export FINT_KAFKA_TOPIC_ORGID="$namespace"
 
+  mkdir -p "$(dirname "$file")"
   tmp="$(mktemp)"
   envsubst '$NAMESPACE $ORG_ID $APP_INSTANCE $KAFKA_TOPIC $FINT_KAFKA_TOPIC_ORGID' < "$template" > "$tmp"
   mv "$tmp" "$file"
-done < <(find "$ROOT/kustomize/overlays" -name kustomization.yaml -print | sort)
+done < <(
+  {
+    find "$ROOT/kustomize/overlays" -name kustomization.yaml -print
+    printf '%s\n' \
+      "$ROOT/kustomize/overlays/ra-no/beta/kustomization.yaml" \
+      "$ROOT/kustomize/overlays/ra-no/api/kustomization.yaml"
+  } | sort -u
+)
