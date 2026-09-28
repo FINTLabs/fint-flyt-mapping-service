@@ -6,11 +6,11 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.2"))
+        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
         constraints {
             classpath("org.apache.httpcomponents.client5:httpclient5:5.6.4")
-            classpath("org.apache.httpcomponents.core5:httpcore5:5.4.3")
-            classpath("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
+            classpath("org.apache.httpcomponents.core5:httpcore5:5.4.4")
+            classpath("org.apache.httpcomponents.core5:httpcore5-h2:5.4.4")
             classpath("org.apache.commons:commons-lang3:3.20.0")
         }
     }
@@ -21,9 +21,9 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("io.github.ben-manes.versions") version "0.64.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    kotlin("jvm") version "2.4.10"
-    kotlin("plugin.spring") version "2.4.10"
-    kotlin("kapt") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
+    kotlin("plugin.spring") version "2.4.20"
+    kotlin("kapt") version "2.4.20"
 }
 
 group = "no.novari"
@@ -51,7 +51,7 @@ repositories {
     mavenLocal()
 }
 
-extra["jackson-bom.version"] = "2.22.2"
+extra["jackson-bom.version"] = "2.22.3"
 extra["log4j2.version"] = "2.26.1"
 extra["netty.version"] = "4.2.17.Final"
 extra["tomcat.version"] = "10.1.59"
@@ -78,7 +78,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
 }
 
 tasks.test {
