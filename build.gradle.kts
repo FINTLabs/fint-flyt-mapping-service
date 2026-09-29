@@ -6,11 +6,11 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.2"))
+        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
         constraints {
             classpath("org.apache.httpcomponents.client5:httpclient5:5.6.4")
-            classpath("org.apache.httpcomponents.core5:httpcore5:5.4.3")
-            classpath("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
+            classpath("org.apache.httpcomponents.core5:httpcore5:5.4.4")
+            classpath("org.apache.httpcomponents.core5:httpcore5-h2:5.4.4")
             classpath("org.apache.commons:commons-lang3:3.20.0")
         }
     }
@@ -51,14 +51,14 @@ repositories {
     mavenLocal()
 }
 
-extra["jackson-bom.version"] = "2.22.2"
+extra["jackson-bom.version"] = "2.22.3"
 extra["log4j2.version"] = "2.26.1"
 extra["netty.version"] = "4.2.17.Final"
 extra["tomcat.version"] = "10.1.59"
 
 dependencies {
     constraints {
-        implementation("at.yawk.lz4:lz4-java:1.11.3") {
+        implementation("at.yawk.lz4:lz4-java:1.12.0") {
             because("Fixes CVE-2026-59949 in the kafka-clients transitive dependency")
         }
     }
@@ -78,7 +78,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
 }
 
 tasks.test {
