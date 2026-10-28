@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 buildscript {
-    configurations.classpath { resolutionStrategy.activateDependencyLocking() }
     repositories {
         gradlePluginPortal()
     }
