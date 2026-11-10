@@ -5,9 +5,8 @@ import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
+import no.novari.flyt.mapping.intgrconf.IntgrConfClient
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService
-import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService
-import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
 import no.novari.flyt.mapping.model.instance.InstanceObject
@@ -40,10 +39,7 @@ class InstanceProcessingServiceTest {
     private lateinit var instanceMappedEventProducerService: InstanceMappedEventProducerService
 
     @Mock
-    private lateinit var activeConfigurationIdRequestProducerService: ActiveConfigurationIdRequestProducerService
-
-    @Mock
-    private lateinit var configurationMappingRequestProducerService: ConfigurationMappingRequestProducerService
+    private lateinit var intgrConfClient: IntgrConfClient
 
     @Mock
     private lateinit var instanceMappingService: InstanceMappingService
@@ -71,8 +67,8 @@ class InstanceProcessingServiceTest {
 
         val mappedInstance = emptyMap<String, Any>()
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(configurationId)
-        `when`(configurationMappingRequestProducerService.get(configurationId)).thenReturn(objectMapping)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
+        `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         doReturn(mappedInstance)
             .`when`(instanceMappingService)
             .toMappedInstanceObject(objectMapping, instance)
@@ -104,7 +100,7 @@ class InstanceProcessingServiceTest {
 
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(null)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(null)
 
         assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
 
@@ -121,8 +117,8 @@ class InstanceProcessingServiceTest {
 
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(configurationId)
-        `when`(configurationMappingRequestProducerService.get(configurationId)).thenReturn(null)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
+        `when`(intgrConfClient.getMapping(configurationId)).thenReturn(null)
 
         assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
 
@@ -142,8 +138,8 @@ class InstanceProcessingServiceTest {
         val consumerRecord = newConsumerRecord(instanceObject)
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(configurationId)
-        `when`(configurationMappingRequestProducerService.get(configurationId)).thenReturn(objectMapping)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
+        `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(ValueConvertingNotFoundException(678L))
 
@@ -166,8 +162,8 @@ class InstanceProcessingServiceTest {
         val consumerRecord = newConsumerRecord(instanceObject)
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(configurationId)
-        `when`(configurationMappingRequestProducerService.get(configurationId)).thenReturn(objectMapping)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
+        `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(ValueConvertingKeyNotFoundException(678L, "testKey"))
 
@@ -190,8 +186,8 @@ class InstanceProcessingServiceTest {
         val consumerRecord = newConsumerRecord(instanceObject)
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenReturn(configurationId)
-        `when`(configurationMappingRequestProducerService.get(configurationId)).thenReturn(objectMapping)
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
+        `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(InstanceFieldNotFoundException("testKey"))
 
@@ -210,7 +206,7 @@ class InstanceProcessingServiceTest {
         `when`(instanceFlowHeaders.integrationId).thenReturn(integrationId)
         val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
 
-        `when`(activeConfigurationIdRequestProducerService.get(integrationId)).thenThrow(RuntimeException())
+        `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenThrow(RuntimeException())
 
         assertThrows(RuntimeException::class.java) {
             instanceProcessingService.process(flytConsumerRecord)

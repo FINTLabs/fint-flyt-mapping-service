@@ -1,7 +1,14 @@
 fint:
   org-id: novari.no
+  sso:
+    client-id: local
+    client-secret: local
 
 novari:
+  flyt:
+    mapping-service:
+      intgr-conf-client:
+        base-url: http://localhost:8095
   kafka:
     default-replicas: 1
     topic:
