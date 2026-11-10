@@ -5,9 +5,6 @@ novari:
   flyt:
     mapping-service:
       kafka:
-        request-reply:
-          reply-timeout: "5s"
-          reply-retention-time: "5m"
         event:
           instance-processing-events-retention-time: "4d"
 
@@ -20,6 +17,7 @@ spring:
     include:
       - flyt-kafka
       - flyt-logging
+      - flyt-intgr-conf-client
 
   output:
     ansi:
