@@ -52,10 +52,15 @@ class IntgrConfClientConfiguration {
     fun intgrConfRestClient(
         restClientBuilder: RestClient.Builder,
         @Qualifier("intgrConfAuthorizedClientManager") authorizedClientManager: OAuth2AuthorizedClientManager,
+        authorizedClientService: OAuth2AuthorizedClientService,
         properties: IntgrConfClientProperties,
     ): RestClient {
         val interceptor = OAuth2ClientHttpRequestInterceptor(authorizedClientManager)
         interceptor.setClientRegistrationIdResolver { properties.clientRegistrationId }
+        // Removes a rejected token (401/403) from the cache, so the Kafka retry fetches a new one.
+        interceptor.setAuthorizationFailureHandler(
+            OAuth2ClientHttpRequestInterceptor.authorizationFailureHandler(authorizedClientService),
+        )
         return restClientBuilder
             .baseUrl("${properties.baseUrl}/api/intern-klient")
             .requestInterceptor(interceptor)
