@@ -7,7 +7,6 @@ import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeadersMapper
 import no.novari.flyt.mapping.InstanceProcessingService
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
-import no.novari.flyt.webresourceserver.security.client.sourceapplication.SourceApplicationAuthorizationRequestService
 import no.novari.kafka.topic.name.EventTopicNameParameters
 import no.novari.kafka.topic.name.TopicNamePrefixParameters
 import no.novari.kafka.topic.name.TopicNameService
@@ -90,9 +89,6 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
 
     @MockitoBean
     private lateinit var instanceErrorEventProducerService: InstanceErrorEventProducerService
-
-    @MockitoBean
-    private lateinit var sourceApplicationAuthorizationRequestService: SourceApplicationAuthorizationRequestService
 
     @BeforeEach
     fun setUp() {

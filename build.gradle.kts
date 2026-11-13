@@ -82,7 +82,7 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    implementation("no.novari:flyt-web-resource-server:4.1.0")
+    implementation("no.novari:flyt-web-resource-server:5.0.0-rc-3")
     implementation("no.novari:flyt-kafka:7.4.0")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
