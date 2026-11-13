@@ -23,6 +23,11 @@ patches:
         value:
           name: "novari.kafka.topic.orgId"
           value: "tromsfylke-no"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.flyt.mapping-service.intgr-conf-client.base-url"
+          value: "http://fint-flyt-intgr-conf-service:8080/beta/tromsfylke-no"
     target:
       kind: Application
       name: fint-flyt-mapping-service

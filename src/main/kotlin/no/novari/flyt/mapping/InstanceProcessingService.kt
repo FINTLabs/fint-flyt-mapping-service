@@ -4,9 +4,8 @@ import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
+import no.novari.flyt.mapping.intgrconf.IntgrConfClient
 import no.novari.flyt.mapping.kafka.InstanceMappedEventProducerService
-import no.novari.flyt.mapping.kafka.configuration.ActiveConfigurationIdRequestProducerService
-import no.novari.flyt.mapping.kafka.configuration.ConfigurationMappingRequestProducerService
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
 import no.novari.flyt.mapping.model.instance.InstanceObject
@@ -15,9 +14,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class InstanceProcessingService(
-    private val configurationMappingRequestProducerService: ConfigurationMappingRequestProducerService,
+    private val intgrConfClient: IntgrConfClient,
     private val instanceMappedEventProducerService: InstanceMappedEventProducerService,
-    private val activeConfigurationIdRequestProducerService: ActiveConfigurationIdRequestProducerService,
     private val instanceMappingService: InstanceMappingService,
     private val instanceErrorEventProducerService: InstanceErrorEventProducerService,
 ) {
@@ -70,7 +68,7 @@ class InstanceProcessingService(
                     )
                     return null
                 }
-        return activeConfigurationIdRequestProducerService.get(integrationId) ?: run {
+        return intgrConfClient.getActiveConfigurationId(integrationId) ?: run {
             instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
             null
         }
@@ -80,7 +78,7 @@ class InstanceProcessingService(
         record: InstanceFlowConsumerRecord<InstanceObject>,
         configurationId: Long,
     ): ObjectMapping? {
-        return configurationMappingRequestProducerService.get(configurationId) ?: run {
+        return intgrConfClient.getMapping(configurationId) ?: run {
             instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
             null
         }

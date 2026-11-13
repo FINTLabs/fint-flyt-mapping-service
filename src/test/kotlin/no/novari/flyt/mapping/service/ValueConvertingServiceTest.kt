@@ -2,7 +2,7 @@ package no.novari.flyt.mapping.service
 
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
-import no.novari.flyt.mapping.kafka.configuration.ValueConvertingRequestProducerService
+import no.novari.flyt.mapping.intgrconf.IntgrConfClient
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.flyt.mapping.model.valueconverting.ValueConverting
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,12 +12,12 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
 class ValueConvertingServiceTest {
-    private val valueConvertingRequestProducerService = mock(ValueConvertingRequestProducerService::class.java)
+    private val intgrConfClient = mock(IntgrConfClient::class.java)
     private val instanceReferenceService = mock(InstanceReferenceService::class.java)
     private val valueConvertingReferenceService = mock(ValueConvertingReferenceService::class.java)
     private val service =
         ValueConvertingService(
-            valueConvertingRequestProducerService,
+            intgrConfClient,
             instanceReferenceService,
             valueConvertingReferenceService,
         )
@@ -46,7 +46,7 @@ class ValueConvertingServiceTest {
             ),
         ).thenReturn(instanceValue)
         `when`(valueConvertingReferenceService.getFirstValueConverterId(mappingString)).thenReturn(valueConvertingId)
-        `when`(valueConvertingRequestProducerService.get(valueConvertingId)).thenReturn(valueConverting)
+        `when`(intgrConfClient.getValueConverting(valueConvertingId)).thenReturn(valueConverting)
 
         val result = service.convertValue(mappingString, instanceValuePerKey, selectedCollectionObjectsPerKey)
 
@@ -69,7 +69,7 @@ class ValueConvertingServiceTest {
             ),
         ).thenReturn(instanceValue)
         `when`(valueConvertingReferenceService.getFirstValueConverterId(mappingString)).thenReturn(valueConvertingId)
-        `when`(valueConvertingRequestProducerService.get(valueConvertingId)).thenReturn(null)
+        `when`(intgrConfClient.getValueConverting(valueConvertingId)).thenReturn(null)
 
         val exception =
             assertThrows(ValueConvertingNotFoundException::class.java) {
@@ -103,7 +103,7 @@ class ValueConvertingServiceTest {
             ),
         ).thenReturn(instanceValue)
         `when`(valueConvertingReferenceService.getFirstValueConverterId(mappingString)).thenReturn(valueConvertingId)
-        `when`(valueConvertingRequestProducerService.get(valueConvertingId)).thenReturn(valueConverting)
+        `when`(intgrConfClient.getValueConverting(valueConvertingId)).thenReturn(valueConverting)
 
         val exception =
             assertThrows(ValueConvertingKeyNotFoundException::class.java) {
