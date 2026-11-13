@@ -8,7 +8,10 @@ and publishes `instance-mapped`. On failure it publishes `instance-error`. See
 ## intgr-conf-service
 
 The configuration, mapping and value convertings come from `/api/intern-klient` in
-fint-flyt-intgr-conf-service, with a token from the OAuth client `fint-flyt-intgr-conf-oauth2-client`.
+fint-flyt-intgr-conf-service, with a token from `fint-flyt-authorization-oauth2-client`. It is the shared OAuth
+client for internal calls between FLYT services, because namerator does not create new NAM clients. The secret is
+mapped to `fint.flyt.authorization.sso.*`; the `ra-no` overlays patch the key names, since `ra-no` gets the secret
+from 1Password.
 
 - A 404 gives an error event, the same as a missing value.
 - Other errors and timeouts make the Kafka consumer retry the record with exponential backoff.
@@ -23,7 +26,8 @@ fint-flyt-intgr-conf-service, with a token from the OAuth client `fint-flyt-intg
 2. Start fint-flyt-intgr-conf-service on `localhost:8095`.
 3. `./gradlew bootRun --args='--spring.profiles.active=local-staging'`
 
-Calls to intgr-conf-service need real values in `fint.sso.client-id` and `fint.sso.client-secret`.
+Calls to intgr-conf-service need real values in `fint.flyt.authorization.sso.client-id` and
+`fint.flyt.authorization.sso.client-secret`.
 
 ## Build
 

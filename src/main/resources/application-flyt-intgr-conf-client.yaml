@@ -9,8 +9,8 @@ spring:
           intgr-conf-service:
             authorization-grant-type: client_credentials
             provider: fint-idp
-            client-id: ${fint.sso.client-id}
-            client-secret: ${fint.sso.client-secret}
+            client-id: ${fint.flyt.authorization.sso.client-id}
+            client-secret: ${fint.flyt.authorization.sso.client-secret}
   http:
     client:
       connect-timeout: 2s
