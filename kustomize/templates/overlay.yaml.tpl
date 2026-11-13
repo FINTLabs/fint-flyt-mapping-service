@@ -23,6 +23,11 @@ patches:
         value:
           name: "novari.kafka.topic.orgId"
           value: "$FINT_KAFKA_TOPIC_ORGID"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "novari.flyt.mapping-service.intgr-conf-client.base-url"
+          value: "$INTGR_CONF_BASE_URL"
     target:
       kind: Application
       name: fint-flyt-mapping-service

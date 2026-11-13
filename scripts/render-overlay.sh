@@ -64,10 +64,16 @@ while IFS= read -r file; do
   export APP_INSTANCE="fint-flyt-mapping-service_$(app_instance_suffix "$namespace")"
   export KAFKA_TOPIC="${namespace}.flyt.*"
   export FINT_KAFKA_TOPIC_ORGID="$namespace"
+  # intgr-conf-service has a context path per environment: /<namespace> in api, /beta/<namespace> in beta.
+  case "$env_name" in
+    beta) context_path="/beta/$namespace" ;;
+    *) context_path="/$namespace" ;;
+  esac
+  export INTGR_CONF_BASE_URL="http://fint-flyt-intgr-conf-service:8080$context_path"
 
   mkdir -p "$(dirname "$file")"
   tmp="$(mktemp)"
-  envsubst '$NAMESPACE $ORG_ID $APP_INSTANCE $KAFKA_TOPIC $FINT_KAFKA_TOPIC_ORGID' < "$template" > "$tmp"
+  envsubst '$NAMESPACE $ORG_ID $APP_INSTANCE $KAFKA_TOPIC $FINT_KAFKA_TOPIC_ORGID $INTGR_CONF_BASE_URL' < "$template" > "$tmp"
   mv "$tmp" "$file"
 done < <(
   {
