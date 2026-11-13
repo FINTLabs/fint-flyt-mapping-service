@@ -35,6 +35,7 @@ class IntgrConfClientTest {
             IntgrConfClientConfiguration().intgrConfRestClient(
                 restClientBuilder,
                 authorizedClientManager(),
+                mock(),
                 IntgrConfClientProperties().apply { baseUrl = "http://fint-flyt-intgr-conf-service:8080/afk-no" },
             ),
         )
