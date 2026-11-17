@@ -2,13 +2,13 @@ package no.novari.flyt.mapping.service
 
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
-import no.novari.flyt.mapping.kafka.configuration.ValueConvertingRequestProducerService
+import no.novari.flyt.mapping.intgrconf.IntgrConfClient
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import org.springframework.stereotype.Service
 
 @Service
 class ValueConvertingService(
-    private val valueConvertingRequestProducerService: ValueConvertingRequestProducerService,
+    private val intgrConfClient: IntgrConfClient,
     private val instanceReferenceService: InstanceReferenceService,
     private val valueConvertingReferenceService: ValueConvertingReferenceService,
 ) {
@@ -26,7 +26,7 @@ class ValueConvertingService(
 
         val valueConvertingId = valueConvertingReferenceService.getFirstValueConverterId(mappingString)
         val valueConverting =
-            valueConvertingRequestProducerService.get(valueConvertingId)
+            intgrConfClient.getValueConverting(valueConvertingId)
                 ?: throw ValueConvertingNotFoundException(valueConvertingId)
 
         val convertingMap = valueConverting.convertingMap

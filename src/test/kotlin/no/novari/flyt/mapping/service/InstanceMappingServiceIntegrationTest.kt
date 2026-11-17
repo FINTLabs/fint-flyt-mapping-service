@@ -1,6 +1,6 @@
 package no.novari.flyt.mapping.service
 
-import no.novari.flyt.mapping.kafka.configuration.ValueConvertingRequestProducerService
+import no.novari.flyt.mapping.intgrconf.IntgrConfClient
 import no.novari.flyt.mapping.model.configuration.CollectionMapping
 import no.novari.flyt.mapping.model.configuration.FromCollectionMapping
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
@@ -17,12 +17,12 @@ import org.mockito.Mockito.`when`
 import java.util.Collections
 
 class InstanceMappingServiceIntegrationTest {
-    private lateinit var valueConvertingRequestProducerService: ValueConvertingRequestProducerService
+    private lateinit var intgrConfClient: IntgrConfClient
     private lateinit var instanceMappingService: InstanceMappingService
 
     @BeforeEach
     fun setup() {
-        valueConvertingRequestProducerService = mock(ValueConvertingRequestProducerService::class.java)
+        intgrConfClient = mock(IntgrConfClient::class.java)
         val instanceReferenceService = InstanceReferenceService()
         instanceMappingService =
             InstanceMappingService(
@@ -30,7 +30,7 @@ class InstanceMappingServiceIntegrationTest {
                 ValueMappingService(
                     InstanceReferenceService(),
                     ValueConvertingService(
-                        valueConvertingRequestProducerService,
+                        intgrConfClient,
                         instanceReferenceService,
                         ValueConvertingReferenceService(),
                     ),
@@ -329,11 +329,11 @@ class InstanceMappingServiceIntegrationTest {
                     ),
                 ).build()
 
-        `when`(valueConvertingRequestProducerService.get(0L)).thenReturn(valueConverting1)
+        `when`(intgrConfClient.getValueConverting(0L)).thenReturn(valueConverting1)
 
-        val result1 = valueConvertingRequestProducerService.get(0L)
+        val result1 = intgrConfClient.getValueConverting(0L)
 
-        verify(valueConvertingRequestProducerService, times(1)).get(0L)
+        verify(intgrConfClient, times(1)).getValueConverting(0L)
         assertEquals(valueConverting1, result1)
 
         val valueConverting2 =
@@ -347,11 +347,11 @@ class InstanceMappingServiceIntegrationTest {
                     ),
                 ).build()
 
-        `when`(valueConvertingRequestProducerService.get(2L)).thenReturn(valueConverting2)
+        `when`(intgrConfClient.getValueConverting(2L)).thenReturn(valueConverting2)
 
         for (i in 0 until 6) {
-            val result2 = valueConvertingRequestProducerService.get(2L)
-            verify(valueConvertingRequestProducerService, times(i + 1)).get(2L)
+            val result2 = intgrConfClient.getValueConverting(2L)
+            verify(intgrConfClient, times(i + 1)).getValueConverting(2L)
             assertEquals(valueConverting2, result2)
         }
 

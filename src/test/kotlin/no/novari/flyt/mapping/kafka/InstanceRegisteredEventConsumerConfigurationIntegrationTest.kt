@@ -7,7 +7,6 @@ import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeadersMapper
 import no.novari.flyt.mapping.InstanceProcessingService
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
-import no.novari.flyt.webresourceserver.security.client.sourceapplication.SourceApplicationAuthorizationRequestService
 import no.novari.kafka.topic.name.EventTopicNameParameters
 import no.novari.kafka.topic.name.TopicNamePrefixParameters
 import no.novari.kafka.topic.name.TopicNameService
@@ -52,6 +51,9 @@ import java.util.UUID
         "novari.kafka.topic.org-id=test-org",
         "novari.kafka.topic.domain-context=test-domain",
         "novari.kafka.default-replicas=1",
+        "fint.flyt.authorization.sso.client-id=test-client",
+        "fint.flyt.authorization.sso.client-secret=test-secret",
+        "novari.flyt.mapping-service.intgr-conf-client.base-url=http://localhost",
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.initial-interval=200ms",
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.multiplier=1.5",
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.max-interval=2s",
@@ -87,9 +89,6 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
 
     @MockitoBean
     private lateinit var instanceErrorEventProducerService: InstanceErrorEventProducerService
-
-    @MockitoBean
-    private lateinit var sourceApplicationAuthorizationRequestService: SourceApplicationAuthorizationRequestService
 
     @BeforeEach
     fun setUp() {
