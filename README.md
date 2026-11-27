@@ -19,6 +19,11 @@ from 1Password.
 - Each overlay sets `novari.flyt.mapping-service.intgr-conf-client.base-url`, because the context
   path of intgr-conf-service differs per environment (`/afk-no`, `/beta/afk-no`).
 
+## Security
+
+The service has no API. flyt-security-starter keeps `/actuator/health/**` and `/actuator/prometheus` open and denies
+everything else.
+
 ## Running locally
 
 1. `docker compose up -d` starts Kafka on `localhost:9092`. Add `--profile tools` for Kafdrop on
@@ -37,5 +42,5 @@ Run `./gradlew check`. `test` does not run ktlint.
 
 Every configuration is locked in `gradle.lockfile`. Dependabot updates the lockfile itself; if two of
 its pull requests conflict, comment `@dependabot recreate`. After any manual change to dependencies,
-versions or constraints, run `./gradlew dependencies --write-locks` and commit the lockfile. Gradle
-plugins are not locked and are pinned in the `plugins` block.
+versions or constraints, run `./gradlew dependencies --write-locks` and commit the lockfile. Versions and
+plugins are in `gradle/libs.versions.toml`.

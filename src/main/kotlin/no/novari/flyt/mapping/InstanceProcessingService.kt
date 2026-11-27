@@ -1,6 +1,6 @@
 package no.novari.flyt.mapping
 
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord
+import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingNotFoundException
@@ -19,67 +19,59 @@ class InstanceProcessingService(
     private val instanceMappingService: InstanceMappingService,
     private val instanceErrorEventProducerService: InstanceErrorEventProducerService,
 ) {
-    fun process(flytConsumerRecord: InstanceFlowConsumerRecord<InstanceObject>) {
-        val configurationId = getConfigurationIdOrPublishError(flytConsumerRecord) ?: return
-        val objectMapping = getObjectMappingOrPublishError(flytConsumerRecord, configurationId) ?: return
+    fun process(
+        instance: InstanceObject,
+        headers: InstanceFlowHeaders,
+    ) {
+        val configurationId = getConfigurationIdOrPublishError(headers) ?: return
+        val objectMapping = getObjectMappingOrPublishError(headers, configurationId) ?: return
 
         val mappedInstance =
             try {
-                instanceMappingService.toMappedInstanceObject(
-                    objectMapping,
-                    flytConsumerRecord.consumerRecord.value(),
-                )
+                instanceMappingService.toMappedInstanceObject(objectMapping, instance)
             } catch (exception: ValueConvertingNotFoundException) {
                 instanceErrorEventProducerService.publishMissingValueConvertingErrorEvent(
-                    flytConsumerRecord.instanceFlowHeaders,
+                    headers,
                     exception.valueConvertingId,
                 )
                 return
             } catch (exception: ValueConvertingKeyNotFoundException) {
                 instanceErrorEventProducerService.publishMissingValueConvertingKeyErrorEvent(
-                    flytConsumerRecord.instanceFlowHeaders,
+                    headers,
                     exception.valueConvertingId,
                     exception.valueConvertingKey,
                 )
                 return
             } catch (exception: InstanceFieldNotFoundException) {
                 instanceErrorEventProducerService.publishInstanceFieldNotFoundErrorEvent(
-                    flytConsumerRecord.instanceFlowHeaders,
+                    headers,
                     exception.instanceFieldKey,
                 )
                 return
             }
 
-        val instanceFlowHeaders =
-            flytConsumerRecord.instanceFlowHeaders
-                .toBuilder()
-                .configurationId(configurationId)
-                .build()
-
-        instanceMappedEventProducerService.publish(instanceFlowHeaders, mappedInstance)
+        instanceMappedEventProducerService.publish(headers.copy(configurationId = configurationId), mappedInstance)
     }
 
-    private fun getConfigurationIdOrPublishError(record: InstanceFlowConsumerRecord<InstanceObject>): Long? {
+    private fun getConfigurationIdOrPublishError(headers: InstanceFlowHeaders): Long? {
         val integrationId =
-            record.instanceFlowHeaders.integrationId
+            headers.integrationId
                 ?: run {
-                    instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(
-                        record.instanceFlowHeaders,
-                    )
+                    instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(headers)
                     return null
                 }
         return intgrConfClient.getActiveConfigurationId(integrationId) ?: run {
-            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
+            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(headers)
             null
         }
     }
 
     private fun getObjectMappingOrPublishError(
-        record: InstanceFlowConsumerRecord<InstanceObject>,
+        headers: InstanceFlowHeaders,
         configurationId: Long,
     ): ObjectMapping? {
         return intgrConfClient.getMapping(configurationId) ?: run {
-            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(record.instanceFlowHeaders)
+            instanceErrorEventProducerService.publishConfigurationNotFoundErrorEvent(headers)
             null
         }
     }

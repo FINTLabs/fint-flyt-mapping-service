@@ -1,143 +1,70 @@
 package no.novari.flyt.mapping.kafka
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerConfiguration
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowErrorHandlerFactory
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowListenerFactoryService
+import no.novari.flyt.kafka.instanceflow.headers.INSTANCE_FLOW_HEADERS_KEY
+import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
+import no.novari.flyt.kafka.instanceflow.headers.instanceFlowHeadersOrNull
 import no.novari.flyt.mapping.InstanceProcessingService
 import no.novari.flyt.mapping.kafka.configuration.KafkaConsumerProperties
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
-import no.novari.kafka.consuming.ListenerConfiguration
-import no.novari.kafka.topic.name.EventTopicNameParameters
-import no.novari.kafka.topic.name.TopicNamePrefixParameters
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import no.novari.kafka.starter.topic.EventTopicName
+import no.novari.kafka.starter.topic.KafkaTopics
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
-import org.springframework.kafka.listener.ListenerExecutionFailedException
+import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.kafka.listener.CommonErrorHandler
+import org.springframework.kafka.listener.DefaultErrorHandler
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries
+import org.springframework.messaging.handler.annotation.Header
+import org.springframework.stereotype.Component
 
 private val log = KotlinLogging.logger {}
 
 @Configuration
-class InstanceRegisteredEventConsumerConfiguration(
-    private val consumerProperties: KafkaConsumerProperties,
-) {
+class InstanceRegisteredEventConsumerConfiguration {
     @Bean
-    fun instanceRegisteredEventConsumer(
-        factoryService: InstanceFlowListenerFactoryService,
-        errorHandlerFactory: InstanceFlowErrorHandlerFactory,
-        errorEventProducerService: InstanceErrorEventProducerService,
-        processingService: InstanceProcessingService,
-    ): ConcurrentMessageListenerContainer<String, InstanceObject> {
-        return createConsumer(
-            factoryService,
-            errorHandlerFactory,
-            errorEventProducerService,
-            processingService,
-            "instance-registered",
-        )
-    }
+    fun instanceRegisteredTopic(topics: KafkaTopics): EventTopicName = topics.event("instance-registered")
 
     @Bean
-    fun instanceRequestedForRetryEventConsumer(
-        factoryService: InstanceFlowListenerFactoryService,
-        errorHandlerFactory: InstanceFlowErrorHandlerFactory,
-        errorEventProducerService: InstanceErrorEventProducerService,
-        processingService: InstanceProcessingService,
-    ): ConcurrentMessageListenerContainer<String, InstanceObject> {
-        return createConsumer(
-            factoryService,
-            errorHandlerFactory,
-            errorEventProducerService,
-            processingService,
-            "instance-requested-for-retry",
-        )
-    }
+    fun instanceRequestedForRetryTopic(topics: KafkaTopics): EventTopicName =
+        topics.event("instance-requested-for-retry")
 
-    private fun createConsumer(
-        factoryService: InstanceFlowListenerFactoryService,
-        errorHandlerFactory: InstanceFlowErrorHandlerFactory,
+    /** Retries with exponential back-off, then publishes a general system error and skips the record. */
+    @Bean
+    fun kafkaErrorHandler(
+        consumerProperties: KafkaConsumerProperties,
         errorEventProducerService: InstanceErrorEventProducerService,
-        processingService: InstanceProcessingService,
-        eventName: String,
-    ): ConcurrentMessageListenerContainer<String, InstanceObject> {
-        val errorHandlerConfig = createErrorHandlerConfig(errorEventProducerService)
-
-        return factoryService
-            .createRecordListenerContainerFactory(
-                InstanceObject::class.java,
-                processingService::process,
-                ListenerConfiguration
-                    .stepBuilder()
-                    .groupIdApplicationDefault()
-                    .maxPollRecordsKafkaDefault()
-                    .maxPollIntervalKafkaDefault()
-                    .continueFromPreviousOffsetOnAssignment()
-                    .build(),
-                errorHandlerFactory.createErrorHandler(errorHandlerConfig),
-            ).createContainer(
-                EventTopicNameParameters
-                    .builder()
-                    .topicNamePrefixParameters(
-                        TopicNamePrefixParameters
-                            .stepBuilder()
-                            .orgIdApplicationDefault()
-                            .domainContextApplicationDefault()
-                            .build(),
-                    ).eventName(eventName)
-                    .build(),
-            )
-    }
-
-    private fun createErrorHandlerConfig(
-        errorEventProducerService: InstanceErrorEventProducerService,
-    ): InstanceFlowErrorHandlerConfiguration<InstanceObject> {
+    ): CommonErrorHandler {
         val backoff = consumerProperties.instanceProcessingBackoff
-        return InstanceFlowErrorHandlerConfiguration
-            .stepBuilder<InstanceObject>()
-            .retryWithExponentialInterval(
-                backoff.initialInterval,
-                backoff.multiplier,
-                backoff.maxInterval,
-                backoff.maxRetries,
-            ).useDefaultRetryClassification()
-            .restartRetryOnExceptionChange()
-            .recoverFailedRecords(
-                object : InstanceFlowErrorHandlerConfiguration.InstanceFlowRecoverer<InstanceObject> {
-                    override fun recover(
-                        instanceFlowConsumerRecord: InstanceFlowConsumerRecord<InstanceObject>,
-                        exception: Exception,
-                    ) {
-                        val unwrappedException = unwrapException(exception)
-                        log.debug { "${unwrappedException.javaClass} handled using publishGeneralSystemErrorEvent" }
-                        errorEventProducerService.publishGeneralSystemErrorEvent(
-                            instanceFlowConsumerRecord.instanceFlowHeaders,
-                        )
-                    }
-
-                    override fun recoverForMissingInstanceFlowHeaders(
-                        consumerRecord: ConsumerRecord<String, InstanceObject>,
-                        exception: Exception,
-                    ) {
-                        log.warn(exception) { "Missing headers on record, skipping" }
-                    }
-                },
-            ).skipRecordOnRecoveryFailure()
-            .build()
+        val backOff =
+            ExponentialBackOffWithMaxRetries(backoff.maxRetries).apply {
+                initialInterval = backoff.initialInterval.toMillis()
+                multiplier = backoff.multiplier
+                maxInterval = backoff.maxInterval.toMillis()
+            }
+        return DefaultErrorHandler(
+            { record, exception ->
+                // A failing recoverer skips the record instead of retrying it again, as in v7.
+                runCatching {
+                    record.headers().instanceFlowHeadersOrNull()?.let(
+                        errorEventProducerService::publishGeneralSystemErrorEvent,
+                    )
+                        ?: log.warn(exception) { "Missing instance flow headers on record, skipping" }
+                }.onFailure { log.error(it) { "Could not publish the error event, skipping record" } }
+            },
+            backOff,
+        )
     }
+}
 
-    private fun unwrapException(exception: Exception): Exception {
-        var current: Throwable = exception
-        while (
-            current is ListenerExecutionFailedException &&
-            current.cause != null &&
-            current.cause !== current
-        ) {
-            current = current.cause!!
-        }
-
-        return current as? Exception ?: exception
-    }
+@Component
+class InstanceEventListener(
+    private val processingService: InstanceProcessingService,
+) {
+    @KafkaListener(topics = ["#{@instanceRegisteredTopic.name}", "#{@instanceRequestedForRetryTopic.name}"])
+    fun on(
+        instance: InstanceObject,
+        @Header(INSTANCE_FLOW_HEADERS_KEY) headers: InstanceFlowHeaders,
+    ) = processingService.process(instance, headers)
 }
