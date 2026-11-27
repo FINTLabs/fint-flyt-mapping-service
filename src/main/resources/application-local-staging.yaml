@@ -12,9 +12,9 @@ novari:
       intgr-conf-client:
         base-url: http://localhost:8095
   kafka:
-    default-replicas: 1
     topic:
       org-id: novari-no
+      default-replicas: 1
 
 spring:
   kafka:

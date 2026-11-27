@@ -1,6 +1,5 @@
 package no.novari.flyt.mapping
 
-import no.novari.flyt.kafka.instanceflow.consuming.InstanceFlowConsumerRecord
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
 import no.novari.flyt.mapping.exception.InstanceFieldNotFoundException
 import no.novari.flyt.mapping.exception.ValueConvertingKeyNotFoundException
@@ -11,7 +10,6 @@ import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.configuration.ObjectMapping
 import no.novari.flyt.mapping.model.instance.InstanceObject
 import no.novari.flyt.mapping.service.InstanceMappingService
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
@@ -52,18 +50,15 @@ class InstanceProcessingServiceTest {
         val integrationId = 123L
         val configurationId = 456L
         val instanceFlowHeaders =
-            InstanceFlowHeaders
-                .builder()
-                .sourceApplicationId(1L)
-                .correlationId(UUID.fromString("1d4fb1f1-ab87-4bc1-979a-b5a97295d7d2"))
-                .integrationId(integrationId)
-                .build()
+            InstanceFlowHeaders(
+                sourceApplicationId = 1L,
+                correlationId = UUID.fromString("1d4fb1f1-ab87-4bc1-979a-b5a97295d7d2"),
+                integrationId = integrationId,
+            )
 
         val objectMapping = mock(ObjectMapping::class.java)
 
         val instance = mock(InstanceObject::class.java)
-        val consumerRecord = newConsumerRecord(instance)
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
         val mappedInstance = emptyMap<String, Any>()
 
@@ -73,7 +68,7 @@ class InstanceProcessingServiceTest {
             .`when`(instanceMappingService)
             .toMappedInstanceObject(objectMapping, instance)
 
-        assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
+        assertDoesNotThrow { instanceProcessingService.process(instance, instanceFlowHeaders) }
 
         val instanceFlowHeadersCaptor = argumentCaptor<InstanceFlowHeaders>()
         val mappedInstanceCaptor = argumentCaptor<Any>()
@@ -98,11 +93,9 @@ class InstanceProcessingServiceTest {
         val instanceFlowHeaders = mock(InstanceFlowHeaders::class.java)
         `when`(instanceFlowHeaders.integrationId).thenReturn(integrationId)
 
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
-
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(null)
 
-        assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
+        assertDoesNotThrow { instanceProcessingService.process(InstanceObject(), instanceFlowHeaders) }
 
         verify(instanceErrorEventProducerService)
             .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders)
@@ -115,12 +108,10 @@ class InstanceProcessingServiceTest {
         val instanceFlowHeaders = mock(InstanceFlowHeaders::class.java)
         `when`(instanceFlowHeaders.integrationId).thenReturn(integrationId)
 
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
-
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
         `when`(intgrConfClient.getMapping(configurationId)).thenReturn(null)
 
-        assertDoesNotThrow { instanceProcessingService.process(flytConsumerRecord) }
+        assertDoesNotThrow { instanceProcessingService.process(InstanceObject(), instanceFlowHeaders) }
 
         verify(instanceErrorEventProducerService)
             .publishConfigurationNotFoundErrorEvent(instanceFlowHeaders)
@@ -135,15 +126,13 @@ class InstanceProcessingServiceTest {
         val objectMapping = mock(ObjectMapping::class.java)
 
         val instanceObject = mock(InstanceObject::class.java)
-        val consumerRecord = newConsumerRecord(instanceObject)
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
         `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(ValueConvertingNotFoundException(678L))
 
-        instanceProcessingService.process(flytConsumerRecord)
+        instanceProcessingService.process(instanceObject, instanceFlowHeaders)
 
         verify(instanceErrorEventProducerService)
             .publishMissingValueConvertingErrorEvent(instanceFlowHeaders, 678L)
@@ -159,15 +148,13 @@ class InstanceProcessingServiceTest {
         val objectMapping = mock(ObjectMapping::class.java)
 
         val instanceObject = mock(InstanceObject::class.java)
-        val consumerRecord = newConsumerRecord(instanceObject)
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
         `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(ValueConvertingKeyNotFoundException(678L, "testKey"))
 
-        instanceProcessingService.process(flytConsumerRecord)
+        instanceProcessingService.process(instanceObject, instanceFlowHeaders)
 
         verify(instanceErrorEventProducerService)
             .publishMissingValueConvertingKeyErrorEvent(instanceFlowHeaders, 678L, "testKey")
@@ -183,15 +170,13 @@ class InstanceProcessingServiceTest {
         val objectMapping = mock(ObjectMapping::class.java)
 
         val instanceObject = mock(InstanceObject::class.java)
-        val consumerRecord = newConsumerRecord(instanceObject)
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, consumerRecord)
 
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenReturn(configurationId)
         `when`(intgrConfClient.getMapping(configurationId)).thenReturn(objectMapping)
         `when`(instanceMappingService.toMappedInstanceObject(objectMapping, instanceObject))
             .thenThrow(InstanceFieldNotFoundException("testKey"))
 
-        instanceProcessingService.process(flytConsumerRecord)
+        instanceProcessingService.process(instanceObject, instanceFlowHeaders)
 
         verify(instanceErrorEventProducerService)
             .publishInstanceFieldNotFoundErrorEvent(instanceFlowHeaders, "testKey")
@@ -204,30 +189,14 @@ class InstanceProcessingServiceTest {
 
         val instanceFlowHeaders = mock(InstanceFlowHeaders::class.java)
         `when`(instanceFlowHeaders.integrationId).thenReturn(integrationId)
-        val flytConsumerRecord = newFlytConsumerRecord(instanceFlowHeaders, newConsumerRecord(null))
 
         `when`(intgrConfClient.getActiveConfigurationId(integrationId)).thenThrow(RuntimeException())
 
         assertThrows(RuntimeException::class.java) {
-            instanceProcessingService.process(flytConsumerRecord)
+            instanceProcessingService.process(InstanceObject(), instanceFlowHeaders)
         }
 
         verify(instanceErrorEventProducerService, never())
             .publishGeneralSystemErrorEvent(instanceFlowHeaders)
-    }
-
-    private fun newConsumerRecord(instanceObject: InstanceObject?): ConsumerRecord<String, InstanceObject> {
-        return ConsumerRecord("test-topic", 0, 0L, "test-key", instanceObject)
-    }
-
-    private fun newFlytConsumerRecord(
-        instanceFlowHeaders: InstanceFlowHeaders,
-        consumerRecord: ConsumerRecord<String, InstanceObject>,
-    ): InstanceFlowConsumerRecord<InstanceObject> {
-        return InstanceFlowConsumerRecord
-            .builder<InstanceObject>()
-            .instanceFlowHeaders(instanceFlowHeaders)
-            .consumerRecord(consumerRecord)
-            .build()
     }
 }

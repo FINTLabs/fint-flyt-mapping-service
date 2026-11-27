@@ -8,10 +8,6 @@ novari:
         event:
           instance-processing-events-retention-time: "4d"
 
-logging:
-  level:
-    no.novari.cache.ehcache.FintEhCacheEventLogger: WARN
-
 spring:
   profiles:
     include:

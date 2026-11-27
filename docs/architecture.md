@@ -51,7 +51,7 @@ C4Container
 
     ContainerQueue_Ext(kafkaIn, "Kafka", "Topic", "instance-registered, instance-requested-for-retry")
     System_Ext(prometheus, "Prometheus", "Metrics in the cluster.")
-    Container(app, "fint-flyt-mapping-service", "Kotlin, Spring Boot 3, Java 25", "Consumes instances, maps them and publishes the result. No database.")
+    Container(app, "fint-flyt-mapping-service", "Kotlin, Spring Boot 4, Java 25", "Consumes instances, maps them and publishes the result. No database.")
     Container_Ext(intgrConf, "fint-flyt-intgr-conf-service", "Spring Boot", "/api/intern-klient")
     ContainerQueue_Ext(kafkaOut, "Kafka", "Topic", "instance-mapped, instance-error")
     System_Ext(idp, "NAM", "fint-idp token endpoint.")
@@ -82,7 +82,7 @@ C4Container
 C4Component
     title Components in fint-flyt-mapping-service
 
-    Component(consumer, "Kafka consumers", "flyt-kafka", " Retries with exponential backoff, then GENERAL_SYSTEM_ERROR.")
+    Component(consumer, "Kafka listener", "flyt-kafka 8", "One @KafkaListener. Retries with exponential backoff, then GENERAL_SYSTEM_ERROR.")
     ContainerQueue_Ext(kafka, "Kafka", "Topic", "instance-registered, instance-requested-for-retry, instance-mapped, instance-error")
     Component(processing, "InstanceProcessingService", "Service", "Fetches configuration, maps, publishes the result or an error event.")
     Component(producers, "Kafka producers", "flyt-kafka", "Publish instance-mapped and instance-error.")

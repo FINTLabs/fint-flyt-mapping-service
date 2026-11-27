@@ -1,40 +1,27 @@
 package no.novari.flyt.mapping.kafka
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import no.novari.Application
 import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeaders
-import no.novari.flyt.kafka.instanceflow.headers.InstanceFlowHeadersMapper
+import no.novari.flyt.kafka.instanceflow.producing.send
 import no.novari.flyt.mapping.InstanceProcessingService
 import no.novari.flyt.mapping.kafka.error.InstanceErrorEventProducerService
 import no.novari.flyt.mapping.model.instance.InstanceObject
-import no.novari.kafka.topic.name.EventTopicNameParameters
-import no.novari.kafka.topic.name.TopicNamePrefixParameters
-import no.novari.kafka.topic.name.TopicNameService
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.StringSerializer
+import no.novari.kafka.starter.topic.EventTopicName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.after
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.timeout
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
-import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry
 import org.springframework.kafka.core.KafkaTemplate
-import org.springframework.kafka.core.ProducerFactory
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
+import org.springframework.kafka.listener.CommonErrorHandler
 import org.springframework.kafka.listener.DefaultErrorHandler
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries
-import org.springframework.kafka.support.serializer.JsonSerializer
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -42,7 +29,6 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.util.UUID
 
 @SpringBootTest(
-    classes = [Application::class],
     properties = [
         "spring.kafka.bootstrap-servers=\${spring.embedded.kafka.brokers}",
         "spring.kafka.consumer.auto-offset-reset=earliest",
@@ -50,7 +36,7 @@ import java.util.UUID
         "fint.org-id=test-org",
         "novari.kafka.topic.org-id=test-org",
         "novari.kafka.topic.domain-context=test-domain",
-        "novari.kafka.default-replicas=1",
+        "novari.kafka.topic.default-replicas=1",
         "fint.flyt.authorization.sso.client-id=test-client",
         "fint.flyt.authorization.sso.client-secret=test-secret",
         "novari.flyt.mapping-service.intgr-conf-client.base-url=http://localhost",
@@ -58,31 +44,32 @@ import java.util.UUID
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.multiplier=1.5",
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.max-interval=2s",
         "novari.flyt.mapping-service.kafka.consumer.instance-processing-backoff.max-retries=2",
-        "logging.level.kafka=ERROR",
         "logging.level.org.apache.kafka=ERROR",
-        "logging.level.org.apache.zookeeper=ERROR",
         "logging.level.org.springframework.kafka=ERROR",
     ],
 )
 @EmbeddedKafka(
     partitions = 1,
-    topics = ["test-org.test-domain.event.instance-registered"],
+    topics = [
+        "test-org.test-domain.event.instance-registered",
+        "test-org.test-domain.event.instance-requested-for-retry",
+    ],
 )
-@Import(InstanceRegisteredEventConsumerConfigurationIntegrationTest.TestKafkaProducerConfiguration::class)
 class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
     @Autowired
-    @Qualifier("testKafkaTemplate")
-    private lateinit var kafkaTemplate: KafkaTemplate<String, InstanceObject>
+    private lateinit var kafkaTemplate: KafkaTemplate<String, Any>
 
     @Autowired
-    private lateinit var instanceFlowHeadersMapper: InstanceFlowHeadersMapper
+    private lateinit var instanceRegisteredTopic: EventTopicName
 
     @Autowired
-    private lateinit var topicNameService: TopicNameService
+    private lateinit var instanceRequestedForRetryTopic: EventTopicName
 
     @Autowired
-    @Qualifier("instanceRegisteredEventConsumer")
-    private lateinit var instanceRegisteredEventConsumer: ConcurrentMessageListenerContainer<String, InstanceObject>
+    private lateinit var listeners: KafkaListenerEndpointRegistry
+
+    @Autowired
+    private lateinit var errorHandler: CommonErrorHandler
 
     @MockitoBean
     private lateinit var instanceProcessingService: InstanceProcessingService
@@ -91,121 +78,59 @@ class InstanceRegisteredEventConsumerConfigurationIntegrationTest {
     private lateinit var instanceErrorEventProducerService: InstanceErrorEventProducerService
 
     @BeforeEach
-    fun setUp() {
-        ContainerTestUtils.waitForAssignment(instanceRegisteredEventConsumer, 1)
+    fun waitForAssignment() {
+        listeners.listenerContainers.forEach { ContainerTestUtils.waitForAssignment(it, 2) }
     }
 
     @Test
-    fun shouldApplyExponentialBackoffAndRecover() {
-        doThrow(RuntimeException("boom"))
-            .`when`(instanceProcessingService)
-            .process(any())
+    fun `both topics are consumed in the application group`() {
+        assertThat(listeners.listenerContainers.map { it.groupId }).containsExactly("test-mapping-service")
+        assertThat(listeners.listenerContainers.flatMap { it.containerProperties.topics!!.toList() })
+            .containsExactlyInAnyOrder(instanceRegisteredTopic.name, instanceRequestedForRetryTopic.name)
+    }
 
-        val instanceFlowHeaders =
-            InstanceFlowHeaders
-                .builder()
-                .sourceApplicationId(1L)
-                .correlationId(UUID.randomUUID())
-                .integrationId(123L)
-                .build()
+    @Test
+    fun `an instance requested for retry is processed with its headers`() {
+        val headers = headers()
+        val instance = InstanceObject(valuePerKey = mapOf("key" to "value"))
 
-        sendInstanceRegisteredEvent(instanceFlowHeaders)
+        kafkaTemplate.send(instanceRequestedForRetryTopic, headers, instance)
 
-        verify(instanceErrorEventProducerService, timeout(2000))
-            .publishGeneralSystemErrorEvent(eq(instanceFlowHeaders))
+        verify(instanceProcessingService, timeout(5000)).process(eq(instance), eq(headers))
+    }
 
-        assertThat(instanceRegisteredEventConsumer.commonErrorHandler)
-            .isInstanceOf(DefaultErrorHandler::class.java)
+    @Test
+    fun `a failing instance is retried with exponential back-off, then a general system error is published`() {
+        doThrow(RuntimeException("boom")).`when`(instanceProcessingService).process(any(), any())
+        val headers = headers()
 
-        val errorHandler = instanceRegisteredEventConsumer.commonErrorHandler as DefaultErrorHandler
-        assertThat(errorHandler).isNotNull()
+        kafkaTemplate.send(instanceRegisteredTopic, headers, InstanceObject(valuePerKey = mapOf("key" to "value")))
 
+        verify(instanceErrorEventProducerService, timeout(5000)).publishGeneralSystemErrorEvent(eq(headers))
         val failureTracker =
             ReflectionTestUtils.invokeMethod<Any>(
-                errorHandler,
+                errorHandler as DefaultErrorHandler,
                 "getFailureTracker",
             )
-        assertThat(failureTracker).isNotNull()
-
         val backOff =
             ReflectionTestUtils.getField(
                 requireNotNull(failureTracker),
                 "backOff",
-            )
-        assertThat(backOff).isNotNull()
-        assertThat(backOff).isInstanceOf(ExponentialBackOffWithMaxRetries::class.java)
-
-        val exponentialBackOff = backOff as ExponentialBackOffWithMaxRetries
-        assertThat(exponentialBackOff.initialInterval).isEqualTo(200L)
-        assertThat(exponentialBackOff.multiplier).isEqualTo(1.5)
-        assertThat(exponentialBackOff.maxInterval).isEqualTo(2_000L)
-        assertThat(exponentialBackOff.maxRetries).isEqualTo(2)
+            ) as ExponentialBackOffWithMaxRetries
+        assertThat(backOff.initialInterval).isEqualTo(200L)
+        assertThat(backOff.multiplier).isEqualTo(1.5)
+        assertThat(backOff.maxInterval).isEqualTo(2_000L)
+        assertThat(backOff.maxRetries).isEqualTo(2)
     }
 
-    private fun sendInstanceRegisteredEvent(instanceFlowHeaders: InstanceFlowHeaders) {
-        val instanceObject =
-            InstanceObject
-                .builder()
-                .valuePerKey(mapOf("key" to "value"))
-                .build()
+    @Test
+    fun `a record without instance flow headers is skipped without an error event`() {
+        kafkaTemplate.send(instanceRegisteredTopic.name, InstanceObject(valuePerKey = mapOf("key" to "value")))
 
-        val topicName =
-            topicNameService.validateAndMapToTopicName(
-                EventTopicNameParameters
-                    .builder()
-                    .topicNamePrefixParameters(
-                        TopicNamePrefixParameters
-                            .stepBuilder()
-                            .orgIdApplicationDefault()
-                            .domainContextApplicationDefault()
-                            .build(),
-                    ).eventName(EVENT_NAME)
-                    .build(),
-            )
-
-        val record =
-            ProducerRecord(
-                topicName,
-                "key",
-                instanceObject,
-            )
-
-        record.headers().add(instanceFlowHeadersMapper.toHeader(instanceFlowHeaders))
-        kafkaTemplate.send(record)
+        verify(instanceErrorEventProducerService, after(2000).never()).publishGeneralSystemErrorEvent(any())
+        verify(instanceProcessingService, after(0).never()).process(any(), any())
     }
 
-    @TestConfiguration
-    class TestKafkaProducerConfiguration {
-        @Bean(name = ["testProducerFactory"])
-        fun producerFactory(
-            @Value("\${spring.embedded.kafka.brokers}")
-            embeddedKafkaBrokers: String,
-            objectMapper: ObjectMapper,
-        ): ProducerFactory<String, InstanceObject> {
-            val props =
-                mutableMapOf<String, Any>(
-                    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to embeddedKafkaBrokers,
-                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
-                )
-
-            return DefaultKafkaProducerFactory(
-                props,
-                StringSerializer(),
-                JsonSerializer(objectMapper),
-            )
-        }
-
-        @Bean(name = ["testKafkaTemplate"])
-        fun kafkaTemplate(
-            @Qualifier("testProducerFactory")
-            producerFactory: ProducerFactory<String, InstanceObject>,
-        ): KafkaTemplate<String, InstanceObject> {
-            return KafkaTemplate(producerFactory)
-        }
-    }
-
-    companion object {
-        private const val EVENT_NAME = "instance-registered"
-    }
+    private fun headers() =
+        InstanceFlowHeaders(sourceApplicationId = 1L, correlationId = UUID.randomUUID(), integrationId = 123L)
 }
